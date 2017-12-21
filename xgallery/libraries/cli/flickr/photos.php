@@ -1,6 +1,6 @@
 <?php
 
-require_once ('../../../bootstrap.php');
+require_once __DIR__ . '/../../../bootstrap.php';
 
 /**
  * A command line cron job to attempt to remove files that should have been deleted at update.
@@ -166,6 +166,8 @@ class XgalleryCliFlickrPhotos extends JApplicationCli
 						. ',' . $db->quoteName('state') . ' = 1'
 						. ' WHERE ' . $db->quoteName('id') . ' = ' . $db->quote($pid);
 					$db->setQuery($query)->execute();
+
+					XgalleryHelperLog::getLogger()->info('php ' . __DIR__ . '/download.php ' . $pid . ' > /dev/null 2>/dev/null &');
 
 					exec('php ' . __DIR__ . '/download.php ' . $pid . ' > /dev/null 2>/dev/null &');
 				}

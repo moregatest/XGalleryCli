@@ -75,6 +75,8 @@ class XgalleryCli extends JApplicationCli
 			}
 		}
 
+		XgalleryHelperLog::getLogger()->info('php ' . XPATH_LIBRARIES . '/cli/flickr/photos.php > /dev/null 2>/dev/null &');
+
 		// Fetch photos
 		exec('php ' . XPATH_LIBRARIES . '/cli/flickr/photos.php > /dev/null 2>/dev/null &');
 	}

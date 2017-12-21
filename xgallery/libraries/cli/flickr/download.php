@@ -1,6 +1,6 @@
 <?php
 
-require_once('../../../bootstrap.php');
+require_once __DIR__ . '/../../../bootstrap.php';
 
 /**
  * A command line cron job to attempt to remove files that should have been deleted at update.
