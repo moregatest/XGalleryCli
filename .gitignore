@@ -1,0 +1,8 @@
+/xgallery/composer.lock
+/xgallery/vendor/*
+
+/deletefiles.php
+/finder_indexer.php
+/garbagecron.php
+/index.html
+/update_cron.php
