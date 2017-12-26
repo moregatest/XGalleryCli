@@ -1,13 +1,13 @@
 <?php
 
-require_once __DIR__ . '/xgallery/bootstrap.php';
+require_once __DIR__ . '/../../../bootstrap.php';
 
 /**
  * A command line cron job to attempt to remove files that should have been deleted at update.
  *
  * @since  3.0
  */
-class XgalleryCli extends JApplicationCli
+class XgalleryCliFlickrContacts extends JApplicationCli
 {
 	/**
 	 * Entry point for CLI script
@@ -20,15 +20,13 @@ class XgalleryCli extends JApplicationCli
 	{
 		\Joomla\CMS\Factory::$application = $this;
 
-		$input = \Joomla\CMS\Factory::getApplication()->input->cli;
+		XgalleryModelFlickr::getInstance()->insertContacts();
 
-		$service = $input->get('service', 'flickr');
-		$task    = $input->get('task', 'contacts');
-
-		echo XgalleryHelperEnv::exec('php ' . XPATH_LIBRARIES . '/cli/' . $service . '/' . $task . '.php');
+		// Fetch photos
+		XgalleryHelperEnv::exec('php ' . XPATH_LIBRARIES . '/cli/flickr/photos.php');
 	}
 }
 
 // Instantiate the application object, passing the class name to JCli::getInstance
 // and use chaining to execute the application.
-JApplicationCli::getInstance('XgalleryCli')->execute();
+JApplicationCli::getInstance('XgalleryCliFlickrContacts')->execute();

@@ -19,9 +19,10 @@ class XgalleryCliFlickrDownload extends JApplicationCli
 	public function doExecute()
 	{
 		\Joomla\CMS\Factory::$application = $this;
+		$input = \Joomla\CMS\Factory::getApplication()->input->cli;
 
 		$db  = \Joomla\CMS\Factory::getDbo();
-		$pid = $_SERVER['argv'][1];
+		$pid = $input->get('pid');
 
 		XgalleryHelperLog::getLogger()->info('Download photo : ' . $pid);
 

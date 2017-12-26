@@ -37,6 +37,17 @@ class XgalleryFlickr
 		}
 	}
 
+	public static function getInstance()
+	{
+		static $instance;
+
+		if (!isset($instance))
+		{
+			$instance = new static;
+		}
+
+		return $instance;
+	}
 	/**
 	 * @param array $contacts
 	 * @param array $params

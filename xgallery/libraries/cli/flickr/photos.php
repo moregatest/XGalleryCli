@@ -20,30 +20,20 @@ class XgalleryCliFlickrPhotos extends JApplicationCli
 	{
 		\Joomla\CMS\Factory::$application = $this;
 
+		$input = \Joomla\CMS\Factory::getApplication()->input->cli;
+
 		$xgallery = new XgalleryFlickr;
 		$db       = \Joomla\CMS\Factory::getDbo();
-		$args     = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : null;
-		$nsid     = null;
+		$url = $input->get('url');
+		$nsid     = $input->get('nsid', null);
 
-		if ($args)
+		if ($url)
 		{
-			$args = explode('=', $args);
+			$nsid = $xgallery->lookupUser($url);
 
-			switch ($args[0])
+			if ($nsid && $nsid->stat == "ok")
 			{
-				case 'nsid':
-					$nsid = $args[1];
-					break;
-				case 'url':
-					$nsid = $xgallery->lookupUser($args[1]);
-
-					if ($nsid && $nsid->stat == "ok")
-					{
-						$nsid = $nsid->user->id;
-					}
-					break;
-				default:
-					$nsid = null;
+				$nsid = $nsid->user->id;
 			}
 		}
 
@@ -169,7 +159,7 @@ class XgalleryCliFlickrPhotos extends JApplicationCli
 
 					XgalleryHelperLog::getLogger()->info('php ' . __DIR__ . '/download.php ' . $pid . ' > /dev/null 2>/dev/null &');
 
-					exec('php ' . __DIR__ . '/download.php ' . $pid . ' > /dev/null 2>/dev/null &');
+					exec('php ' . __DIR__ . '/download.php -pid=' . $pid . ' > /dev/null 2>/dev/null &');
 				}
 			}
 			catch (Exception $exception)
