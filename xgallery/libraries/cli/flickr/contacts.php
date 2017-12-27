@@ -23,7 +23,7 @@ class XgalleryCliFlickrContacts extends JApplicationCli
 		XgalleryModelFlickr::getInstance()->insertContacts();
 
 		// Fetch photos
-		XgalleryHelperEnv::exec('php ' . XPATH_LIBRARIES . '/cli/flickr/photos.php');
+		XgalleryHelperEnv::exec(XPATH_LIBRARIES . '/cli/flickr/photos.php');
 	}
 }
 

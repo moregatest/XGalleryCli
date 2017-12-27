@@ -4,6 +4,8 @@ class XgalleryHelperFile
 {
 	public static function downloadFile($url, $saveTo)
 	{
+		XgalleryHelperLog::getLogger()->info(__FUNCTION__, func_get_args());
+
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_VERBOSE, 1);

@@ -48,6 +48,7 @@ class XgalleryFlickr
 
 		return $instance;
 	}
+
 	/**
 	 * @param array $contacts
 	 * @param array $params
@@ -62,7 +63,7 @@ class XgalleryFlickr
 
 		$return = $this->getContacts($params);
 
-		if ($return && $return->stat == 'ok')
+		if ($return)
 		{
 			$contacts = array_merge($contacts, $return->contacts->contact);
 
@@ -86,34 +87,21 @@ class XgalleryFlickr
 	{
 		XgalleryHelperLog::getLogger()->info(__FUNCTION__);
 
-		$params = array_merge(array(
+		return ($this->execute($params = array_merge(array(
 			'method'         => 'flickr.contacts.getList',
 			'format'         => 'json',
 			'nojsoncallback' => '1',
 			'per_page'       => 1000
-		), $params);
-
-		$return = $this->client->CallAPI(
-			'https://api.flickr.com/services/rest/',
-			'GET',
-			$params,
-			array('FailOnAccessError' => true),
-			$result
-		);
-
-		if (!$return)
-		{
-			return false;
-		}
-
-		if ($result->stat != 'ok')
-		{
-			return false;
-		}
-
-		return $result;
+		), $params)));
 	}
 
+	/**
+	 * @param       $nsid
+	 * @param array $photos
+	 * @param array $params
+	 *
+	 * @return array
+	 */
 	public function getPhotosList($nsid, &$photos = array(), $params = array())
 	{
 		XgalleryHelperLog::getLogger()->info(__FUNCTION__);
@@ -127,7 +115,7 @@ class XgalleryFlickr
 				$params
 			));
 
-		if ($return && $return->stat == 'ok')
+		if ($return)
 		{
 			$photos = array_merge($photos, $return->photos->photo);
 
@@ -142,95 +130,87 @@ class XgalleryFlickr
 		return $photos;
 	}
 
+	/**
+	 * @param $params
+	 *
+	 * @return bool
+	 */
 	protected function getPhotos($params)
 	{
 		XgalleryHelperLog::getLogger()->info(__FUNCTION__);
 
-		$params = array_merge(array(
+		return $this->execute(array_merge(array(
 			'method'         => 'flickr.people.getPhotos',
 			'format'         => 'json',
 			'nojsoncallback' => '1',
 			'per_page'       => 500
-		), $params);
-
-		$return = $this->client->CallAPI(
-			'https://api.flickr.com/services/rest/',
-			'GET',
-			$params,
-			array('FailOnAccessError' => true),
-			$result
-		);
-
-		if (!$return)
-		{
-			return false;
-		}
-
-		if ($result->stat != 'ok')
-		{
-			return false;
-		}
-
-		return $result;
+		), $params));
 	}
 
 	public function getPhotoSizes($pid)
 	{
 		XgalleryHelperLog::getLogger()->info(__FUNCTION__);
 
-		$return = $this->client->CallAPI(
-			'https://api.flickr.com/services/rest/',
-			'GET',
-			array(
-				'method'         => 'flickr.photos.getSizes',
-				'format'         => 'json',
-				'nojsoncallback' => '1',
-				'photo_id'       => $pid
-			),
-			array('FailOnAccessError' => true),
-			$result
-		);
-
-		if (!$return)
-		{
-			return false;
-		}
-
-		if ($result->stat != 'ok')
-		{
-			return false;
-		}
-
-		return $result;
+		return $this->execute(array(
+			'method'         => 'flickr.photos.getSizes',
+			'format'         => 'json',
+			'nojsoncallback' => '1',
+			'photo_id'       => $pid
+		));
 	}
 
 	public function lookupUser($url)
 	{
 		XgalleryHelperLog::getLogger()->info(__FUNCTION__);
 
-		$return = $this->client->CallAPI(
-			'https://api.flickr.com/services/rest/',
-			'GET',
-			array(
-				'method'         => 'flickr.urls.lookupUser',
-				'format'         => 'json',
-				'nojsoncallback' => '1',
-				'url'            => $url
-			),
-			array('FailOnAccessError' => true),
-			$result
-		);
+		return $this->execute(array(
+			'method'         => 'flickr.urls.lookupUser',
+			'format'         => 'json',
+			'nojsoncallback' => '1',
+			'url'            => $url
+		));
+	}
+
+	protected function execute($parameters, $url = 'https://api.flickr.com/services/rest/', $method = 'GET', $options = array('FailOnAccessError' => true))
+	{
+		XgalleryHelperLog::getLogger()->info(__FUNCTION__, func_get_args());
+
+		$driver = new Stash\Driver\FileSystem(array('path' => JPATH_ROOT . '/cache'));
+
+		// Inject the driver into a new Pool object.
+		$pool = new Stash\Pool($driver);
+		$id   = md5(serialize(func_get_args()));
+
+		$item = $pool->getItem('flickr/' . $id);
+
+		if (!$item->isMiss())
+		{
+			XgalleryHelperLog::getLogger()->info('Has cached');
+
+			return $item->get();
+		}
+
+		$return = $this->client->CallAPI($url, $method, $parameters, $options, $respond);
 
 		if (!$return)
 		{
+			$item->set(false);
+			$pool->save($item);
+
 			return false;
 		}
 
-		if ($result->stat != 'ok')
+		if ($respond && isset($respond->stat) && $respond->stat == 'ok')
 		{
-			return false;
+			$item->set($respond);
+			$pool->save($item);
+
+			return $respond;
 		}
 
-		return $result;
+		$item->set(false);
+		$pool->save($item);
+
+		return false;
 	}
 }

@@ -4,6 +4,7 @@ class XgalleryHelperEnv
 {
 	public static function exec($command)
 	{
+		$exec[] = 'php';
 		$exec[] = $command;
 		$exec[] = '> /dev/null 2>/dev/null &';
 

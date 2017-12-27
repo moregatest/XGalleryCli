@@ -4,7 +4,7 @@ class XgalleryModelFlickr extends XgalleryModelBase
 {
 	public function insertContacts()
 	{
-		XgalleryHelperLog::getLogger()->info(__CLASS__ . '/' . __FUNCTION__);
+		XgalleryHelperLog::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
 
 		$db    = \Joomla\CMS\Factory::getDbo();
 		$query = $db->getQuery(true);

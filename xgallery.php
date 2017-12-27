@@ -25,7 +25,7 @@ class XgalleryCli extends JApplicationCli
 		$service = $input->get('service', 'flickr');
 		$task    = $input->get('task', 'contacts');
 
-		echo XgalleryHelperEnv::exec('php ' . XPATH_LIBRARIES . '/cli/' . $service . '/' . $task . '.php');
+		XgalleryHelperEnv::exec(XPATH_LIBRARIES . '/cli/' . $service . '/' . $task . '.php');
 	}
 }
 

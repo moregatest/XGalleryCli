@@ -22,9 +22,9 @@ class XgalleryCliFlickrPhotos extends JApplicationCli
 
 		$input = \Joomla\CMS\Factory::getApplication()->input->cli;
 
-		$xgallery = new XgalleryFlickr;
+		$xgallery = XgalleryFlickr::getInstance();
 		$db       = \Joomla\CMS\Factory::getDbo();
-		$url = $input->get('url');
+		$url      = $input->get('url');
 		$nsid     = $input->get('nsid', null);
 
 		if ($url)
@@ -157,9 +157,7 @@ class XgalleryCliFlickrPhotos extends JApplicationCli
 						. ' WHERE ' . $db->quoteName('id') . ' = ' . $db->quote($pid);
 					$db->setQuery($query)->execute();
 
-					XgalleryHelperLog::getLogger()->info('php ' . __DIR__ . '/download.php ' . $pid . ' > /dev/null 2>/dev/null &');
-
-					exec('php ' . __DIR__ . '/download.php -pid=' . $pid . ' > /dev/null 2>/dev/null &');
+					XgalleryHelperEnv::exec(__DIR__ . '/download.php --pid=' . $pid);
 				}
 			}
 			catch (Exception $exception)
