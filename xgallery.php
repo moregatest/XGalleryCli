@@ -22,8 +22,8 @@ class XgalleryCli extends JApplicationCli
 
 		$input = \Joomla\CMS\Factory::getApplication()->input->cli;
 
-		$service = $input->get('service', 'flickr');
-		$task    = $input->get('task', 'contacts');
+		$service = $input->get('service', 'photos');
+		$task    = $input->get('task', 'flickr');
 
 		XgalleryHelperEnv::exec(XPATH_LIBRARIES . '/cli/' . $service . '/' . $task . '.php');
 	}
