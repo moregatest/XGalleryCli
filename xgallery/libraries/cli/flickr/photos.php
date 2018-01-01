@@ -24,7 +24,7 @@ class XgalleryCliFlickrPhotos extends JApplicationCli
 
 		$xgallery = XgalleryFlickr::getInstance();
 		$db       = \Joomla\CMS\Factory::getDbo();
-		$url      = $input->get('url');
+		$url      = $input->get('url', null, 'RAW');
 		$nsid     = $input->get('nsid', null);
 
 		if ($url)
