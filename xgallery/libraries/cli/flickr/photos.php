@@ -13,6 +13,7 @@ class XgalleryCliFlickrPhotos extends JApplicationCli
 	 * Entry point for CLI script
 	 *
 	 * @return  void
+	 * @throws  Exception
 	 *
 	 * @since   3.0
 	 */
@@ -21,12 +22,16 @@ class XgalleryCliFlickrPhotos extends JApplicationCli
 		\Joomla\CMS\Factory::$application = $this;
 
 		$input = \Joomla\CMS\Factory::getApplication()->input->cli;
+		$db    = \Joomla\CMS\Factory::getDbo();
+
+		// Custom args
+		$url  = $input->get('url', null, 'RAW');
+		$nsid = $input->get('nsid', null);
 
 		$xgallery = XgalleryFlickr::getInstance();
-		$db       = \Joomla\CMS\Factory::getDbo();
-		$url      = $input->get('url', null, 'RAW');
-		$nsid     = $input->get('nsid', null);
+		$model    = XgalleryModelFlickr::getInstance();
 
+		// Get nsid from URL
 		if ($url)
 		{
 			$nsid = $xgallery->lookupUser($url);
@@ -37,47 +42,40 @@ class XgalleryCliFlickrPhotos extends JApplicationCli
 			}
 		}
 
-		$photos = array();
-
-		// Transaction: Get a contact then fetch all photos of this
+		// Transaction: Get a contact then fetch all photos of this contact
 		try
 		{
 			$db->transactionStart();
 
 			if ($nsid === null)
 			{
-				// Fetch photos of a contact
-				$rawQuery = ' SELECT ' . $db->quoteName('nsid')
-					. ' FROM ' . $db->quoteName('#__xgallery_flickr_contacts')
-					. ' ORDER BY ' . $db->quoteName('updated') . ' ASC'
-					. ' LIMIT 1 FOR UPDATE;';
-				$nsid     = $db->setQuery($rawQuery)->loadResult();
+				$nsid = $model->getContact();
 			}
 
-			XgalleryHelperLog::getLogger()->info('Work on nsid: ' . $nsid);
+			$model->updateContact($nsid);
 
-			// Update to make sure another process won't step over
-			$rawQuery = ' UPDATE ' . $db->quoteName('#__xgallery_flickr_contacts')
-				. ' SET ' . $db->quoteName('updated') . ' = ' . $db->quote(\Joomla\CMS\Date\Date::getInstance()->toSql())
-				. ' WHERE ' . $db->quoteName('nsid') . ' = ' . $db->quote($nsid);
-			$db->setQuery($rawQuery)->execute();
 			$db->transactionCommit();
 		}
 		catch (Exception $exception)
 		{
-			XgalleryHelperLog::getLogger()->error($exception->getMessage(), array('query' => (string) $rawQuery));
+			XgalleryHelperLog::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
 			$db->transactionRollback();
 		}
 
-		if ($nsid)
+		// No nsid provided
+		if (!$nsid || empty($nsid))
 		{
-			$photos = $xgallery->getPhotosList($nsid);
+			XgalleryHelperLog::getLogger()->warning('No nsid provided');
+
+			return;
 		}
+
+		// Fetch photos
+		$photos = $xgallery->getPhotosList($nsid);
 
 		// Insert photos list
 		if (!empty($photos))
 		{
-			//$query = $db->getQuery(true);
 			$query = ' INSERT IGNORE INTO ' . $db->quoteName('#__xgallery_flickr_contact_photos')
 				. '( ' . implode(',', $db->quoteName(array(
 					'id',
@@ -114,6 +112,7 @@ class XgalleryCliFlickrPhotos extends JApplicationCli
 
 			$query = trim($query, ',');
 
+			// Try to execute INSERT IGNORE
 			try
 			{
 				// Insert photos list. Ignore duplicate
@@ -127,38 +126,7 @@ class XgalleryCliFlickrPhotos extends JApplicationCli
 			// Only process if this user have any photos
 			try
 			{
-				// Get photo sizes of current contact
-				$query = 'SELECT ' . $db->quoteName('id')
-					. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
-					. ' WHERE ' . $db->quoteName('state') . ' = 0 '
-					. ' AND ' . $db->quoteName('owner') . ' = ' . $db->quote($nsid)
-					. ' LIMIT 300 OFFSET 0 ';
-				$pids  = $db->setQuery($query)->loadColumn();
-
-				foreach ($pids as $pid)
-				{
-					$sized = $xgallery->getPhotoSizes($pid);
-
-					if (!$sized)
-					{
-						continue;
-					}
-
-					if ($sized->stat != "ok")
-					{
-						continue;
-					}
-
-					// Update sized
-					$query = ' UPDATE ' . $db->quoteName('#__xgallery_flickr_contact_photos')
-						. ' SET '
-						. $db->quoteName('urls') . ' = ' . $db->quote(json_encode($sized))
-						. ',' . $db->quoteName('state') . ' = 1'
-						. ' WHERE ' . $db->quoteName('id') . ' = ' . $db->quote($pid);
-					$db->setQuery($query)->execute();
-
-					XgalleryHelperEnv::exec(__DIR__ . '/download.php --pid=' . $pid);
-				}
+				$model->downloadPhotos($nsid, 150, 0);
 			}
 			catch (Exception $exception)
 			{

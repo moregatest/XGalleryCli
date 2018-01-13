@@ -1,5 +1,8 @@
 <?php
 
+// No direct access.
+defined('_XEXEC') or die;
+
 class XgalleryHelperLog
 {
 	/**

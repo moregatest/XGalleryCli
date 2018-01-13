@@ -1,5 +1,7 @@
 <?php
 
+// No direct access.
+defined('_XEXEC') or die;
 class XgalleryHelperFile
 {
 	public static function downloadFile($url, $saveTo)

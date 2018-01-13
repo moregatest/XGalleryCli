@@ -13,63 +13,60 @@ class XgalleryCliFlickrDownload extends JApplicationCli
 	 * Entry point for CLI script
 	 *
 	 * @return  void
+	 * @throws  Exception
 	 *
 	 * @since   3.0
 	 */
 	public function doExecute()
 	{
 		\Joomla\CMS\Factory::$application = $this;
-		$input                            = \Joomla\CMS\Factory::getApplication()->input->cli;
+
+		$input = \Joomla\CMS\Factory::getApplication()->input->cli;
 
 		$db  = \Joomla\CMS\Factory::getDbo();
 		$pid = $input->get('pid');
+
+		$model = XgalleryModelFlickr::getInstance();
 
 		if ($pid)
 		{
 			try
 			{
 				$db->transactionStart();
-				$query = ' SELECT ' . $db->quoteName('urls') . ',' . $db->quoteName('owner')
-					. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
-					. ' WHERE ' . $db->quoteName('id') . ' = ' . $db->quote($pid)
-					. ' LIMIT 1 FOR UPDATE ';
-				$photo = $db->setQuery($query)->loadObject();
-				$urls  = json_decode($photo->urls);
-				$url   = end($urls->sizes->size);
 
-				$toDir = JPATH_ROOT . '/media/xgallery/' . $photo->owner;
-				\Joomla\Filesystem\Folder::create($toDir);
-				$fileName         = basename($url->source);
-				$saveTo           = $toDir . '/' . $fileName;
-				$originalFileSize = XgalleryHelperFile::downloadFile($url->source, $saveTo);
+				$photo = XgalleryModelFlickr::getInstance()->getFlickrPhoto($pid);
 
-				if ($originalFileSize === false || $originalFileSize != filesize($saveTo))
+				if ($photo)
 				{
-					\Joomla\Filesystem\File::delete($saveTo);
+					$urls = json_decode($photo->urls);
+					$url  = end($urls->sizes->size);
 
-					throw new Exception('Download failed');
-				}
-				else
-				{
-					$query = $db->getQuery(true);
-					// Update this photo status
-					$query->clear()
-						->update($db->quoteName('#__xgallery_flickr_contact_photos'))
-						->set(array(
-							$db->quoteName('state') . ' = 2'
-						))
-						->where($db->quoteName('id') . ' = ' . $db->quote($pid));
-					$db->setQuery($query)->execute();
+					$toDir = JPATH_ROOT . '/media/xgallery/' . $photo->owner;
+					\Joomla\Filesystem\Folder::create($toDir);
+					$fileName = basename($url->source);
+					$saveTo   = $toDir . '/' . $fileName;
 
-					$db->transactionCommit();
+					$originalFileSize = XgalleryHelperFile::downloadFile($url->source, $saveTo);
 
-					XgalleryHelperLog::getLogger()->info('---- Download completed ' . $pid . ' ----');
+					if ($originalFileSize === false || $originalFileSize != filesize($saveTo))
+					{
+						\Joomla\Filesystem\File::delete($saveTo);
+
+						throw new Exception('Download failed');
+					}
+					else
+					{
+						$model->updatePhotoState($pid, 2);
+
+						XgalleryHelperLog::getLogger()->info('---- Download completed ' . $pid . ' ----');
+					}
 				}
 
+				$db->transactionCommit();
 			}
 			catch (Exception $exception)
 			{
-				XgalleryHelperLog::getLogger()->error($exception->getMessage(), array('query' => (string) $query, 'url' => get_object_vars($urls)));
+				XgalleryHelperLog::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery(), 'url' => get_object_vars($urls)));
 				$db->transactionRollback();
 			}
 		}

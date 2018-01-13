@@ -1,8 +1,39 @@
 <?php
 
+// No direct access.
+defined('_XEXEC') or die;
+
 class XgalleryModelFlickr extends XgalleryModelBase
 {
-	public function insertContacts()
+	public function getContact()
+	{
+		$db = \Joomla\CMS\Factory::getDbo();
+		// Fetch photos of a contact
+		$rawQuery = ' SELECT ' . $db->quoteName('nsid')
+			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contacts')
+			. ' ORDER BY ' . $db->quoteName('updated') . ' ASC'
+			. ' LIMIT 1 FOR UPDATE;';
+
+		return $db->setQuery($rawQuery)->loadResult();
+	}
+
+	public function updateContact($nsid)
+	{
+		$db       = \Joomla\CMS\Factory::getDbo();
+		$rawQuery = ' UPDATE ' . $db->quoteName('#__xgallery_flickr_contacts')
+			. ' SET ' . $db->quoteName('updated') . ' = ' . $db->quote(\Joomla\CMS\Date\Date::getInstance()->toSql())
+			. ' WHERE ' . $db->quoteName('nsid') . ' = ' . $db->quote($nsid);
+
+		return $db->setQuery($rawQuery)->execute();
+	}
+
+	/**
+	 *
+	 * @return bool|mixed
+	 *
+	 * @since  2.0.0
+	 */
+	public function insertContactsFromFlickr()
 	{
 		XgalleryHelperLog::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
 
@@ -47,6 +78,7 @@ class XgalleryModelFlickr extends XgalleryModelBase
 				$query->values(implode(',', $values));
 			}
 
+			// Try to execute INSERT IGNORE
 			try
 			{
 				$query = (string) $query;
@@ -62,5 +94,92 @@ class XgalleryModelFlickr extends XgalleryModelBase
 				return false;
 			}
 		}
+
+		return false;
+	}
+
+	public function downloadPhotos($nsid, $limit, $offset)
+	{
+		// Get photo sizes of current contact
+		$pids = $this->getPhotos($nsid, $limit, $offset);
+
+		foreach ($pids as $pid)
+		{
+			$sized = XgalleryFlickr::getInstance()->getPhotoSizes($pid);
+
+			if (!$sized)
+			{
+				continue;
+			}
+
+			if ($sized->stat != "ok")
+			{
+				continue;
+			}
+
+			// Update sized
+			$this->updatePhotoSizes($pid, $sized);
+
+			XgalleryHelperEnv::exec(XPATH_CLI_FLICKR . '/download.php --pid=' . $pid);
+		}
+	}
+
+	public function getPhotos($nsid, $limit, $offset)
+	{
+		$db = \Joomla\CMS\Factory::getDbo();
+		// Get photo sizes of current contact
+		$query = 'SELECT ' . $db->quoteName('id')
+			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
+			. ' WHERE ' . $db->quoteName('state') . ' = 0 '
+			. ' AND ' . $db->quoteName('owner') . ' = ' . $db->quote($nsid)
+			. ' LIMIT ' . (int) $limit . ' OFFSET ' . $offset . ' FOR UPDATE;';
+
+		return $db->setQuery($query)->loadColumn();
+	}
+
+	public function updatePhotoSizes($pid, $sized)
+	{
+		$db    = \Joomla\CMS\Factory::getDbo();
+		$query = ' UPDATE ' . $db->quoteName('#__xgallery_flickr_contact_photos')
+			. ' SET '
+			. $db->quoteName('urls') . ' = ' . $db->quote(json_encode($sized))
+			. ',' . $db->quoteName('state') . ' = 1'
+			. ' WHERE ' . $db->quoteName('id') . ' = ' . $db->quote($pid);
+
+		return $db->setQuery($query)->execute();
+	}
+
+	public function updatePhotoState($pid, $state)
+	{
+		$db    = \Joomla\CMS\Factory::getDbo();
+		$query = $db->getQuery(true);
+		// Update this photo status
+		$query->clear()
+			->update($db->quoteName('#__xgallery_flickr_contact_photos'))
+			->set(array(
+				$db->quoteName('state') . ' = ' . (int) $state
+			))
+			->where($db->quoteName('id') . ' = ' . $db->quote($pid));
+
+		return $db->setQuery($query)->execute();
+	}
+
+	/**
+	 * @param $pid
+	 *
+	 * @return mixed
+	 *
+	 * @since  2.0.0
+	 */
+	public function getFlickrPhoto($pid)
+	{
+		$db = \Joomla\CMS\Factory::getDbo();
+
+		$query = ' SELECT ' . $db->quoteName('urls') . ',' . $db->quoteName('owner')
+			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
+			. ' WHERE ' . $db->quoteName('id') . ' = ' . $db->quote($pid)
+			. ' LIMIT 1 FOR UPDATE ';
+
+		return $db->setQuery($query)->loadObject();
 	}
 }

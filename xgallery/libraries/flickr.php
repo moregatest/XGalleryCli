@@ -1,54 +1,15 @@
 <?php
 
+// No direct access.
+defined('_XEXEC') or die;
+
 /**
  * @package     ${NAMESPACE}
  *
  * @since       2.0.0
  */
-class XgalleryFlickr
+class XgalleryFlickr extends XgalleryFlickrBase
 {
-	/**
-	 * @var null|oauth_client_class
-	 */
-	private $client = null;
-
-	/**
-	 * Xgallery constructor.
-	 */
-	public function __construct()
-	{
-		$this->client                      = new oauth_client_class;
-		$this->client->configuration_file  = XPATH_LIBRARIES . '/vendor/oauth-api/oauth_configuration.json';
-		$this->client->offline             = true;
-		$this->client->debug               = false;
-		$this->client->debug_http          = false;
-		$this->client->server              = 'Flickr';
-		$this->client->redirect_uri        = 'http://localhost/xgallery/cli/xgallery.php';
-		$this->client->client_id           = 'a0b36e86ee8ecb4f992f14b5d00e29a9';
-		$this->client->client_secret       = '4a1647401ff0d777';
-		$this->client->access_token        = '72157675968581360-4aa75c21a7402ce3';
-		$this->client->access_token_secret = '777bd05f9bd4cb00';
-
-		$this->client->scope = 'read'; // 'read', 'write' or 'delete'
-
-		if (($success = $this->client->Initialize()))
-		{
-			$this->client->Finalize($success);
-		}
-	}
-
-	public static function getInstance()
-	{
-		static $instance;
-
-		if (!isset($instance))
-		{
-			$instance = new static;
-		}
-
-		return $instance;
-	}
-
 	/**
 	 * @param array $contacts
 	 * @param array $params
@@ -82,6 +43,8 @@ class XgalleryFlickr
 	 * @param array $params
 	 *
 	 * @return boolean|object
+	 *
+	 * @since  2.0.0
 	 */
 	protected function getContacts($params = array())
 	{
@@ -101,6 +64,8 @@ class XgalleryFlickr
 	 * @param array $params
 	 *
 	 * @return array
+	 *
+	 * @since  2.0.0
 	 */
 	public function getPhotosList($nsid, &$photos = array(), $params = array())
 	{
@@ -125,7 +90,7 @@ class XgalleryFlickr
 			}
 		}
 
-		XgalleryHelperLog::getLogger()->info('Total photos: ' . count($photos), $params);
+		XgalleryHelperLog::getLogger()->info('Photos: ' . count($photos), $params);
 
 		return $photos;
 	}
@@ -133,7 +98,9 @@ class XgalleryFlickr
 	/**
 	 * @param $params
 	 *
-	 * @return bool
+	 * @return boolean|object
+	 *
+	 * @since  2.0.0
 	 */
 	protected function getPhotos($params)
 	{
@@ -147,6 +114,13 @@ class XgalleryFlickr
 		), $params));
 	}
 
+	/**
+	 * @param $pid
+	 *
+	 * @return boolean|mixed
+	 *
+	 * @since  2.0.0
+	 */
 	public function getPhotoSizes($pid)
 	{
 		XgalleryHelperLog::getLogger()->info(__FUNCTION__);
@@ -159,6 +133,13 @@ class XgalleryFlickr
 		));
 	}
 
+	/**
+	 * @param $url
+	 *
+	 * @return boolean|mixed
+	 *
+	 * @since  2.0.0
+	 */
 	public function lookupUser($url)
 	{
 		XgalleryHelperLog::getLogger()->info(__FUNCTION__);
@@ -169,48 +150,5 @@ class XgalleryFlickr
 			'nojsoncallback' => '1',
 			'url'            => $url
 		));
-	}
-
-	protected function execute($parameters, $url = 'https://api.flickr.com/services/rest/', $method = 'GET', $options = array('FailOnAccessError' => true))
-	{
-		XgalleryHelperLog::getLogger()->info(__FUNCTION__, func_get_args());
-
-		$driver = new Stash\Driver\FileSystem(array('path' => JPATH_ROOT . '/cache'));
-
-		// Inject the driver into a new Pool object.
-		$pool = new Stash\Pool($driver);
-		$id   = md5(serialize(func_get_args()));
-
-		$item = $pool->getItem('flickr/' . $id);
-
-		if (!$item->isMiss())
-		{
-			XgalleryHelperLog::getLogger()->info('Has cached');
-
-			return $item->get();
-		}
-
-		$return = $this->client->CallAPI($url, $method, $parameters, $options, $respond);
-
-		if (!$return)
-		{
-			$item->set(false);
-			$pool->save($item);
-
-			return false;
-		}
-
-		if ($respond && isset($respond->stat) && $respond->stat == 'ok')
-		{
-			$item->set($respond);
-			$pool->save($item);
-
-			return $respond;
-		}
-
-		$item->set(false);
-		$pool->save($item);
-
-		return false;
 	}
 }

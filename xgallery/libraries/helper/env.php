@@ -1,7 +1,17 @@
 <?php
 
+// No direct access.
+defined('_XEXEC') or die;
+
 class XgalleryHelperEnv
 {
+	/**
+	 * @param  string $command
+	 *
+	 * @return string
+	 *
+	 * @since  2.0.0
+	 */
 	public static function exec($command)
 	{
 		$exec[] = 'php';
@@ -11,5 +21,10 @@ class XgalleryHelperEnv
 		XgalleryHelperLog::getLogger()->info('Execute ', $exec);
 
 		return exec(implode(' ', $exec));
+	}
+
+	public static function execService($service, $task)
+	{
+		return self::exec(XPATH_LIBRARIES . '/cli/' . $service . '/' . $task . '.php');
 	}
 }

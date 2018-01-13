@@ -13,6 +13,7 @@ class XgalleryCliFlickrContacts extends JApplicationCli
 	 * Entry point for CLI script
 	 *
 	 * @return  void
+	 * @throws  Exception
 	 *
 	 * @since   3.0
 	 */
@@ -20,10 +21,10 @@ class XgalleryCliFlickrContacts extends JApplicationCli
 	{
 		\Joomla\CMS\Factory::$application = $this;
 
-		XgalleryModelFlickr::getInstance()->insertContacts();
+		XgalleryModelFlickr::getInstance()->insertContactsFromFlickr();
 
 		// Fetch photos
-		XgalleryHelperEnv::exec(XPATH_LIBRARIES . '/cli/flickr/photos.php');
+		XgalleryHelperEnv::execService('flickr', 'photos');
 	}
 }
 

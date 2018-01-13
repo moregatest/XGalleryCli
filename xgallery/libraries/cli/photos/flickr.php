@@ -52,6 +52,8 @@ class XgalleryCliPhotosFlickr extends JApplicationCli
 					'params'
 				)));
 
+				XgalleryHelperLog::getLogger()->debug((string)$query);
+
 				$ids = array();
 
 				foreach ($photos as $photo)
@@ -111,12 +113,15 @@ class XgalleryCliPhotosFlickr extends JApplicationCli
 					}
 				}
 
+
+
 				$query = str_replace('INSERT', 'INSERT IGNORE', (string) $query);
+				XgalleryHelperLog::getLogger()->debug($query);
 
 				// Ignore duplicate
-				if ($db->setQuery($query)->execute())
+				if (!$db->setQuery($query)->execute())
 				{
-
+					XgalleryHelperLog::getLogger()->error($db->getErrorMsg());
 				}
 
 				// Update state
