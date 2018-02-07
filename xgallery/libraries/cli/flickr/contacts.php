@@ -1,21 +1,29 @@
 <?php
+/**
+ * @package     XGallery.Cli
+ * @subpackage  Entrypoint
+ *
+ * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE
+ */
 
 require_once __DIR__ . '/../../../bootstrap.php';
 
 /**
- * A command line cron job to attempt to remove files that should have been deleted at update.
+ * @package     XGallery.Cli
+ * @subpackage  Flickr.Contacts
  *
- * @since  3.0
+ * @since       2.0.0
  */
-class XgalleryCliFlickrContacts extends JApplicationCli
+class XgalleryCliFlickrContacts extends \Joomla\CMS\Application\CliApplication
 {
 	/**
 	 * Entry point for CLI script
 	 *
 	 * @return  void
-	 * @throws  Exception
 	 *
-	 * @since   3.0
+	 * @since   2.0.0
+	 * @throws  Exception
 	 */
 	public function doExecute()
 	{
@@ -24,7 +32,7 @@ class XgalleryCliFlickrContacts extends JApplicationCli
 		XgalleryModelFlickr::getInstance()->insertContactsFromFlickr();
 
 		// Fetch photos
-		XgalleryHelperEnv::execService('flickr', 'photos');
+		XgalleryHelperEnvironment::execService('flickr', 'photos');
 	}
 }
 

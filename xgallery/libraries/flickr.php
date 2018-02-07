@@ -1,27 +1,33 @@
 <?php
+/**
+ * @package     XGallery.Cli
+ * @subpackage  Flickr
+ *
+ * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE
+ */
 
 // No direct access.
 defined('_XEXEC') or die;
 
 /**
- * @package     ${NAMESPACE}
+ * @package     XGallery.Cli
+ * @subpackage  Libraries
  *
  * @since       2.0.0
  */
 class XgalleryFlickr extends XgalleryFlickrBase
 {
 	/**
-	 * @param array $contacts
-	 * @param array $params
+	 * @param   array $contacts Contacts
+	 * @param   array $params   Params
 	 *
-	 * @return array
+	 * @return  array
 	 *
-	 * @since  2.0.0
+	 * @since   2.0.0
 	 */
 	public function getContactsList(&$contacts = array(), $params = array())
 	{
-		XgalleryHelperLog::getLogger()->info(__FUNCTION__);
-
 		$return = $this->getContacts($params);
 
 		if ($return)
@@ -40,7 +46,7 @@ class XgalleryFlickr extends XgalleryFlickrBase
 	}
 
 	/**
-	 * @param array $params
+	 * @param   array $params Parameters
 	 *
 	 * @return boolean|object
 	 *
@@ -48,20 +54,18 @@ class XgalleryFlickr extends XgalleryFlickrBase
 	 */
 	protected function getContacts($params = array())
 	{
-		XgalleryHelperLog::getLogger()->info(__FUNCTION__);
-
-		return ($this->execute($params = array_merge(array(
-			'method'         => 'flickr.contacts.getList',
-			'format'         => 'json',
-			'nojsoncallback' => '1',
-			'per_page'       => 1000
-		), $params)));
+		return ($this->execute(
+			array_merge(
+				array('method' => 'flickr.contacts.getList', 'per_page' => XGALLERY_FLICKR_CONTACTS_PERPAGE),
+				$params
+			)
+		));
 	}
 
 	/**
-	 * @param       $nsid
-	 * @param array $photos
-	 * @param array $params
+	 * @param   string $nsid   Nsid
+	 * @param   array  $photos Photo
+	 * @param   array  $params Parameters
 	 *
 	 * @return array
 	 *
@@ -69,8 +73,6 @@ class XgalleryFlickr extends XgalleryFlickrBase
 	 */
 	public function getPhotosList($nsid, &$photos = array(), $params = array())
 	{
-		XgalleryHelperLog::getLogger()->info(__FUNCTION__);
-
 		$return = $this->getPhotos(
 			array_merge(
 				array(
@@ -78,7 +80,8 @@ class XgalleryFlickr extends XgalleryFlickrBase
 					'user_id'     => $nsid
 				),
 				$params
-			));
+			)
+		);
 
 		if ($return)
 		{
@@ -96,59 +99,80 @@ class XgalleryFlickr extends XgalleryFlickrBase
 	}
 
 	/**
-	 * @param $params
+	 * @param   array $params Parameters
 	 *
-	 * @return boolean|object
+	 * @return  boolean|object
 	 *
-	 * @since  2.0.0
+	 * @since   2.0.0
 	 */
 	protected function getPhotos($params)
 	{
-		XgalleryHelperLog::getLogger()->info(__FUNCTION__);
-
-		return $this->execute(array_merge(array(
-			'method'         => 'flickr.people.getPhotos',
-			'format'         => 'json',
-			'nojsoncallback' => '1',
-			'per_page'       => 500
-		), $params));
+		return $this->execute(
+			array_merge(
+				array(
+					'method'   => 'flickr.people.getPhotos',
+					'per_page' => 500
+				), $params
+			)
+		);
 	}
 
 	/**
-	 * @param $pid
+	 * @param   string $pid Pid
 	 *
-	 * @return boolean|mixed
+	 * @return  boolean|mixed
 	 *
-	 * @since  2.0.0
+	 * @since   2.0.0
 	 */
 	public function getPhotoSizes($pid)
 	{
-		XgalleryHelperLog::getLogger()->info(__FUNCTION__);
+		if (empty($pid))
+		{
+			return false;
+		}
 
 		return $this->execute(array(
-			'method'         => 'flickr.photos.getSizes',
-			'format'         => 'json',
-			'nojsoncallback' => '1',
-			'photo_id'       => $pid
-		));
+				'method'   => 'flickr.photos.getSizes',
+				'photo_id' => $pid
+			)
+		);
 	}
 
 	/**
-	 * @param $url
+	 * @param   string $url Url
+	 *
+	 * @return  boolean|mixed
+	 *
+	 * @since   2.0.0
+	 */
+	public function lookupUser($url)
+	{
+		if (empty($url))
+		{
+			return false;
+		}
+
+		return $this->execute(array(
+				'method' => 'flickr.urls.lookupUser',
+				'url'    => $url
+			)
+		);
+	}
+
+	/**
+	 * @param   string $nsid User id
 	 *
 	 * @return boolean|mixed
 	 *
 	 * @since  2.0.0
 	 */
-	public function lookupUser($url)
+	public function getFavortiesList($nsid = null)
 	{
-		XgalleryHelperLog::getLogger()->info(__FUNCTION__);
-
 		return $this->execute(array(
-			'method'         => 'flickr.urls.lookupUser',
-			'format'         => 'json',
-			'nojsoncallback' => '1',
-			'url'            => $url
-		));
+				'method'   => 'flickr.favorites.getList',
+				'user_id'  => $nsid,
+				'per_page' => 500
+			)
+		);
 	}
 }

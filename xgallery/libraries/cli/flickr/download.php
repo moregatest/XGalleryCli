@@ -36,17 +36,22 @@ class XgalleryCliFlickrDownload extends JApplicationCli
 
 				$photo = XgalleryModelFlickr::getInstance()->getFlickrPhoto($pid);
 
-				if ($photo)
+				if ($photo === null)
 				{
-					$urls = json_decode($photo->urls);
-					$url  = end($urls->sizes->size);
+					return false;
+				}
 
-					$toDir = JPATH_ROOT . '/media/xgallery/' . $photo->owner;
+				$urls = json_decode($photo->urls);
+				$size = end($urls->sizes->size);
+
+				if ($size->media == 'photo')
+				{
+					$toDir = XPATH_MEDIA . $photo->owner;
 					\Joomla\Filesystem\Folder::create($toDir);
-					$fileName = basename($url->source);
+					$fileName = basename($size->source);
 					$saveTo   = $toDir . '/' . $fileName;
 
-					$originalFileSize = XgalleryHelperFile::downloadFile($url->source, $saveTo);
+					$originalFileSize = XgalleryHelperFile::downloadFile($size->source, $saveTo);
 
 					if ($originalFileSize === false || $originalFileSize != filesize($saveTo))
 					{
@@ -56,7 +61,7 @@ class XgalleryCliFlickrDownload extends JApplicationCli
 					}
 					else
 					{
-						$model->updatePhotoState($pid, 2);
+						$model->updatePhoto($pid, array('state' => 2));
 
 						XgalleryHelperLog::getLogger()->info('---- Download completed ' . $pid . ' ----');
 					}
