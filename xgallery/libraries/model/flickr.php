@@ -19,10 +19,11 @@ defined('_XEXEC') or die;
 class XgalleryModelFlickr extends XgalleryModelBase
 {
 	/**
+	 * @param   integer $limit Limit
 	 *
-	 * @return mixed
+	 * @return  mixed
 	 *
-	 * @since  2.0.0
+	 * @since   2.0.0
 	 */
 	public function getContact($limit = 1)
 	{
@@ -65,6 +66,49 @@ class XgalleryModelFlickr extends XgalleryModelBase
 	}
 
 	/**
+	 * @param $pid
+	 *
+	 * @return mixed
+	 *
+	 * @since  2.0.0
+	 */
+	public function getPhoto($pid)
+	{
+		$db = \Joomla\CMS\Factory::getDbo();
+
+		$query = ' SELECT ' . $db->quoteName('urls') . ',' . $db->quoteName('owner')
+			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
+			. ' WHERE ' . $db->quoteName('id') . ' = ' . $db->quote($pid)
+			. ' LIMIT 1 FOR UPDATE ';
+
+		return $db->setQuery($query)->loadObject();
+	}
+
+	/**
+	 * @param   string  $nsid   Nsid
+	 * @param   integer $limit  Limit
+	 * @param   integer $offset Offset
+	 * @param   integer $state  State
+	 *
+	 * @return  array
+	 *
+	 * @since   2.0.0
+	 */
+	public function getPhotos($nsid, $limit, $offset, $state = 0)
+	{
+		$db = \Joomla\CMS\Factory::getDbo();
+
+		// Get photo sizes of current contact
+		$query = 'SELECT ' . $db->quoteName('id')
+			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
+			. ' WHERE ' . $db->quoteName('state') . ' = ' . (int) $state
+			. ' AND ' . $db->quoteName('owner') . ' = ' . $db->quote($nsid)
+			. ' LIMIT ' . (int) $limit . ' OFFSET ' . $offset . ' FOR UPDATE;';
+
+		return $db->setQuery($query)->loadColumn();
+	}
+
+	/**
 	 * @param   integer $pid  Photo id
 	 * @param   array   $data Data
 	 *
@@ -102,7 +146,7 @@ class XgalleryModelFlickr extends XgalleryModelBase
 		$db    = \Joomla\CMS\Factory::getDbo();
 		$query = $db->getQuery(true);
 
-		$contacts = XgalleryFlickr::getInstance()->getContactsList();
+		$contacts = \XGallery\Flickr\Flickr::getInstance()->getContactsList();
 
 		if (empty($contacts))
 		{
@@ -203,7 +247,7 @@ class XgalleryModelFlickr extends XgalleryModelBase
 		}
 
 		// Fetch photos
-		$photos = XgalleryFlickr::getInstance()->getPhotosList($nsid);
+		$photos = \XGallery\Flickr\Flickr::getInstance()->getPhotosList($nsid);
 
 		if (empty($photos))
 		{
@@ -234,7 +278,7 @@ class XgalleryModelFlickr extends XgalleryModelBase
 
 		foreach ($photos as $photo)
 		{
-			$values   = array();
+			$values = array();
 
 			$values[] = isset($photo->id) ? $db->quote($photo->id) : $db->quote('');
 			$values[] = isset($photo->owner) ? $db->quote($photo->owner) : $db->quote('');
@@ -305,7 +349,7 @@ class XgalleryModelFlickr extends XgalleryModelBase
 
 		foreach ($pids as $pid)
 		{
-			$sized = XgalleryFlickr::getInstance()->getPhotoSizes($pid);
+			$sized = \XGallery\Flickr\Flickr::getInstance()->getPhotoSizes($pid);
 
 			if (!$sized)
 			{
@@ -320,52 +364,9 @@ class XgalleryModelFlickr extends XgalleryModelBase
 			// Update sized
 			$this->updatePhoto($pid, array('urls' => json_encode($sized), 'state' => 1));
 
-			//XgalleryHelperEnvironment::exec(XPATH_CLI_FLICKR . '/download.php --pid=' . $pid);
+			XgalleryHelperEnvironment::exec(XPATH_CLI_FLICKR . '/download.php --pid=' . $pid);
 		}
 
 		return true;
-	}
-
-	/**
-	 * @param   string  $nsid   Nsid
-	 * @param   integer $limit  Limit
-	 * @param   integer $offset Offset
-	 * @param   integer $state  State
-	 *
-	 * @return  array
-	 *
-	 * @since   2.0.0
-	 */
-	public function getPhotos($nsid, $limit, $offset, $state = 0)
-	{
-		$db = \Joomla\CMS\Factory::getDbo();
-
-		// Get photo sizes of current contact
-		$query = 'SELECT ' . $db->quoteName('id')
-			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
-			. ' WHERE ' . $db->quoteName('state') . ' = ' . (int) $state
-			. ' AND ' . $db->quoteName('owner') . ' = ' . $db->quote($nsid)
-			. ' LIMIT ' . (int) $limit . ' OFFSET ' . $offset . ' FOR UPDATE;';
-
-		return $db->setQuery($query)->loadColumn();
-	}
-
-	/**
-	 * @param $pid
-	 *
-	 * @return mixed
-	 *
-	 * @since  2.0.0
-	 */
-	public function getFlickrPhoto($pid)
-	{
-		$db = \Joomla\CMS\Factory::getDbo();
-
-		$query = ' SELECT ' . $db->quoteName('urls') . ',' . $db->quoteName('owner')
-			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
-			. ' WHERE ' . $db->quoteName('id') . ' = ' . $db->quote($pid)
-			. ' LIMIT 1 FOR UPDATE ';
-
-		return $db->setQuery($query)->loadObject();
 	}
 }

@@ -52,7 +52,7 @@ class XgalleryCliPhotosFlickr extends JApplicationCli
 					'params'
 				)));
 
-				XgalleryHelperLog::getLogger()->debug((string)$query);
+				XgalleryHelperLog::getLogger()->debug((string) $query);
 
 				$ids = array();
 
@@ -112,7 +112,6 @@ class XgalleryCliPhotosFlickr extends JApplicationCli
 						$query->values(implode(',', $values));
 					}
 				}
-
 
 
 				$query = str_replace('INSERT', 'INSERT IGNORE', (string) $query);

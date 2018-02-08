@@ -1,22 +1,26 @@
 <?php
 /**
  * @package     XGallery.Cli
- * @subpackage  Helper
+ * @subpackage  Cache.Helper
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
+namespace XGallery\Cache;
+
+
 // No direct access.
 defined('_XEXEC') or die;
 
+
 /**
  * @package     XGallery.Cli
- * @subpackage  Libraries.Helper
+ * @subpackage  Cache.Helper
  *
  * @since       2.0.0
  */
-class XgalleryHelperCache
+class Helper
 {
 	/**
 	 *
@@ -33,10 +37,10 @@ class XgalleryHelperCache
 			return $pool;
 		}
 
-		$driver = new Stash\Driver\FileSystem(array('path' => JPATH_ROOT . '/cache'));
+		$driver = new \Stash\Driver\FileSystem(array('path' => JPATH_ROOT . '/cache'));
 
 		// Inject the driver into a new Pool object.
-		$pool = new Stash\Pool($driver);
+		$pool = new \Stash\Pool($driver);
 
 		return $pool;
 	}
@@ -54,7 +58,7 @@ class XgalleryHelperCache
 	}
 
 	/**
-	 * @param   \Stash\Item $item  Item
+	 * @param   \Stash\Item $item Item
 	 *
 	 * @return  boolean
 	 *

@@ -7,6 +7,8 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
+namespace XGallery\Flickr;
+
 // No direct access.
 defined('_XEXEC') or die;
 
@@ -16,7 +18,7 @@ defined('_XEXEC') or die;
  *
  * @since       2.0.0
  */
-class XgalleryFlickr extends XgalleryFlickrBase
+class Flickr extends \XGallery\Oauth\Services\Flickr
 {
 	/**
 	 * @param   array $contacts Contacts
@@ -40,7 +42,7 @@ class XgalleryFlickr extends XgalleryFlickrBase
 			}
 		}
 
-		XgalleryHelperLog::getLogger()->info('Contacts: ' . count($contacts));
+		\XgalleryHelperLog::getLogger()->info('Contacts: ' . count($contacts));
 
 		return $contacts;
 	}
@@ -56,7 +58,7 @@ class XgalleryFlickr extends XgalleryFlickrBase
 	{
 		return ($this->execute(
 			array_merge(
-				array('method' => 'flickr.contacts.getList', 'per_page' => XGALLERY_FLICKR_CONTACTS_PERPAGE),
+				array('method' => 'flickr.contacts.getList', 'per_page' => XGALLERY_FLICKR_CONTACTS_GETLIST_PERPAGE),
 				$params
 			)
 		));
@@ -93,7 +95,7 @@ class XgalleryFlickr extends XgalleryFlickrBase
 			}
 		}
 
-		XgalleryHelperLog::getLogger()->info('Photos: ' . count($photos), $params);
+		\XgalleryHelperLog::getLogger()->info('Photos: ' . count($photos), $params);
 
 		return $photos;
 	}
@@ -111,7 +113,7 @@ class XgalleryFlickr extends XgalleryFlickrBase
 			array_merge(
 				array(
 					'method'   => 'flickr.people.getPhotos',
-					'per_page' => 500
+					'per_page' => XGALLERY_FLICKR_PEOPLE_GETPHOTOS_PERPAGE
 				), $params
 			)
 		);
@@ -171,7 +173,7 @@ class XgalleryFlickr extends XgalleryFlickrBase
 		return $this->execute(array(
 				'method'   => 'flickr.favorites.getList',
 				'user_id'  => $nsid,
-				'per_page' => 500
+				'per_page' => XGALLERY_FLICKR_FAVORITES_GETLIST_PERPAGE
 			)
 		);
 	}

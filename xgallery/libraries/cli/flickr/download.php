@@ -34,11 +34,11 @@ class XgalleryCliFlickrDownload extends JApplicationCli
 			{
 				$db->transactionStart();
 
-				$photo = XgalleryModelFlickr::getInstance()->getFlickrPhoto($pid);
+				$photo = XgalleryModelFlickr::getInstance()->getPhoto($pid);
 
 				if ($photo === null)
 				{
-					return false;
+					return;
 				}
 
 				$urls = json_decode($photo->urls);
@@ -71,7 +71,10 @@ class XgalleryCliFlickrDownload extends JApplicationCli
 			}
 			catch (Exception $exception)
 			{
-				XgalleryHelperLog::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery(), 'url' => get_object_vars($urls)));
+				XgalleryHelperLog::getLogger()->error(
+					$exception->getMessage(),
+					array('query' => (string) $db->getQuery(), 'url' => get_object_vars($urls))
+				);
 				$db->transactionRollback();
 			}
 		}

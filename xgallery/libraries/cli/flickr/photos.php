@@ -40,7 +40,7 @@ class XgalleryCliFlickrPhotos extends \Joomla\CMS\Application\CliApplication
 		// Get nsid from URL
 		if ($url)
 		{
-			$nsid = XgalleryFlickr::getInstance()->lookupUser($url);
+			$nsid = \XGallery\Flickr\Flickr::getInstance()->lookupUser($url);
 
 			if ($nsid && $nsid->stat == "ok")
 			{

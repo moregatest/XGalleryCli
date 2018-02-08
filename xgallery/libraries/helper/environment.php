@@ -19,17 +19,22 @@ defined('_XEXEC') or die;
 class XgalleryHelperEnvironment
 {
 	/**
-	 * @param   string $command Execute command
+	 * @param   string  $command  Execute command
+	 * @param   boolean $output   Show output
 	 *
 	 * @return  string
 	 *
 	 * @since   2.0.0
 	 */
-	public static function exec($command)
+	public static function exec($command, $output = false)
 	{
 		$exec[] = 'php';
 		$exec[] = $command;
-		$exec[] = '> /dev/null 2>/dev/null &';
+
+		if (!$output)
+		{
+			$exec[] = '> /dev/null 2>/dev/null &';
+		}
 
 		XgalleryHelperLog::getLogger()->info('Execute ', $exec);
 
@@ -37,8 +42,8 @@ class XgalleryHelperEnvironment
 	}
 
 	/**
-	 * @param   string $service  Service
-	 * @param   string $task     Task
+	 * @param   string $service Service
+	 * @param   string $task    Task
 	 *
 	 * @return  string
 	 *

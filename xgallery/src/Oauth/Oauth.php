@@ -1,0 +1,93 @@
+<?php
+/**
+ * @package     XGallery.Cli
+ * @subpackage  OAuth
+ *
+ * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE
+ */
+
+namespace XGallery\Oauth;
+
+use XGallery\Cache\Helper;
+
+// No direct access.
+defined('_XEXEC') or die;
+
+/**
+ * @package     XGallery.Cli
+ * @subpackage  OAuth
+ *
+ * @since       2.0.0
+ */
+class Oauth extends \oauth_client_class
+{
+	/**
+	 * Oauth constructor.
+	 *
+	 * @since       2.0.0
+	 */
+	public function __construct()
+	{
+		$this->configuration_file = XPATH_LIBRARIES . '/vendor/oauth-api/oauth_configuration.json';
+		$this->offline            = true;
+		$this->debug              = false;
+		$this->debug_http         = false;
+		$this->redirect_uri       = \Joomla\CMS\Uri\Uri::root() . 'xgallery/cli/xgallery.php';
+
+		if (($success = $this->Initialize()))
+		{
+			$this->Finalize($success);
+		}
+	}
+
+	/**
+	 * @param   array  $parameters Parameters
+	 * @param   string $url        URL
+	 * @param   string $method     Method
+	 * @param   array  $options    Options
+	 *
+	 * @return  boolean|mixed
+	 *
+	 * @since   2.0.0
+	 */
+	protected function execute($parameters, $url, $method = 'GET', $options = array())
+	{
+		\XgalleryHelperLog::getLogger()->info(__FUNCTION__, func_get_args());
+
+		$id   = md5($url . md5(serialize(func_get_args())));
+		$item = Helper::getItem($id);
+
+		if (!$item->isMiss())
+		{
+			\XgalleryHelperLog::getLogger()->info('Has cached: ' . $id);
+
+			return $item->get();
+		}
+
+		\XgalleryHelperLog::getLogger()->info('Has no cache: ' . $id);
+
+		$startTime   = microtime(true);
+		$return      = $this->CallAPI($url, $method, $parameters, $options, $respond);
+		$endTime     = microtime(true);
+		$executeTime = $endTime - $startTime;
+
+		\XgalleryHelperLog::getLogger()->info('Call API time: ' . $executeTime, array($return));
+
+		$item->set($respond);
+
+		Helper::save($item);
+
+		if (!$return)
+		{
+			return false;
+		}
+
+		if ($respond && isset($respond->stat) && $respond->stat == 'ok')
+		{
+			return $respond;
+		}
+
+		return false;
+	}
+}
