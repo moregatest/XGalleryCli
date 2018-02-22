@@ -7,8 +7,7 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-require_once __DIR__ . '/../../../bootstrap.php';
-
+require_once __DIR__ . '/../../bootstrap.php';
 
 /**
  * @package     XGallery.Cli
@@ -31,7 +30,7 @@ class XgalleryCliFlickrPhotos extends \Joomla\CMS\Application\CliApplication
 		\Joomla\CMS\Factory::$application = $this;
 
 		$input = \Joomla\CMS\Factory::getApplication()->input->cli;
-		$model = XgalleryModelFlickr::getInstance();
+		$model = \XGallery\Model\Flickr::getInstance();
 
 		// Custom args
 		$url  = $input->get('url', null, 'RAW');
@@ -66,14 +65,15 @@ class XgalleryCliFlickrPhotos extends \Joomla\CMS\Application\CliApplication
 		}
 		catch (Exception $exception)
 		{
-			XgalleryHelperLog::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
+			\XGallery\Log\Helper::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
 			$db->transactionRollback();
 		}
 
+		$db->disconnect();
 		$model->insertPhotosFromFlickr($nsid);
 	}
 }
 
 // Instantiate the application object, passing the class name to JCli::getInstance
 // and use chaining to execute the application.
-JApplicationCli::getInstance('XgalleryCliFlickrPhotos')->execute();
+\Joomla\CMS\Application\CliApplication::getInstance('XgalleryCliFlickrPhotos')->execute();

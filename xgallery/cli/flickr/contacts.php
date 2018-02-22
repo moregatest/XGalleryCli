@@ -7,7 +7,7 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-require_once __DIR__ . '/../../../bootstrap.php';
+require_once __DIR__ . '/../../bootstrap.php';
 
 /**
  * @package     XGallery.Cli
@@ -29,10 +29,10 @@ class XgalleryCliFlickrContacts extends \Joomla\CMS\Application\CliApplication
 	{
 		\Joomla\CMS\Factory::$application = $this;
 
-		XgalleryModelFlickr::getInstance()->insertContactsFromFlickr();
+		\XGallery\Model\Flickr::getInstance()->insertContactsFromFlickr();
 
 		// Fetch photos
-		XgalleryHelperEnvironment::execService('flickr', 'photos');
+		XGallery\Environment\Helper::execService('flickr', 'photos');
 	}
 }
 

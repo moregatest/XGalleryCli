@@ -9,10 +9,10 @@
 
 namespace XGallery\Cache;
 
+use Stash\Driver\FileSystem;
+use Stash\Pool;
 
-// No direct access.
 defined('_XEXEC') or die;
-
 
 /**
  * @package     XGallery.Cli
@@ -37,10 +37,10 @@ class Helper
 			return $pool;
 		}
 
-		$driver = new \Stash\Driver\FileSystem(array('path' => JPATH_ROOT . '/cache'));
+		$driver = new FileSystem(array('path' => XPATH_CACHE));
 
 		// Inject the driver into a new Pool object.
-		$pool = new \Stash\Pool($driver);
+		$pool = new Pool($driver);
 
 		return $pool;
 	}

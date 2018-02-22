@@ -1,13 +1,13 @@
 <?php
 
-require_once __DIR__ . '/../../../bootstrap.php';
+require_once __DIR__ . '/../../bootstrap.php';
 
 /**
  * A command line cron job to attempt to remove files that should have been deleted at update.
  *
  * @since  3.0
  */
-class XgalleryCliFlickrDownload extends JApplicationCli
+class XgalleryCliFlickrDownload extends \Joomla\CMS\Application\CliApplication
 {
 	/**
 	 * Entry point for CLI script
@@ -26,7 +26,7 @@ class XgalleryCliFlickrDownload extends JApplicationCli
 		$db  = \Joomla\CMS\Factory::getDbo();
 		$pid = $input->get('pid');
 
-		$model = XgalleryModelFlickr::getInstance();
+		$model = \XGallery\Model\Flickr::getInstance();
 
 		if ($pid)
 		{
@@ -34,7 +34,7 @@ class XgalleryCliFlickrDownload extends JApplicationCli
 			{
 				$db->transactionStart();
 
-				$photo = XgalleryModelFlickr::getInstance()->getPhoto($pid);
+				$photo = \XGallery\Model\Flickr::getInstance()->getPhoto($pid);
 
 				if ($photo === null)
 				{
@@ -51,19 +51,20 @@ class XgalleryCliFlickrDownload extends JApplicationCli
 					$fileName = basename($size->source);
 					$saveTo   = $toDir . '/' . $fileName;
 
-					$originalFileSize = XgalleryHelperFile::downloadFile($size->source, $saveTo);
+					$originalFileSize = \XGallery\Environment\Filesystem\Helper::downloadFile($size->source, $saveTo);
 
 					if ($originalFileSize === false || $originalFileSize != filesize($saveTo))
 					{
-						\Joomla\Filesystem\File::delete($saveTo);
+						if (file_exists($saveTo))
+						{
+							\Joomla\Filesystem\File::delete($saveTo);
+						}
 
-						throw new Exception('Download failed');
+						throw new Exception('File is not validated: ' . $saveTo);
 					}
 					else
 					{
-						$model->updatePhoto($pid, array('state' => 2));
-
-						XgalleryHelperLog::getLogger()->info('---- Download completed ' . $pid . ' ----');
+						$model->updatePhoto($pid, array('state' => XGALLERY_FLICKR_PHOTO_STATE_DOWNLOADED));
 					}
 				}
 
@@ -71,7 +72,7 @@ class XgalleryCliFlickrDownload extends JApplicationCli
 			}
 			catch (Exception $exception)
 			{
-				XgalleryHelperLog::getLogger()->error(
+				\XGallery\Log\Helper::getLogger()->error(
 					$exception->getMessage(),
 					array('query' => (string) $db->getQuery(), 'url' => get_object_vars($urls))
 				);
@@ -85,4 +86,4 @@ class XgalleryCliFlickrDownload extends JApplicationCli
 
 // Instantiate the application object, passing the class name to JCli::getInstance
 // and use chaining to execute the application.
-JApplicationCli::getInstance('XgalleryCliFlickrDownload')->execute();
+\Joomla\CMS\Application\CliApplication::getInstance('XgalleryCliFlickrDownload')->execute();

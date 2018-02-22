@@ -1,22 +1,24 @@
 <?php
 /**
  * @package     XGallery.Cli
- * @subpackage  Helper
+ * @subpackage  Model.Base
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
+
+namespace XGallery\Model;
 
 // No direct access.
 defined('_XEXEC') or die;
 
 /**
  * @package     XGallery.Cli
- * @subpackage  Libraries.Model
+ * @subpackage  Model.Base
  *
  * @since       2.0.0
  */
-class XgalleryModelBase
+class Base
 {
 	/**
 	 *

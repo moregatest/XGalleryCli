@@ -52,7 +52,7 @@ class XgalleryCliPhotosFlickr extends JApplicationCli
 					'params'
 				)));
 
-				XgalleryHelperLog::getLogger()->debug((string) $query);
+				\XGallery\Log\Helper::getLogger()->debug((string) $query);
 
 				$ids = array();
 
@@ -115,12 +115,12 @@ class XgalleryCliPhotosFlickr extends JApplicationCli
 
 
 				$query = str_replace('INSERT', 'INSERT IGNORE', (string) $query);
-				XgalleryHelperLog::getLogger()->debug($query);
+				\XGallery\Log\Helper::getLogger()->debug($query);
 
 				// Ignore duplicate
 				if (!$db->setQuery($query)->execute())
 				{
-					XgalleryHelperLog::getLogger()->error($db->getErrorMsg());
+					\XGallery\Log\Helper::getLogger()->error($db->getErrorMsg());
 				}
 
 				// Update state
@@ -140,7 +140,7 @@ class XgalleryCliPhotosFlickr extends JApplicationCli
 		}
 		catch (Exception $exception)
 		{
-			XgalleryHelperLog::getLogger()->error($exception->getMessage(), array('query' => (string) $query));
+			\XGallery\Log\Helper::getLogger()->error($exception->getMessage(), array('query' => (string) $query));
 
 			$db->transactionRollback();
 		}

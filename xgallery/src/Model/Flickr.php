@@ -1,138 +1,27 @@
 <?php
 /**
  * @package     XGallery.Cli
- * @subpackage  Model
+ * @subpackage  Model.Flickr
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-// No direct access.
+namespace XGallery\Model;
+
+use Joomla\CMS\Factory;
+use XGallery\Environment\Helper;
+
 defined('_XEXEC') or die;
 
 /**
  * @package     XGallery.Cli
- * @subpackage  Libraries.Model
+ * @subpackage  Model.Flickr
  *
  * @since       2.0.0
  */
-class XgalleryModelFlickr extends XgalleryModelBase
+class Flickr extends Flickr\Base
 {
-	/**
-	 * @param   integer $limit Limit
-	 *
-	 * @return  mixed
-	 *
-	 * @since   2.0.0
-	 */
-	public function getContact($limit = 1)
-	{
-		$db = \Joomla\CMS\Factory::getDbo();
-
-		// Fetch photos of a contact
-		$rawQuery = ' SELECT ' . $db->quoteName('nsid')
-			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contacts')
-			. ' ORDER BY ' . $db->quoteName('updated') . ' ASC'
-			. ' LIMIT ' . (int) $limit . ' FOR UPDATE;';
-
-		return $db->setQuery($rawQuery)->loadResult();
-	}
-
-	/**
-	 * @param   string $nsid Nsid
-	 * @param   array  $data Data
-	 *
-	 * @return mixed
-	 *
-	 * @since  2.0.0
-	 */
-	public function updateContact($nsid, $data = array())
-	{
-		$db    = \Joomla\CMS\Factory::getDbo();
-		$query = $db->getQuery(true);
-
-		$data['updated'] = \Joomla\CMS\Date\Date::getInstance()->toSql();
-
-		$query->update($db->quoteName('#__xgallery_flickr_contacts'));
-
-		foreach ($data as $key => $value)
-		{
-			$query->set($db->quoteName($key) . ' = ' . $db->quote($value));
-		}
-
-		$query->where($db->quoteName('nsid') . ' = ' . $db->quote($nsid));
-
-		return $db->setQuery($query)->execute();
-	}
-
-	/**
-	 * @param $pid
-	 *
-	 * @return mixed
-	 *
-	 * @since  2.0.0
-	 */
-	public function getPhoto($pid)
-	{
-		$db = \Joomla\CMS\Factory::getDbo();
-
-		$query = ' SELECT ' . $db->quoteName('urls') . ',' . $db->quoteName('owner')
-			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
-			. ' WHERE ' . $db->quoteName('id') . ' = ' . $db->quote($pid)
-			. ' LIMIT 1 FOR UPDATE ';
-
-		return $db->setQuery($query)->loadObject();
-	}
-
-	/**
-	 * @param   string  $nsid   Nsid
-	 * @param   integer $limit  Limit
-	 * @param   integer $offset Offset
-	 * @param   integer $state  State
-	 *
-	 * @return  array
-	 *
-	 * @since   2.0.0
-	 */
-	public function getPhotos($nsid, $limit, $offset, $state = 0)
-	{
-		$db = \Joomla\CMS\Factory::getDbo();
-
-		// Get photo sizes of current contact
-		$query = 'SELECT ' . $db->quoteName('id')
-			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
-			. ' WHERE ' . $db->quoteName('state') . ' = ' . (int) $state
-			. ' AND ' . $db->quoteName('owner') . ' = ' . $db->quote($nsid)
-			. ' LIMIT ' . (int) $limit . ' OFFSET ' . $offset . ' FOR UPDATE;';
-
-		return $db->setQuery($query)->loadColumn();
-	}
-
-	/**
-	 * @param   integer $pid  Photo id
-	 * @param   array   $data Data
-	 *
-	 * @return  mixed
-	 *
-	 * @since   2.0.0
-	 */
-	public function updatePhoto($pid, $data = array())
-	{
-		$db    = \Joomla\CMS\Factory::getDbo();
-		$query = $db->getQuery(true);
-
-		$query->update($db->quoteName('#__xgallery_flickr_contact_photos'));
-
-		foreach ($data as $key => $value)
-		{
-			$query->set($db->quoteName($key) . ' = ' . $db->quote($value));
-		}
-
-		$query->where($db->quoteName('id') . ' = ' . $db->quote($pid));
-
-		return $db->setQuery($query)->execute();
-	}
-
 	/**
 	 *
 	 * @return boolean|mixed
@@ -141,12 +30,13 @@ class XgalleryModelFlickr extends XgalleryModelBase
 	 */
 	public function insertContactsFromFlickr()
 	{
-		XgalleryHelperLog::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
+		\XGallery\Log\Helper::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
 
-		$db    = \Joomla\CMS\Factory::getDbo();
+		$db    = Factory::getDbo();
 		$query = $db->getQuery(true);
 
 		$contacts = \XGallery\Flickr\Flickr::getInstance()->getContactsList();
+		\XGallery\Log\Helper::getLogger()->info('Contacts: ' . count($contacts));
 
 		if (empty($contacts))
 		{
@@ -221,9 +111,9 @@ class XgalleryModelFlickr extends XgalleryModelBase
 			// Ignore duplicate
 			return $db->setQuery($query)->execute();
 		}
-		catch (Exception $exception)
+		catch (\Exception $exception)
 		{
-			XgalleryHelperLog::getLogger()->error($exception->getMessage());
+			\XGallery\Log\Helper::getLogger()->error($exception->getMessage());
 
 			return false;
 		}
@@ -241,13 +131,14 @@ class XgalleryModelFlickr extends XgalleryModelBase
 		// No nsid provided
 		if (!$nsid || empty($nsid))
 		{
-			XgalleryHelperLog::getLogger()->warning('No nsid provided');
+			\XGallery\Log\Helper::getLogger()->warning('No nsid provided');
 
 			return false;
 		}
 
 		// Fetch photos
 		$photos = \XGallery\Flickr\Flickr::getInstance()->getPhotosList($nsid);
+		\XGallery\Log\Helper::getLogger()->info('Photos: ' . count($photos));
 
 		if (empty($photos))
 		{
@@ -280,17 +171,38 @@ class XgalleryModelFlickr extends XgalleryModelBase
 		{
 			$values = array();
 
+			// Id
 			$values[] = isset($photo->id) ? $db->quote($photo->id) : $db->quote('');
+
+			// Owner
 			$values[] = isset($photo->owner) ? $db->quote($photo->owner) : $db->quote('');
+
+			// Secret
 			$values[] = isset($photo->secret) ? $db->quote($photo->secret) : $db->quote('');
+
+			// Server
 			$values[] = isset($photo->server) ? $db->quote($photo->server) : $db->quote('');
+
+			// Farm
 			$values[] = isset($photo->farm) ? $db->quote($photo->farm) : $db->quote('');
+
+			// Title
 			$values[] = isset($photo->title) ? $db->quote($photo->title) : $db->quote('');
+
+			// Is public
 			$values[] = isset($photo->ispublic) ? $db->quote($photo->ispublic) : $db->quote('');
+
+			// Is friend
 			$values[] = isset($photo->isfriend) ? $db->quote($photo->isfriend) : $db->quote('');
+
+			// Is family
 			$values[] = isset($photo->isfamily) ? $db->quote($photo->isfamily) : $db->quote('');
+
+			// Urls
 			$values[] = isset($photo->urls) ? $db->quote($photo->urls) : $db->quote('');
-			$values[] = isset($photo->state) ? $db->quote($photo->state) : 0;
+
+			// State
+			$values[] = isset($photo->state) ? $db->quote($photo->state) : XGALLERY_FLICKR_PHOTO_STATE_PENDING;
 
 			$query->values(implode(',', $values));
 		}
@@ -306,9 +218,9 @@ class XgalleryModelFlickr extends XgalleryModelBase
 			// Ignore duplicate
 			$db->setQuery($query)->execute();
 		}
-		catch (Exception $exception)
+		catch (\Exception $exception)
 		{
-			XgalleryHelperLog::getLogger()->error($exception->getMessage());
+			\XGallery\Log\Helper::getLogger()->error($exception->getMessage());
 
 			return false;
 		}
@@ -318,9 +230,9 @@ class XgalleryModelFlickr extends XgalleryModelBase
 		{
 			$this->downloadPhotos($nsid, XGALLERY_FLICKR_DOWNLOAD_PHOTOS_LIMIT, 0);
 		}
-		catch (Exception $exception)
+		catch (\Exception $exception)
 		{
-			XgalleryHelperLog::getLogger()->error($exception->getMessage(), array('query' => (string) $query));
+			\XGallery\Log\Helper::getLogger()->error($exception->getMessage(), array('query' => (string) $query));
 		}
 
 		$db->disconnect();
@@ -362,9 +274,9 @@ class XgalleryModelFlickr extends XgalleryModelBase
 			}
 
 			// Update sized
-			$this->updatePhoto($pid, array('urls' => json_encode($sized), 'state' => 1));
+			$this->updatePhoto($pid, array('urls' => json_encode($sized), 'state' => XGALLERY_FLICKR_PHOTO_STATE_SIZED));
 
-			XgalleryHelperEnvironment::exec(XPATH_CLI_FLICKR . '/download.php --pid=' . $pid);
+			Helper::exec(XPATH_CLI_FLICKR . '/download.php --pid=' . $pid);
 		}
 
 		return true;

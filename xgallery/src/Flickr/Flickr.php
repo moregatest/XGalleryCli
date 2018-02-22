@@ -9,7 +9,8 @@
 
 namespace XGallery\Flickr;
 
-// No direct access.
+use XGallery\Log\Helper;
+
 defined('_XEXEC') or die;
 
 /**
@@ -41,8 +42,6 @@ class Flickr extends \XGallery\Oauth\Services\Flickr
 				$this->getContactsList($contacts, array('page' => (int) $return->contacts->page + 1));
 			}
 		}
-
-		\XgalleryHelperLog::getLogger()->info('Contacts: ' . count($contacts));
 
 		return $contacts;
 	}
@@ -78,7 +77,7 @@ class Flickr extends \XGallery\Oauth\Services\Flickr
 		$return = $this->getPhotos(
 			array_merge(
 				array(
-					'safe_search' => 3,
+					'safe_search' => XGALLERY_FLICKR_SAFE_SEARCH,
 					'user_id'     => $nsid
 				),
 				$params
@@ -94,8 +93,6 @@ class Flickr extends \XGallery\Oauth\Services\Flickr
 				$this->getPhotosList($nsid, $photos, array('page' => (int) $return->photos->page + 1));
 			}
 		}
-
-		\XgalleryHelperLog::getLogger()->info('Photos: ' . count($photos), $params);
 
 		return $photos;
 	}
@@ -164,9 +161,9 @@ class Flickr extends \XGallery\Oauth\Services\Flickr
 	/**
 	 * @param   string $nsid User id
 	 *
-	 * @return boolean|mixed
+	 * @return  boolean|mixed
 	 *
-	 * @since  2.0.0
+	 * @since   2.0.0
 	 */
 	public function getFavortiesList($nsid = null)
 	{

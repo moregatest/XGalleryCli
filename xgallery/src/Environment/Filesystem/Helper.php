@@ -1,34 +1,36 @@
 <?php
 /**
  * @package     XGallery.Cli
- * @subpackage  Helper
+ * @subpackage  Environment.Filesystem
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
+
+namespace XGallery\Environment\Filesystem;
 
 // No direct access.
 defined('_XEXEC') or die;
 
 /**
  * @package     XGallery.Cli
- * @subpackage  Libraries.Helper
+ * @subpackage  Filesystem.Helper
  *
  * @since       2.0.0
  */
-class XgalleryHelperFile
+class Helper
 {
 	/**
 	 * @param   string $url    URL
 	 * @param   string $saveTo Save to
 	 *
-	 * @return boolean|integer
+	 * @return  boolean|integer
 	 *
-	 * @since  2.0.0
+	 * @since   2.0.0
 	 */
 	public static function downloadFile($url, $saveTo)
 	{
-		XgalleryHelperLog::getLogger()->info(__FUNCTION__, func_get_args());
+		\XGallery\Log\Helper::getLogger()->info(__FUNCTION__, func_get_args());
 
 		$ch = curl_init();
 
@@ -44,24 +46,34 @@ class XgalleryHelperFile
 			)
 		);
 
-		$result   = curl_exec($ch);
-		$fileSize = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-
-		if ($result)
+		try
 		{
+			$result   = curl_exec($ch);
+			$fileSize = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+
+			if ($result === false)
+			{
+				\XGallery\Log\Helper::getLogger()->error('Download failed', array('url' => $url));
+
+				return false;
+			}
+
 			// The following lines write the contents to a file in the same directory (provided permissions etc)
 			$fp = fopen($saveTo, 'w');
 			fwrite($fp, $result);
 			fclose($fp);
+
 			curl_close($ch);
+
+			\XGallery\Log\Helper::getLogger()->info('Download completed', array('url' => $url));
 
 			return $fileSize;
 		}
+		catch (\Exception $exception)
+		{
+			\XGallery\Log\Helper::getLogger()->error($exception->getMessage());
 
-		curl_close($ch);
-
-		XgalleryHelperLog::getLogger()->error('Download failed', array('url' => $url));
-
-		return false;
+			return false;
+		}
 	}
 }

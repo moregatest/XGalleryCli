@@ -1,4 +1,11 @@
 <?php
+/**
+ * @package     XGallery.Cli
+ * @subpackage  Bootstrap
+ *
+ * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE
+ */
 
 define('_XEXEC', true);
 define('XPATH_BASE', __DIR__);

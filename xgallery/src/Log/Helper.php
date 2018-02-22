@@ -1,22 +1,24 @@
 <?php
 /**
  * @package     XGallery.Cli
- * @subpackage  Helper
+ * @subpackage  Log.Helper
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
+
+namespace XGallery\Log;
 
 // No direct access.
 defined('_XEXEC') or die;
 
 /**
  * @package     XGallery.Cli
- * @subpackage  Libraries.Helper
+ * @subpackage  Log.Helper
  *
  * @since       2.0.0
  */
-class XgalleryHelperLog
+class Helper
 {
 	/**
 	 * @param   string $level Level

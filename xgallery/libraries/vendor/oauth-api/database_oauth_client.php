@@ -22,9 +22,10 @@ class database_oauth_client_class extends oauth_client_class
 
 	Function GetStoredState(&$state)
 	{
-		if(!$this->SetupSession($session))
+		if (!$this->SetupSession($session))
 			return false;
 		$state = $session->state;
+
 		return true;
 	}
 
@@ -44,102 +45,109 @@ class database_oauth_client_class extends oauth_client_class
 			's', $session->refresh_token,
 			's', $session->access_token_response
 		);
-		if(!$this->Query('INSERT INTO oauth_session (session, state, access_token, access_token_secret, expiry, authorized, type, server, creation, refresh_token, access_token_response) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', $parameters, $results))
+		if (!$this->Query('INSERT INTO oauth_session (session, state, access_token, access_token_secret, expiry, authorized, type, server, creation, refresh_token, access_token_response) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', $parameters, $results))
 			return false;
 		$session->id = $results['insert_id'];
+
 		return true;
 	}
-	
+
 	Function SetOAuthSession(&$oauth_session, $session)
 	{
-		$oauth_session = new oauth_session_value_class;
-		$oauth_session->id = $session[0];
-		$oauth_session->session = $session[1];
-		$oauth_session->state = $session[2];
-		$oauth_session->access_token = $session[3];
-		$oauth_session->access_token_secret = $session[4];
-		$oauth_session->expiry = $session[5];
-		$oauth_session->authorized = $session[6];
-		$oauth_session->type = $session[7];
-		$oauth_session->server = $session[8];
-		$oauth_session->creation = $session[9];
-		$oauth_session->refresh_token = $session[10];
+		$oauth_session                        = new oauth_session_value_class;
+		$oauth_session->id                    = $session[0];
+		$oauth_session->session               = $session[1];
+		$oauth_session->state                 = $session[2];
+		$oauth_session->access_token          = $session[3];
+		$oauth_session->access_token_secret   = $session[4];
+		$oauth_session->expiry                = $session[5];
+		$oauth_session->authorized            = $session[6];
+		$oauth_session->type                  = $session[7];
+		$oauth_session->server                = $session[8];
+		$oauth_session->creation              = $session[9];
+		$oauth_session->refresh_token         = $session[10];
 		$oauth_session->access_token_response = (IsSet($session[11]) ? json_decode($session[11]) : null);
 	}
 
 	Function GetUserSession($user, &$oauth_session)
 	{
-		if($this->debug)
-			$this->OutputDebug('Getting the OAuth session for user '.$user);
-		$parameters = array(
+		if ($this->debug)
+			$this->OutputDebug('Getting the OAuth session for user ' . $user);
+		$parameters   = array(
 			'i', $user,
 			's', $this->server
 		);
-		$result_types = array(   'i','s',     's',   's',          's',                 'ts',   'b',        's',  's',    'ts',     's',           's');
-		if(!$this->Query('SELECT id, session, state, access_token, access_token_secret, expiry, authorized, type, server, creation, refresh_token, access_token_response FROM oauth_session WHERE user=? AND server=?', $parameters, $results, $result_types))
+		$result_types = array('i', 's', 's', 's', 's', 'ts', 'b', 's', 's', 'ts', 's', 's');
+		if (!$this->Query('SELECT id, session, state, access_token, access_token_secret, expiry, authorized, type, server, creation, refresh_token, access_token_response FROM oauth_session WHERE user=? AND server=?', $parameters, $results, $result_types))
 			return false;
-		if(count($results['rows']) === 0)
+		if (count($results['rows']) === 0)
 		{
 			$oauth_session = null;
+
 			return true;
 		}
 		$this->SetOAuthSession($oauth_session, $results['rows'][0]);
 		$this->sessions[$oauth_session->session][$this->server] = $oauth_session;
-		$this->session = $oauth_session->session;
+		$this->session                                          = $oauth_session->session;
+
 		return true;
 	}
 
 	Function GetOAuthSession($session, $server, &$oauth_session)
 	{
-		if(IsSet($this->sessions[$session][$server]))
+		if (IsSet($this->sessions[$session][$server]))
 		{
 			$oauth_session = $this->sessions[$session][$server];
+
 			return true;
 		}
-		$parameters = array(
+		$parameters   = array(
 			's', $session,
 			's', $server
 		);
-		$result_types = array(   'i','s',     's',   's',          's',                 'ts',   'b',        's',  's',    'ts',     's',           's');
-		if(!$this->Query('SELECT id, session, state, access_token, access_token_secret, expiry, authorized, type, server, creation, refresh_token, access_token_response FROM oauth_session WHERE session=? AND server=?', $parameters, $results, $result_types))
+		$result_types = array('i', 's', 's', 's', 's', 'ts', 'b', 's', 's', 'ts', 's', 's');
+		if (!$this->Query('SELECT id, session, state, access_token, access_token_secret, expiry, authorized, type, server, creation, refresh_token, access_token_response FROM oauth_session WHERE session=? AND server=?', $parameters, $results, $result_types))
 			return false;
-		if(count($results['rows']) === 0)
+		if (count($results['rows']) === 0)
 		{
 			$oauth_session = null;
+
 			return true;
 		}
 		$this->SetOAuthSession($oauth_session, $results['rows'][0]);
 		$this->sessions[$session][$server] = $oauth_session;
+
 		return true;
 	}
-	
+
 	Function StoreAccessToken($access_token)
 	{
-		if(!$this->SetupSession($session))
+		if (!$this->SetupSession($session))
 			return false;
-		$session->access_token = $access_token['value'];
+		$session->access_token        = $access_token['value'];
 		$session->access_token_secret = (IsSet($access_token['secret']) ? $access_token['secret'] : '');
-		$session->authorized = (IsSet($access_token['authorized']) ? $access_token['authorized'] : null);
-		$session->expiry = (IsSet($access_token['expiry']) ? $access_token['expiry'] : null);
-		if(IsSet($access_token['type']))
+		$session->authorized          = (IsSet($access_token['authorized']) ? $access_token['authorized'] : null);
+		$session->expiry              = (IsSet($access_token['expiry']) ? $access_token['expiry'] : null);
+		if (IsSet($access_token['type']))
 			$session->type = $access_token['type'];
-		$session->refresh_token = (IsSet($access_token['refresh']) ? $access_token['refresh'] : '');
+		$session->refresh_token         = (IsSet($access_token['refresh']) ? $access_token['refresh'] : '');
 		$session->access_token_response = (IsSet($access_token['response']) ? $access_token['response'] : null);
-		if(!$this->GetOAuthSession($session->session, $this->server, $oauth_session))
-			return($this->SetError('OAuth session error: '.$this->error));
-		if(!IsSet($oauth_session))
+		if (!$this->GetOAuthSession($session->session, $this->server, $oauth_session))
+			return ($this->SetError('OAuth session error: ' . $this->error));
+		if (!IsSet($oauth_session))
 		{
 			$this->error = 'the session to store the access token was not found';
+
 			return false;
 		}
-		$oauth_session->access_token = $session->access_token;
-		$oauth_session->access_token_secret = $session->access_token_secret;
-		$oauth_session->authorized = (IsSet($session->authorized) ? $session->authorized : null);
-		$oauth_session->expiry = (IsSet($session->expiry) ? $session->expiry : null);
-		$oauth_session->type = (IsSet($session->type) ? $session->type : '');
-		$oauth_session->refresh_token = $session->refresh_token;
+		$oauth_session->access_token          = $session->access_token;
+		$oauth_session->access_token_secret   = $session->access_token_secret;
+		$oauth_session->authorized            = (IsSet($session->authorized) ? $session->authorized : null);
+		$oauth_session->expiry                = (IsSet($session->expiry) ? $session->expiry : null);
+		$oauth_session->type                  = (IsSet($session->type) ? $session->type : '');
+		$oauth_session->refresh_token         = $session->refresh_token;
 		$oauth_session->access_token_response = (IsSet($session->access_token_response) ? $session->access_token_response : null);
-		$parameters = array(
+		$parameters                           = array(
 			's', $oauth_session->session,
 			's', $oauth_session->state,
 			's', $oauth_session->access_token,
@@ -154,67 +162,73 @@ class database_oauth_client_class extends oauth_client_class
 			'i', $this->user,
 			'i', $oauth_session->id
 		);
+
 		return $this->Query('UPDATE oauth_session SET session=?, state=?, access_token=?, access_token_secret=?, expiry=?, authorized=?, type=?, server=?, creation=?, refresh_token=?, access_token_response=?, user=? WHERE id=?', $parameters, $results);
 	}
 
 	Function GetAccessToken(&$access_token)
 	{
-		if($this->user)
+		if ($this->user)
 		{
-			if(!$this->GetUserSession($this->user, $session))
+			if (!$this->GetUserSession($this->user, $session))
 				return false;
-			if(!IsSet($session))
-				return $this->SetError('it was not found the OAuth session for user '.$this->user);
+			if (!IsSet($session))
+				return $this->SetError('it was not found the OAuth session for user ' . $this->user);
 		}
 		else
 		{
-			if(!$this->SetupSession($session))
+			if (!$this->SetupSession($session))
 				return false;
 		}
-		if(strlen($session->access_token))
+		if (strlen($session->access_token))
 		{
 			$access_token = array(
-				'value'=>$session->access_token,
-				'secret'=>$session->access_token_secret
+				'value'  => $session->access_token,
+				'secret' => $session->access_token_secret
 			);
-			if(IsSet($session->authorized))
+			if (IsSet($session->authorized))
 				$access_token['authorized'] = $session->authorized;
-			if(IsSet($session->expiry))
+			if (IsSet($session->expiry))
 				$access_token['expiry'] = $session->expiry;
-			if(strlen($session->type))
+			if (strlen($session->type))
 				$access_token['type'] = $session->type;
-			if(strlen($session->refresh_token))
+			if (strlen($session->refresh_token))
 				$access_token['refresh'] = $session->refresh_token;
-			if(IsSet($session->access_token_response))
+			if (IsSet($session->access_token_response))
 				$access_token['response'] = $session->access_token_response;
 		}
 		else
 			$access_token = array();
+
 		return true;
 	}
 
 	Function ResetAccessToken()
 	{
-		if($this->debug)
-			$this->OutputDebug('Resetting the access token status for OAuth server located at '.$this->access_token_url);
+		if ($this->debug)
+			$this->OutputDebug('Resetting the access token status for OAuth server located at ' . $this->access_token_url);
 		SetCookie($this->session_cookie, '', 0, $this->session_path);
+
 		return true;
 	}
 
 	Function SetUser($user)
 	{
-		if(strlen($this->session) === 0)
+		if (strlen($this->session) === 0)
 			$this->SetError('it was not yet established an OAuth session');
 		$parameters = array(
 			'i', $user,
 			's', $this->session,
 			's', $this->server,
 		);
-		if(!$this->Query('UPDATE oauth_session SET user=? WHERE session=? AND server=?', $parameters, $results))
+		if (!$this->Query('UPDATE oauth_session SET user=? WHERE session=? AND server=?', $parameters, $results))
 			return false;
 		$this->user = $user;
+
 		return true;
 	}
-};
+}
+
+;
 
 ?>

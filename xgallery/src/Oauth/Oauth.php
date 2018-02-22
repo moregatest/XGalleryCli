@@ -53,26 +53,24 @@ class Oauth extends \oauth_client_class
 	 */
 	protected function execute($parameters, $url, $method = 'GET', $options = array())
 	{
-		\XgalleryHelperLog::getLogger()->info(__FUNCTION__, func_get_args());
+		\XGallery\Log\Helper::getLogger()->info(__FUNCTION__, func_get_args());
 
 		$id   = md5($url . md5(serialize(func_get_args())));
 		$item = Helper::getItem($id);
 
 		if (!$item->isMiss())
 		{
-			\XgalleryHelperLog::getLogger()->info('Has cached: ' . $id);
+			\XGallery\Log\Helper::getLogger()->info('Has cached: ' . $id);
 
 			return $item->get();
 		}
-
-		\XgalleryHelperLog::getLogger()->info('Has no cache: ' . $id);
 
 		$startTime   = microtime(true);
 		$return      = $this->CallAPI($url, $method, $parameters, $options, $respond);
 		$endTime     = microtime(true);
 		$executeTime = $endTime - $startTime;
 
-		\XgalleryHelperLog::getLogger()->info('Call API time: ' . $executeTime, array($return));
+		\XGallery\Log\Helper::getLogger()->info('Called API time: ' . $executeTime, array($return));
 
 		$item->set($respond);
 

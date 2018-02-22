@@ -30,7 +30,7 @@ class XgalleryCli extends \Joomla\CMS\Application\CliApplication
 
 		$input = \Joomla\CMS\Factory::getApplication()->input->cli;
 
-		XgalleryHelperEnvironment::execService(
+		XGallery\Environment\Helper::execService(
 			$input->get('service', XGALLERY_DEFAULT_SERVICE),
 			$input->get('task', XGALLERY_DEFAULT_TASK)
 		);
@@ -39,4 +39,4 @@ class XgalleryCli extends \Joomla\CMS\Application\CliApplication
 
 // Instantiate the application object, passing the class name to JCli::getInstance
 // and use chaining to execute the application.
-JApplicationCli::getInstance('XgalleryCli')->execute();
+\Joomla\CMS\Application\CliApplication::getInstance('XgalleryCli')->execute();
