@@ -1,20 +1,28 @@
 <?php
+/**
+ * @package     XGallery.Cli
+ * @subpackage  Entrypoint
+ *
+ * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE
+ */
 
 require_once __DIR__ . '/xgallery/bootstrap.php';
 
 /**
- * A command line cron job to attempt to remove files that should have been deleted at update.
+ * @package     XGallery.Cli
  *
- * @since  3.0
+ * @since       2.0.0
  */
-class XgalleryCli extends JApplicationCli
+class XgalleryCli extends \Joomla\CMS\Application\CliApplication
 {
 	/**
 	 * Entry point for CLI script
 	 *
 	 * @return  void
 	 *
-	 * @since   3.0
+	 * @since   2.0.0
+	 * @throws  Exception
 	 */
 	public function doExecute()
 	{
@@ -22,13 +30,13 @@ class XgalleryCli extends JApplicationCli
 
 		$input = \Joomla\CMS\Factory::getApplication()->input->cli;
 
-		$service = $input->get('service', 'flickr');
-		$task    = $input->get('task', 'contacts');
-
-		XgalleryHelperEnv::execService($service, $task);
+		XGallery\Environment\Helper::execService(
+			$input->get('service', XGALLERY_DEFAULT_SERVICE),
+			$input->get('task', XGALLERY_DEFAULT_TASK)
+		);
 	}
 }
 
 // Instantiate the application object, passing the class name to JCli::getInstance
 // and use chaining to execute the application.
-JApplicationCli::getInstance('XgalleryCli')->execute();
+\Joomla\CMS\Application\CliApplication::getInstance('XgalleryCli')->execute();

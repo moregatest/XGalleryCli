@@ -6,57 +6,59 @@
  *
  */
 
-	require('http.php');
-	require('yahoo_user.php');
+require('http.php');
+require('yahoo_user.php');
 
-	$yahoo = new yahoo_user_class;
-	$yahoo->user = 'yahoouser';
-	$yahoo->password = 'yahoopassword';
-	$parameters = array();
-	$success = $yahoo->ExportAddressBook($parameters);
+$yahoo           = new yahoo_user_class;
+$yahoo->user     = 'yahoouser';
+$yahoo->password = 'yahoopassword';
+$parameters      = array();
+$success         = $yahoo->ExportAddressBook($parameters);
 ?>
 <html>
 <head>
-<title>Export Yahoo user address book</TITLE>
+	<title>Export Yahoo user address book</TITLE>
 </head>
 <body>
 <h1 style="text-align: center">Export Yahoo user address book</h1>
-<hr />
+<hr/>
 <?php
-	if($success)
-	{
-		if(strlen($yahoo->logged_user))
-		{
+if ($success)
+{
+if (strlen($yahoo->logged_user))
+{
 ?>
 <h2 style="text-align: center">The user '<?php echo $yahoo->logged_user; ?>' has logged in Yahoo successfully.</h2>
 <?php
-			if(IsSet($parameters['Data']))
-			{
+if (IsSet($parameters['Data']))
+{
 ?>
 <h2 style="text-align: center">The address book was exported to CSV format.</h2>
-<center><table>
-<tr>
-<td><pre><?php echo HtmlSpecialChars(WordWrap($parameters['Data'], 75, "\n", 1)); ?></pre>
-</td>
-</tr>
-</table>
-<?php
-			}
-		}
-		else
-		{
-?>
-<h2 style="text-align: center">The Yahoo user '<?php echo $yahoo->user; ?>' login attempt failed.</h2>
-<?php
-		}
+<center>
+	<table>
+		<tr>
+			<td>
+				<pre><?php echo HtmlSpecialChars(WordWrap($parameters['Data'], 75, "\n", 1)); ?></pre>
+			</td>
+		</tr>
+	</table>
+	<?php
+	}
 	}
 	else
 	{
-?>
-<h2 style="text-align: center">Error: <?php echo $yahoo->error ?></h2>
-<?php
+		?>
+		<h2 style="text-align: center">The Yahoo user '<?php echo $yahoo->user; ?>' login attempt failed.</h2>
+		<?php
 	}
-?>
-<hr />
+	}
+	else
+	{
+		?>
+		<h2 style="text-align: center">Error: <?php echo $yahoo->error ?></h2>
+		<?php
+	}
+	?>
+	<hr/>
 </body>
 </html>
