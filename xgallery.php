@@ -30,10 +30,12 @@ class XgalleryCli extends \Joomla\CMS\Application\CliApplication
 
 		$input = \Joomla\CMS\Factory::getApplication()->input->cli;
 
-		XGallery\Environment\Helper::execService(
-			$input->get('service', XGALLERY_DEFAULT_SERVICE),
-			$input->get('task', XGALLERY_DEFAULT_TASK)
-		);
+		$class = '\\XGallery\\Application\\'
+			. $input->getCmd('service', XGALLERY_DEFAULT_SERVICE)
+			. '\\' . $input->getCmd('application', XGALLERY_DEFAULT_APPLICATION);
+		$application = \XGallery\Application\Base::getInstance($class);
+
+		$application->execute();
 	}
 }
 

@@ -3,17 +3,13 @@
 // No direct access.
 defined('_XEXEC') or die;
 
-define('XGALLERY_DEFAULT_SERVICE', 'flickr');
-define('XGALLERY_DEFAULT_TASK', 'contacts');
+define('XGALLERY_DEFAULT_SERVICE', 'Flickr');
+define('XGALLERY_DEFAULT_APPLICATION', 'Contacts');
 
 define('XPATH_CACHE', JPATH_ROOT . '/cache');
 
 define('XPATH_LIBRARIES', XPATH_BASE . '/libraries');
-define('XPATH_CLI', XPATH_BASE . '/cli');
-define('XPATH_CLI_FLICKR', XPATH_CLI . '/flickr');
-
 define('XPATH_SRC', XPATH_BASE . DIRECTORY_SEPARATOR . 'src');
-
 
 define('XPATH_LOG', JPATH_ROOT . '/logs/xgallery/');
 define('XPATH_MEDIA', JPATH_ROOT . '/media/xgallery/');

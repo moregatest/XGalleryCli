@@ -11,7 +11,6 @@ namespace XGallery\Oauth;
 
 use XGallery\Cache\Helper;
 
-// No direct access.
 defined('_XEXEC') or die;
 
 /**
@@ -81,11 +80,6 @@ class Oauth extends \oauth_client_class
 			return false;
 		}
 
-		if ($respond && isset($respond->stat) && $respond->stat == 'ok')
-		{
-			return $respond;
-		}
-
-		return false;
+		return $respond;
 	}
 }

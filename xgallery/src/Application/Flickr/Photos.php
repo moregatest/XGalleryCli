@@ -1,36 +1,43 @@
 <?php
 /**
  * @package     XGallery.Cli
- * @subpackage  Entrypoint
+ * @subpackage  Application.Flickr
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-require_once __DIR__ . '/../../bootstrap.php';
+namespace XGallery\Application\Flickr;
+
+defined('_XEXEC') or die;
+
+use Joomla\CMS\Factory;
+use XGallery\Application\Base;
+use XGallery\Log\Helper;
+use XGallery\Model\Flickr;
 
 /**
  * @package     XGallery.Cli
- * @subpackage  Flickr.Photos
+ * @subpackage  Application.Flickr
  *
  * @since       2.0.0
  */
-class XgalleryCliFlickrPhotos extends \Joomla\CMS\Application\CliApplication
+class Photos extends Base
 {
 	/**
-	 * Entry point for CLI script
 	 *
-	 * @return  void
+	 * @return  boolean
 	 *
 	 * @since   2.0.0
-	 * @throws  Exception
+	 * @throws \Exception
 	 */
-	public function doExecute()
+	public function execute()
 	{
-		\Joomla\CMS\Factory::$application = $this;
+		parent::execute();
 
-		$input = \Joomla\CMS\Factory::getApplication()->input->cli;
-		$model = \XGallery\Model\Flickr::getInstance();
+		$input = Factory::getApplication()->input->cli;
+		$db    = Factory::getDbo();
+		$model = Flickr::getInstance();
 
 		// Custom args
 		$url  = $input->get('url', null, 'RAW');
@@ -50,8 +57,6 @@ class XgalleryCliFlickrPhotos extends \Joomla\CMS\Application\CliApplication
 		// Transaction: Get a contact then fetch all photos of this contact
 		try
 		{
-			$db = \Joomla\CMS\Factory::getDbo();
-
 			$db->transactionStart();
 
 			if ($nsid === null)
@@ -63,17 +68,16 @@ class XgalleryCliFlickrPhotos extends \Joomla\CMS\Application\CliApplication
 
 			$db->transactionCommit();
 		}
-		catch (Exception $exception)
+		catch (\Exception $exception)
 		{
-			\XGallery\Log\Helper::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
+			Helper::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
 			$db->transactionRollback();
 		}
 
 		$db->disconnect();
+
 		$model->insertPhotosFromFlickr($nsid);
+
+		return true;
 	}
 }
-
-// Instantiate the application object, passing the class name to JCli::getInstance
-// and use chaining to execute the application.
-\Joomla\CMS\Application\CliApplication::getInstance('XgalleryCliFlickrPhotos')->execute();
