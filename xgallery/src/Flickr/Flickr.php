@@ -9,8 +9,6 @@
 
 namespace XGallery\Flickr;
 
-use XGallery\Log\Helper;
-
 defined('_XEXEC') or die;
 
 /**

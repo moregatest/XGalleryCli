@@ -9,7 +9,6 @@
 
 namespace XGallery\Model;
 
-// No direct access.
 defined('_XEXEC') or die;
 
 /**

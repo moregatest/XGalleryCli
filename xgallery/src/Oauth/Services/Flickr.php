@@ -11,7 +11,6 @@ namespace XGallery\Oauth\Services;
 
 use XGallery\Oauth\Oauth;
 
-// No direct access.
 defined('_XEXEC') or die;
 
 /**
@@ -98,6 +97,13 @@ class Flickr extends Oauth
 		$parameters = array_merge($this->defaultParameters, $parameters);
 		$options    = array_merge($this->defaultOptions, $options);
 
-		return parent::execute($parameters, $url, $method, $options);
+		$respond = parent::execute($parameters, $url, $method, $options);
+
+		if ($respond && isset($respond->stat) && $respond->stat == 'ok')
+		{
+			return $respond;
+		}
+
+		return false;
 	}
 }

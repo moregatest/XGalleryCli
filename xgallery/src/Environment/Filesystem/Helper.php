@@ -9,7 +9,6 @@
 
 namespace XGallery\Environment\Filesystem;
 
-// No direct access.
 defined('_XEXEC') or die;
 
 /**
