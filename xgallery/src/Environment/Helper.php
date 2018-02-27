@@ -35,7 +35,7 @@ class Helper
 
 		if (!$output)
 		{
-			//$exec[] = '> /dev/null 2>/dev/null &';
+			$exec[] = '> /dev/null 2>/dev/null &';
 		}
 
 		\XGallery\Log\Helper::getLogger()->info(__FUNCTION__, $exec);

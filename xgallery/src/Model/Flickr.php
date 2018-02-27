@@ -57,7 +57,7 @@ class Flickr extends Flickr\Base
 					'friend',
 					'family',
 					'path_alias',
-					'location',
+					'location'
 				)
 			)
 		);
@@ -228,11 +228,22 @@ class Flickr extends Flickr\Base
 		// Only process if this user have any photos
 		try
 		{
-			$this->downloadPhotos($nsid, XGALLERY_FLICKR_DOWNLOAD_PHOTOS_LIMIT, 0);
+			$config = \XGallery\System\Configuration::getInstance();
+			$limit  = $config->getConfig('flickr_download_limit');
+
+			$this->downloadPhotos($nsid, $limit, 0);
+
+			$config->setConfig('flickr_download_limit', (int) $limit + (int) $config->getConfig('flickr_download_step_count'));
+			$config->save();
 		}
 		catch (\Exception $exception)
 		{
 			\XGallery\Log\Helper::getLogger()->error($exception->getMessage(), array('query' => (string) $query));
+
+			$config->setConfig('flickr_download_limit', (int) $limit - (int) $config->getConfig('flickr_download_step_count'));
+			$config->save();
+
+			return false;
 		}
 
 		$db->disconnect();

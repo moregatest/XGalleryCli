@@ -12,7 +12,7 @@ class XgalleryCliFlickrDownload extends \Joomla\CMS\Application\CliApplication
 	/**
 	 * Entry point for CLI script
 	 *
-	 * @return  void
+	 * @return  boolean
 	 * @throws  Exception
 	 *
 	 * @since   3.0
@@ -38,7 +38,7 @@ class XgalleryCliFlickrDownload extends \Joomla\CMS\Application\CliApplication
 
 				if ($photo === null)
 				{
-					return;
+					return false;
 				}
 
 				$urls = json_decode($photo->urls);
@@ -47,13 +47,19 @@ class XgalleryCliFlickrDownload extends \Joomla\CMS\Application\CliApplication
 				if ($size->media == 'photo')
 				{
 					$toDir = XPATH_MEDIA . $photo->owner;
-					\Joomla\Filesystem\Folder::create($toDir);
+
+					if (is_dir($toDir) && !file_exists($toDir))
+					{
+						\Joomla\Filesystem\Folder::create($toDir);
+					}
+
 					$fileName = basename($size->source);
 					$saveTo   = $toDir . '/' . $fileName;
 
 					$originalFileSize = \XGallery\Environment\Filesystem\Helper::downloadFile($size->source, $saveTo);
+					$downloadedFileSize = filesize($saveTo);
 
-					if ($originalFileSize === false || $originalFileSize != filesize($saveTo))
+					if ($originalFileSize === false || $originalFileSize != $downloadedFileSize)
 					{
 						if (file_exists($saveTo))
 						{
@@ -77,10 +83,14 @@ class XgalleryCliFlickrDownload extends \Joomla\CMS\Application\CliApplication
 					array('query' => (string) $db->getQuery(), 'url' => get_object_vars($urls))
 				);
 				$db->transactionRollback();
+
+				return false;
 			}
 		}
 
 		$db->disconnect();
+
+		return true;
 	}
 }
 
