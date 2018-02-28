@@ -11,6 +11,7 @@ namespace XGallery\Model;
 
 use Joomla\CMS\Factory;
 use XGallery\Environment\Helper;
+use XGallery\System\Configuration;
 
 defined('_XEXEC') or die;
 
@@ -32,18 +33,41 @@ class Flickr extends Flickr\Base
 	{
 		\XGallery\Log\Helper::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
 
-		$db    = Factory::getDbo();
-		$query = $db->getQuery(true);
+		$config = Configuration::getInstance();
 
-		$contacts = \XGallery\Flickr\Flickr::getInstance()->getContactsList();
+		$lastExecutedTime = (int) $config->getConfig('flickr_contacts_last_executed');
 
-		\XGallery\Log\Helper::getLogger()->info('Contacts: ' . count($contacts));
+		// No need update contact if cache is not expired
+		if ($lastExecutedTime && time() - $lastExecutedTime < 3600)
+		{
+			\XGallery\Log\Helper::getLogger()->notice('Cache is not expired. No need update contacts');
+
+			return true;
+		}
+
+		$contacts          = \XGallery\Flickr\Flickr::getInstance()->getContactsList();
+		$totalContacts     = count($contacts);
+		$lastTotalContacts = $config->getConfig('flickr_contacts_count');
+
+		\XGallery\Log\Helper::getLogger()->info('Contacts: ' . $totalContacts);
+
+		if ($lastTotalContacts && $lastTotalContacts == $totalContacts)
+		{
+			\XGallery\Log\Helper::getLogger()->notice('Have no new contacts');
+
+			return true;
+		}
+
+		$config->setConfig('flickr_contacts_count', $totalContacts);
+		$config->save();
 
 		if (empty($contacts))
 		{
 			return false;
 		}
 
+		$db    = Factory::getDbo();
+		$query = $db->getQuery(true);
 		$query->insert($db->quoteName('#__xgallery_flickr_contacts'));
 		$query->columns(
 			$db->quoteName(

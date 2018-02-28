@@ -15,6 +15,7 @@ use Joomla\CMS\Factory;
 use XGallery\Application\Base;
 use XGallery\Environment\Helper;
 use XGallery\Model\Flickr;
+use XGallery\System\Configuration;
 
 /**
  * @package     XGallery.Cli
@@ -44,6 +45,9 @@ class Contacts extends Base
 		$args['application'] = 'Photos';
 
 		Helper::execService($args);
+
+		Configuration::getInstance()->setConfig('flickr_contacts_last_executed', time());
+		Configuration::getInstance()->save();
 
 		return $result;
 	}
