@@ -13,7 +13,6 @@ defined('_XEXEC') or die;
 
 use Joomla\CMS\Factory;
 use XGallery\Application\Base;
-use XGallery\Log\Helper;
 use XGallery\Model\Flickr;
 
 /**
@@ -36,7 +35,6 @@ class Photos extends Base
 		parent::execute();
 
 		$input = Factory::getApplication()->input->cli;
-		$db    = Factory::getDbo();
 		$model = Flickr::getInstance();
 
 		// Custom args
@@ -54,27 +52,10 @@ class Photos extends Base
 			}
 		}
 
-		// Transaction: Get a contact then fetch all photos of this contact
-		try
+		if ($nsid === null)
 		{
-			$db->transactionStart();
-
-			if ($nsid === null)
-			{
-				$nsid = $model->getContact();
-			}
-
-			$model->updateContact($nsid);
-
-			$db->transactionCommit();
+			$nsid = $model->getContact();
 		}
-		catch (\Exception $exception)
-		{
-			Helper::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
-			$db->transactionRollback();
-		}
-
-		$db->disconnect();
 
 		$model->insertPhotosFromFlickr($nsid);
 

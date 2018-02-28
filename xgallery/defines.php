@@ -10,6 +10,7 @@ define('XPATH_CACHE', JPATH_ROOT . '/cache');
 
 define('XPATH_LIBRARIES', XPATH_BASE . '/libraries');
 define('XPATH_SRC', XPATH_BASE . DIRECTORY_SEPARATOR . 'src');
+define('XPATH_VENDOR', XPATH_BASE . DIRECTORY_SEPARATOR . 'vendor');
 
 define('XPATH_LOG', JPATH_ROOT . '/logs/xgallery/');
 define('XPATH_MEDIA', JPATH_ROOT . '/media/xgallery/');

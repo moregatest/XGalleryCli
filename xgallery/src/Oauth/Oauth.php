@@ -28,7 +28,7 @@ class Oauth extends \oauth_client_class
 	 */
 	public function __construct()
 	{
-		$this->configuration_file = XPATH_LIBRARIES . '/vendor/oauth-api/oauth_configuration.json';
+		$this->configuration_file = XPATH_VENDOR . '/phpclasses/oauth-api/oauth_configuration.json';
 		$this->offline            = true;
 		$this->debug              = false;
 		$this->debug_http         = false;
@@ -64,8 +64,9 @@ class Oauth extends \oauth_client_class
 			return $item->get();
 		}
 
-		$startTime   = microtime(true);
-		$return      = $this->CallAPI($url, $method, $parameters, $options, $respond);
+		$startTime = microtime(true);
+		$return    = $this->CallAPI($url, $method, $parameters, $options, $respond);
+
 		$endTime     = microtime(true);
 		$executeTime = $endTime - $startTime;
 

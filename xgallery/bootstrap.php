@@ -18,32 +18,26 @@ if (function_exists('xdebug_disable'))
 }
 
 require_once __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/libraries/vendor/httpclient/http.php';
-require_once __DIR__ . '/libraries/vendor/oauth-api/oauth_client.php';
 require_once __DIR__ . '/cli.php';
 require_once __DIR__ . '/defines.php';
 
-spl_autoload_register(function ($className) {
-	$prefix      = 'Xgallery';
-	$parts       = preg_split('/(?=[A-Z])/', $className, -1, PREG_SPLIT_NO_EMPTY);
-	$classPrefix = array_shift($parts);
-
-	if ($classPrefix == $prefix)
-	{
-		$filePath = strtolower(XPATH_BASE . DIRECTORY_SEPARATOR . 'libraries' . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $parts) . '.php');
-
-		if (is_file($filePath) && file_exists($filePath))
-		{
-			require_once $filePath;
-		}
-	}
-});
-
-spl_autoload_register(function ($class) {
+/**
+ * @param   string  $class  Classname
+ *
+ * @return  boolean
+ *
+ * @since   2.0.0
+ */
+function autoloadPsr4($class)
+{
 	$file = XPATH_SRC . str_replace('\\', '/', $class) . '.php';
 
 	if (is_file($file) && file_exists($file))
 	{
-		require_once $file;
+		return require $file;
 	}
-});
+
+	return false;
+}
+
+spl_autoload_register('autoloadPsr4');

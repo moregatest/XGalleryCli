@@ -5,11 +5,23 @@
   "require": {
     "katzgrau/klogger": "dev-master",
     "tedivm/stash": "^0.14.2",
-    "gumlet/php-image-resize": "*"
+    "gumlet/php-image-resize": "*",
+    "phpclasses/httpclient": ">=1.0.5",
+    "phpclasses/oauth-api": ">=1.0.103"
   },
   "autoload": {
     "psr-4": {
       "XGallery\\": "src/"
     }
-  }
+  },
+  "repositories":
+  [
+    {
+      "type": "composer",
+      "url": "https:\/\/www.phpclasses.org\/"
+    },
+    {
+      "packagist": false
+    }
+  ]
 }

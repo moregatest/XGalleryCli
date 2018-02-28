@@ -137,6 +137,25 @@ class Flickr extends Flickr\Base
 			return false;
 		}
 
+		$db = Factory::getDbo();
+
+		// Transaction: Get a contact then fetch all photos of this contact
+		try
+		{
+			$db->transactionStart();
+
+			$this->updateContact($nsid);
+
+			$db->transactionCommit();
+		}
+		catch (\Exception $exception)
+		{
+			\XGallery\Log\Helper::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
+			$db->transactionRollback();
+		}
+
+		$db->disconnect();
+
 		// Fetch photos
 		$photos = \XGallery\Flickr\Flickr::getInstance()->getPhotosList($nsid);
 		\XGallery\Log\Helper::getLogger()->info('Photos: ' . count($photos));
