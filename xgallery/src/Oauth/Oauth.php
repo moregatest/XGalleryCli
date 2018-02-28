@@ -73,6 +73,7 @@ class Oauth extends \oauth_client_class
 		\XGallery\Log\Helper::getLogger()->info('Called API time: ' . $executeTime, array($return));
 
 		$item->set($respond);
+		$item->expiresAfter(3600);
 
 		Helper::save($item);
 
