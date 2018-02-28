@@ -12,6 +12,11 @@ define('XPATH_BASE', __DIR__);
 
 $_SERVER['HTTP_HOST'] = null;
 
+if (function_exists('xdebug_disable'))
+{
+	xdebug_disable();
+}
+
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/libraries/vendor/httpclient/http.php';
 require_once __DIR__ . '/libraries/vendor/oauth-api/oauth_client.php';
@@ -37,8 +42,8 @@ spl_autoload_register(function ($className) {
 spl_autoload_register(function ($class) {
 	$file = XPATH_SRC . str_replace('\\', '/', $class) . '.php';
 
-	if (file_exists($file))
+	if (is_file($file) && file_exists($file))
 	{
-		require $file;
+		require_once $file;
 	}
 });

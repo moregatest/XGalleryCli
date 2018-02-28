@@ -82,7 +82,7 @@ class Flickr extends \XGallery\Oauth\Services\Flickr
 			)
 		);
 
-		if ($return)
+		if ($return && $return->stat == 'ok')
 		{
 			$photos = array_merge($photos, $return->photos->photo);
 
