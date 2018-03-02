@@ -9,7 +9,6 @@
 
 namespace XGallery\Environment\Filesystem;
 
-// No direct access.
 defined('_XEXEC') or die;
 
 /**
@@ -39,7 +38,7 @@ class Helper
 				CURLOPT_VERBOSE        => 1,
 				CURLOPT_RETURNTRANSFER => 1,
 				CURLOPT_AUTOREFERER    => false,
-				CURLOPT_ENCODING       => 'gzip',
+				CURLOPT_ENCODING       => 'gzip,deflate',
 				CURLOPT_HEADER         => 0,
 				CURLOPT_SSL_VERIFYHOST => 0,
 				CURLOPT_SSL_VERIFYPEER => 0

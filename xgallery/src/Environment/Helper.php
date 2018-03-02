@@ -9,7 +9,6 @@
 
 namespace XGallery\Environment;
 
-// No direct access.
 defined('_XEXEC') or die;
 
 /**
@@ -35,24 +34,33 @@ class Helper
 
 		if (!$output)
 		{
-			//$exec[] = '> /dev/null 2>/dev/null &';
+			$exec[] = '> /dev/null 2>/dev/null &';
 		}
 
 		\XGallery\Log\Helper::getLogger()->info(__FUNCTION__, $exec);
 
-		return exec(implode(' ', $exec));
+		return shell_exec(implode(' ', $exec));
 	}
 
 	/**
-	 * @param   string $service Service
-	 * @param   string $task    Task
+	 * @param   array $args Args
 	 *
 	 * @return  string
 	 *
 	 * @since   2.0.0
 	 */
-	public static function execService($service, $task)
+	public static function execService($args = array())
 	{
-		return self::exec(XPATH_CLI . '/' . $service . '/' . $task . '.php');
+		$command = JPATH_ROOT . '/cli/xgallery.php';
+
+		if (!empty($args))
+		{
+			foreach ($args as $name => $value)
+			{
+				$command .= ' --' . $name . '=' . $value;
+			}
+		}
+
+		return self::exec(trim($command));
 	}
 }

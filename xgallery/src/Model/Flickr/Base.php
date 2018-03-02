@@ -126,13 +126,13 @@ class Base extends \XGallery\Model\Base
 	 */
 	public function updatePhoto($pid, $data = array())
 	{
-		$db    = Factory::getDbo();
-		$query = $db->getQuery(true);
-
 		if (empty($data))
 		{
 			return false;
 		}
+
+		$db    = Factory::getDbo();
+		$query = $db->getQuery(true);
 
 		$query->update($db->quoteName('#__xgallery_flickr_contact_photos'));
 

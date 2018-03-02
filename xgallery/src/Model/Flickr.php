@@ -11,6 +11,7 @@ namespace XGallery\Model;
 
 use Joomla\CMS\Factory;
 use XGallery\Environment\Helper;
+use XGallery\System\Configuration;
 
 defined('_XEXEC') or die;
 
@@ -32,17 +33,41 @@ class Flickr extends Flickr\Base
 	{
 		\XGallery\Log\Helper::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
 
-		$db    = Factory::getDbo();
-		$query = $db->getQuery(true);
+		$config = Configuration::getInstance();
 
-		$contacts = \XGallery\Flickr\Flickr::getInstance()->getContactsList();
-		\XGallery\Log\Helper::getLogger()->info('Contacts: ' . count($contacts));
+		$lastExecutedTime = (int) $config->getConfig('flickr_contacts_last_executed');
+
+		// No need update contact if cache is not expired
+		if ($lastExecutedTime && time() - $lastExecutedTime < 3600)
+		{
+			\XGallery\Log\Helper::getLogger()->notice('Cache is not expired. No need update contacts');
+
+			return true;
+		}
+
+		$contacts          = \XGallery\Flickr\Flickr::getInstance()->getContactsList();
+		$totalContacts     = count($contacts);
+		$lastTotalContacts = $config->getConfig('flickr_contacts_count');
+
+		\XGallery\Log\Helper::getLogger()->info('Contacts: ' . $totalContacts);
+
+		if ($lastTotalContacts && $lastTotalContacts == $totalContacts)
+		{
+			\XGallery\Log\Helper::getLogger()->notice('Have no new contacts');
+
+			return true;
+		}
+
+		$config->setConfig('flickr_contacts_count', $totalContacts);
+		$config->save();
 
 		if (empty($contacts))
 		{
 			return false;
 		}
 
+		$db    = Factory::getDbo();
+		$query = $db->getQuery(true);
 		$query->insert($db->quoteName('#__xgallery_flickr_contacts'));
 		$query->columns(
 			$db->quoteName(
@@ -57,7 +82,7 @@ class Flickr extends Flickr\Base
 					'friend',
 					'family',
 					'path_alias',
-					'location',
+					'location'
 				)
 			)
 		);
@@ -136,6 +161,25 @@ class Flickr extends Flickr\Base
 			return false;
 		}
 
+		$db = Factory::getDbo();
+
+		// Transaction: Get a contact then fetch all photos of this contact
+		try
+		{
+			$db->transactionStart();
+
+			$this->updateContact($nsid);
+
+			$db->transactionCommit();
+		}
+		catch (\Exception $exception)
+		{
+			\XGallery\Log\Helper::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
+			$db->transactionRollback();
+		}
+
+		$db->disconnect();
+
 		// Fetch photos
 		$photos = \XGallery\Flickr\Flickr::getInstance()->getPhotosList($nsid);
 		\XGallery\Log\Helper::getLogger()->info('Photos: ' . count($photos));
@@ -145,7 +189,7 @@ class Flickr extends Flickr\Base
 			return false;
 		}
 
-		$db    = \Joomla\CMS\Factory::getDbo();
+		$db    = Factory::getDbo();
 		$query = $db->getQuery(true);
 
 		$query->insert($db->quoteName('#__xgallery_flickr_contact_photos'));
@@ -228,11 +272,22 @@ class Flickr extends Flickr\Base
 		// Only process if this user have any photos
 		try
 		{
-			$this->downloadPhotos($nsid, XGALLERY_FLICKR_DOWNLOAD_PHOTOS_LIMIT, 0);
+			$config = \XGallery\System\Configuration::getInstance();
+			$limit  = $config->getConfig('flickr_download_limit');
+
+			$this->downloadPhotos($nsid, $limit, 0);
+
+			$config->setConfig('flickr_download_limit', (int) $limit + (int) $config->getConfig('flickr_download_step_count'));
+			$config->save();
 		}
 		catch (\Exception $exception)
 		{
 			\XGallery\Log\Helper::getLogger()->error($exception->getMessage(), array('query' => (string) $query));
+
+			$config->setConfig('flickr_download_limit', (int) $limit - (int) $config->getConfig('flickr_download_step_count'));
+			$config->save();
+
+			return false;
 		}
 
 		$db->disconnect();
@@ -248,18 +303,19 @@ class Flickr extends Flickr\Base
 	 * @return  boolean
 	 *
 	 * @since   2.0.0
+	 * @throws  \Exception
 	 */
 	public function downloadPhotos($nsid, $limit, $offset)
 	{
 		// Get photo sizes of current contact
-		$pids = $this->getPhotos($nsid, $limit, $offset);
+		$pIds = $this->getPhotos($nsid, $limit, $offset);
 
-		if (!$pids || empty($pids))
+		if (!$pIds || empty($pIds))
 		{
 			return false;
 		}
 
-		foreach ($pids as $pid)
+		foreach ($pIds as $pid)
 		{
 			$sized = \XGallery\Flickr\Flickr::getInstance()->getPhotoSizes($pid);
 
@@ -276,7 +332,13 @@ class Flickr extends Flickr\Base
 			// Update sized
 			$this->updatePhoto($pid, array('urls' => json_encode($sized), 'state' => XGALLERY_FLICKR_PHOTO_STATE_SIZED));
 
-			Helper::exec(XPATH_CLI_FLICKR . '/download.php --pid=' . $pid);
+			$input               = Factory::getApplication()->input->cli;
+			$args                = $input->getArray();
+			$args['service']     = 'Flickr';
+			$args['application'] = 'Download';
+			$args['pid']         = $pid;
+
+			Helper::execService($args);
 		}
 
 		return true;

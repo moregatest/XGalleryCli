@@ -48,7 +48,7 @@ class Helper
 	/**
 	 * @param   string $key Key
 	 *
-	 * @return \Stash\Interfaces\ItemInterface
+	 * @return  \Stash\Interfaces\ItemInterface
 	 *
 	 * @since   2.0.0
 	 */
@@ -58,7 +58,7 @@ class Helper
 	}
 
 	/**
-	 * @param   \Stash\Item $item Item
+	 * @param   \Stash\Interfaces\ItemInterface $item Item
 	 *
 	 * @return  boolean
 	 *
