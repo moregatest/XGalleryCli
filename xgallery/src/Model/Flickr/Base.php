@@ -74,20 +74,21 @@ class Base extends \XGallery\Model\Base
 	}
 
 	/**
-	 * @param   string $pid Pid
+	 * @param   string  $pid   Pid
+	 * @param   integer $limit Limit
 	 *
 	 * @return  mixed
 	 *
 	 * @since   2.0.0
 	 */
-	public function getPhoto($pid)
+	public function getPhoto($pid, $limit = 1)
 	{
 		$db = Factory::getDbo();
 
 		$query = ' SELECT ' . $db->quoteName('urls') . ',' . $db->quoteName('owner')
 			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
 			. ' WHERE ' . $db->quoteName('id') . ' = ' . $db->quote($pid)
-			. ' LIMIT 1 FOR UPDATE ';
+			. ' LIMIT ' . $limit . ' FOR UPDATE ';
 
 		return $db->setQuery($query)->loadObject();
 	}
@@ -102,7 +103,7 @@ class Base extends \XGallery\Model\Base
 	 *
 	 * @since   2.0.0
 	 */
-	public function getPhotos($nsid, $limit, $offset, $state = 0)
+	public function getPhotos($nsid, $limit, $offset, $state = XGALLERY_FLICKR_PHOTO_STATE_PENDING)
 	{
 		$db = Factory::getDbo();
 

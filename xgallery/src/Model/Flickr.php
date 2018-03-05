@@ -324,11 +324,6 @@ class Flickr extends Flickr\Base
 				continue;
 			}
 
-			if ($sized->stat != "ok")
-			{
-				continue;
-			}
-
 			// Update sized
 			$this->updatePhoto($pid, array('urls' => json_encode($sized), 'state' => XGALLERY_FLICKR_PHOTO_STATE_SIZED));
 

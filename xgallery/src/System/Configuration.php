@@ -19,8 +19,18 @@ use Joomla\Filesystem\File;
  */
 class Configuration
 {
+	/**
+	 * @var    object|null
+	 *
+	 * @since  2.0.0
+	 */
 	protected $data = null;
 
+	/**
+	 * Configuration constructor.
+	 *
+	 * @since  2.0.0
+	 */
 	public function __construct()
 	{
 		if (is_file(XPATH_CONFIGURATION_FILE)
@@ -36,18 +46,32 @@ class Configuration
 		}
 	}
 
+	/**
+	 *
+	 * @return  static
+	 *
+	 * @since   2.0.0
+	 */
 	public static function getInstance()
 	{
 		static $instance;
 
 		if (!isset($instance))
 		{
-			$instance = new static();
+			$instance = new static;
 		}
 
 		return $instance;
 	}
 
+	/**
+	 * @param   string $name    Name
+	 * @param   mixed  $default Default value
+	 *
+	 * @return  mixed
+	 *
+	 * @since   2.0.0.
+	 */
 	public function getConfig($name, $default = null)
 	{
 		if (isset($this->data->{$name}))
@@ -58,14 +82,29 @@ class Configuration
 		return $default;
 	}
 
+	/**
+	 * @param   string $name  Name
+	 * @param   mixed  $value Value
+	 *
+	 * @return  void
+	 *
+	 * @since   2.0.0
+	 */
 	public function setConfig($name, $value)
 	{
 		$this->data->{$name} = $value;
 	}
 
+	/**
+	 *
+	 * @return boolean
+	 *
+	 * @since  2.0.0
+	 */
 	public function save()
 	{
 		$buffer = json_encode($this->data);
-		File::write(XPATH_CONFIGURATION_FILE, $buffer);
+
+		return File::write(XPATH_CONFIGURATION_FILE, $buffer);
 	}
 }

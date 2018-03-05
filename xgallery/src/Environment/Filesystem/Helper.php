@@ -71,8 +71,8 @@ class Helper
 		catch (\Exception $exception)
 		{
 			\XGallery\Log\Helper::getLogger()->error($exception->getMessage());
-
-			return false;
 		}
+
+		return false;
 	}
 }
