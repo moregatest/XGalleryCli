@@ -206,7 +206,7 @@ class Flickr extends Flickr\Base
 					'isfriend',
 					'isfamily',
 					'urls',
-					'state',
+					'state'
 				)
 			)
 		);
@@ -277,14 +277,18 @@ class Flickr extends Flickr\Base
 
 			$this->downloadPhotos($nsid, $limit, 0);
 
-			$config->setConfig('flickr_download_limit', (int) $limit + (int) $config->getConfig('flickr_download_step_count'));
-			$config->save();
+			if (!$config->getConfig('flickr_download_step_count', false))
+			{
+				$config->setConfig('flickr_download_limit', (int) $limit + (int) $config->getConfig('flickr_download_step_count'));
+				$config->save();
+			}
 		}
 		catch (\Exception $exception)
 		{
 			\XGallery\Log\Helper::getLogger()->error($exception->getMessage(), array('query' => (string) $query));
 
 			$config->setConfig('flickr_download_limit', (int) $limit - (int) $config->getConfig('flickr_download_step_count'));
+			$config->setConfig('flickr_download_limit_lock', true);
 			$config->save();
 
 			return false;

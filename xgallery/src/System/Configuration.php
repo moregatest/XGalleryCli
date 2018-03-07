@@ -33,6 +33,8 @@ class Configuration
 	 */
 	public function __construct()
 	{
+		$this->data = new \stdClass;
+
 		if (is_file(XPATH_CONFIGURATION_FILE)
 			&& file_exists(XPATH_CONFIGURATION_FILE)
 		)
