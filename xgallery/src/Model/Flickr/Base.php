@@ -144,6 +144,10 @@ class Base extends \XGallery\Model\Base
 
 		$query->where($db->quoteName('id') . ' = ' . $db->quote($pid));
 
-		return $db->setQuery($query)->execute();
+		$return = $db->setQuery($query)->execute();
+
+		$db->disconnect();
+
+		return $return;
 	}
 }

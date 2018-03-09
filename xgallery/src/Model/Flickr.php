@@ -127,6 +127,8 @@ class Flickr extends Flickr\Base
 			$query->values(implode(',', $values));
 		}
 
+		$return = false;
+
 		// Try to execute INSERT IGNORE
 		try
 		{
@@ -134,14 +136,16 @@ class Flickr extends Flickr\Base
 			$query = str_replace('INSERT', 'INSERT IGNORE', $query);
 
 			// Ignore duplicate
-			return $db->setQuery($query)->execute();
+			$return = $db->setQuery($query)->execute();
 		}
 		catch (\Exception $exception)
 		{
 			\XGallery\Log\Helper::getLogger()->error($exception->getMessage());
-
-			return false;
 		}
+
+		$db->disconnect();
+
+		return $return;
 	}
 
 	/**
@@ -269,6 +273,8 @@ class Flickr extends Flickr\Base
 			return false;
 		}
 
+		$db->disconnect();
+
 		// Only process if this user have any photos
 		try
 		{
@@ -290,6 +296,8 @@ class Flickr extends Flickr\Base
 			$config->setConfig('flickr_download_limit', (int) $limit - (int) $config->getConfig('flickr_download_step_count'));
 			$config->setConfig('flickr_download_limit_lock', true);
 			$config->save();
+
+			$db->disconnect();
 
 			return false;
 		}
