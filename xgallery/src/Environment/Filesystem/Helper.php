@@ -47,32 +47,39 @@ class Helper
 
 		try
 		{
-			$result   = curl_exec($ch);
-			$fileSize = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-
-			if ($result === false)
+			if (is_resource($ch))
 			{
-				\XGallery\Log\Helper::getLogger()->error('Download failed', array('url' => $url));
+				$result   = curl_exec($ch);
+				$fileSize = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
 
-				return false;
+				if ($result === false)
+				{
+					\XGallery\Log\Helper::getLogger()->error('Download failed', array('url' => $url));
+
+					return false;
+				}
+
+				// The following lines write the contents to a file in the same directory (provided permissions etc)
+				$fp = fopen($saveTo, 'w');
+				fwrite($fp, $result);
+				fclose($fp);
+
+
+				curl_close($ch);
+
+
+				\XGallery\Log\Helper::getLogger()->info('Download completed', array('url' => $url));
+
+				return $fileSize;
 			}
 
-			// The following lines write the contents to a file in the same directory (provided permissions etc)
-			$fp = fopen($saveTo, 'w');
-			fwrite($fp, $result);
-			fclose($fp);
-
-			curl_close($ch);
-
-			\XGallery\Log\Helper::getLogger()->info('Download completed', array('url' => $url));
-
-			return $fileSize;
+			return false;
 		}
 		catch (\Exception $exception)
 		{
 			\XGallery\Log\Helper::getLogger()->error($exception->getMessage());
-
-			return false;
 		}
+
+		return false;
 	}
 }

@@ -10,6 +10,8 @@
 namespace XGallery\Log;
 
 // No direct access.
+use Katzgrau\KLogger\Logger;
+
 defined('_XEXEC') or die;
 
 /**
@@ -33,7 +35,7 @@ class Helper
 
 		if (!isset($logger))
 		{
-			$logger = New \Katzgrau\KLogger\Logger(
+			$logger = New Logger(
 				XPATH_LOG, $level,
 				array
 				(

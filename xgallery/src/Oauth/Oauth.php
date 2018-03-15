@@ -59,7 +59,7 @@ class Oauth extends \oauth_client_class
 
 		if (!$item->isMiss())
 		{
-			\XGallery\Log\Helper::getLogger()->info('Has cached: ' . $id);
+			\XGallery\Log\Helper::getLogger()->info('Oauth request has cached');
 
 			return $item->get();
 		}
@@ -70,7 +70,7 @@ class Oauth extends \oauth_client_class
 		$endTime     = microtime(true);
 		$executeTime = $endTime - $startTime;
 
-		\XGallery\Log\Helper::getLogger()->info('Called API time: ' . $executeTime, array($return));
+		\XGallery\Log\Helper::getLogger()->info('Oauth executed time: ' . $executeTime, array($return));
 
 		$item->set($respond);
 		$item->expiresAfter(3600);

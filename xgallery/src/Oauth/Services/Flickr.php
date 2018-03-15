@@ -49,15 +49,16 @@ class Flickr extends Oauth
 	 */
 	public function __construct()
 	{
+		$config                    = \XGallery\System\Configuration::getInstance();
 		$this->server              = 'Flickr';
 		$this->redirect_uri        = \Joomla\CMS\Uri\Uri::root() . 'xgallery/cli/xgallery.php';
-		$this->client_id           = 'a0b36e86ee8ecb4f992f14b5d00e29a9';
-		$this->client_secret       = '4a1647401ff0d777';
-		$this->access_token        = '72157675968581360-4aa75c21a7402ce3';
-		$this->access_token_secret = '777bd05f9bd4cb00';
+		$this->client_id           = $config->getConfig('flickr_client_id', 'a0b36e86ee8ecb4f992f14b5d00e29a9');
+		$this->client_secret       = $config->getConfig('flickr_client_secret', '4a1647401ff0d777');
+		$this->access_token        = $config->getConfig('flickr_access_token', '72157675968581360-4aa75c21a7402ce3');
+		$this->access_token_secret = $config->getConfig('access_token_secret', '777bd05f9bd4cb00');
 
 		// 'read', 'write' or 'delete'
-		$this->scope = 'read';
+		$this->scope = $config->getConfig('flickr_scope', 'read');
 
 		parent::__construct();
 	}
@@ -99,7 +100,7 @@ class Flickr extends Oauth
 
 		$respond = parent::execute($parameters, $url, $method, $options);
 
-		if ($respond && isset($respond->stat) && $respond->stat == 'ok')
+		if ($respond && isset($respond->stat) && $respond->stat == XGALLERY_FLICKR_STAT_SUCCESS)
 		{
 			return $respond;
 		}
