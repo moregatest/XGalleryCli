@@ -12,7 +12,7 @@ namespace XGallery\Application\Flickr;
 defined('_XEXEC') or die;
 
 use Joomla\CMS\Factory;
-use XGallery\Application\Base;
+use XGallery\Application;
 use XGallery\Environment\Helper;
 use XGallery\Model\Flickr;
 use XGallery\System\Configuration;
@@ -23,7 +23,7 @@ use XGallery\System\Configuration;
  *
  * @since       2.0.0
  */
-class Contacts extends Base
+class Contacts extends Application
 {
 	/**
 	 *

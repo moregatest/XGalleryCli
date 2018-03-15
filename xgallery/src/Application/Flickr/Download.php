@@ -12,7 +12,7 @@ namespace XGallery\Application\Flickr;
 use Joomla\CMS\Factory;
 use Joomla\Filesystem\File;
 use Joomla\Filesystem\Folder;
-use XGallery\Application\Base;
+use XGallery\Application;
 use XGallery\Environment\Filesystem\Helper;
 use XGallery\Model\Flickr;
 
@@ -24,7 +24,7 @@ defined('_XEXEC') or die;
  *
  * @since       2.0.0
  */
-class Download extends Base
+class Download extends Application
 {
 	/**
 	 *

@@ -11,6 +11,7 @@ namespace XGallery\Model\Flickr;
 
 use Joomla\CMS\Factory;
 use XGallery\Log\Helper;
+use XGallery\Model;
 
 defined('_XEXEC') or die;
 
@@ -20,7 +21,7 @@ defined('_XEXEC') or die;
  *
  * @since       2.0.0
  */
-class Base extends \XGallery\Model\Base
+class Base extends Model
 {
 	/**
 	 * @param   integer $limit Limit
