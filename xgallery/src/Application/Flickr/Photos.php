@@ -11,7 +11,6 @@ namespace XGallery\Application\Flickr;
 
 defined('_XEXEC') or die;
 
-use Joomla\CMS\Factory;
 use XGallery\Application;
 use XGallery\Model\Flickr;
 
@@ -21,7 +20,7 @@ use XGallery\Model\Flickr;
  *
  * @since       2.0.0
  */
-class Photos extends Application
+class Photos extends Application\Cli
 {
 	/**
 	 *
@@ -32,21 +31,18 @@ class Photos extends Application
 	 */
 	public function execute()
 	{
-		parent::execute();
-
-		$input = Factory::getApplication()->input->cli;
 		$model = Flickr::getInstance();
 
 		// Custom args
-		$url  = $input->get('url', null, 'RAW');
-		$nsid = $input->get('nsid', null);
+		$url  = $this->input->get('url', null, 'RAW');
+		$nsid = $this->input->get('nsid', null);
 
 		// Get nsid from URL
 		if ($url)
 		{
-			$nsid = \XGallery\Flickr\Flickr::getInstance()->lookupUser($url);
+			$nsid = \XGallery\Service\Flickr::getInstance()->lookupUser($url);
 
-			if ($nsid && $nsid->stat == "ok")
+			if ($nsid)
 			{
 				$nsid = $nsid->user->id;
 			}
@@ -57,8 +53,6 @@ class Photos extends Application
 			$nsid = $model->getContact();
 		}
 
-		$model->insertPhotosFromFlickr($nsid);
-
-		return true;
+		return $model->insertPhotosFromFlickr($nsid);
 	}
 }

@@ -11,6 +11,7 @@ namespace XGallery\Model;
 
 use Joomla\CMS\Factory;
 use XGallery\Environment\Helper;
+use XGallery\Model;
 use XGallery\System\Configuration;
 
 defined('_XEXEC') or die;
@@ -45,7 +46,7 @@ class Flickr extends Flickr\Base
 			return true;
 		}
 
-		$contacts          = \XGallery\Flickr\Flickr::getInstance()->getContactsList();
+		$contacts          = \XGallery\Service\Flickr::getInstance()->getContactsList();
 		$totalContacts     = count($contacts);
 		$lastTotalContacts = $config->getConfig('flickr_contacts_count');
 
@@ -63,6 +64,8 @@ class Flickr extends Flickr\Base
 
 		if (empty($contacts))
 		{
+			\XGallery\Log\Helper::getLogger()->notice('Have no contacts');
+
 			return false;
 		}
 
@@ -185,7 +188,7 @@ class Flickr extends Flickr\Base
 		$db->disconnect();
 
 		// Fetch photos
-		$photos = \XGallery\Flickr\Flickr::getInstance()->getPhotosList($nsid);
+		$photos = \XGallery\Service\Flickr::getInstance()->getPhotosList($nsid);
 		\XGallery\Log\Helper::getLogger()->info('Photos: ' . count($photos));
 
 		if (empty($photos))
@@ -193,6 +196,7 @@ class Flickr extends Flickr\Base
 			return false;
 		}
 
+		// Got photos now insert to database
 		$db    = Factory::getDbo();
 		$query = $db->getQuery(true);
 
@@ -275,27 +279,24 @@ class Flickr extends Flickr\Base
 
 		$db->disconnect();
 
+		$config = Configuration::getInstance();
+
 		// Only process if this user have any photos
 		try
 		{
-			$config = \XGallery\System\Configuration::getInstance();
-			$limit  = $config->getConfig('flickr_download_limit');
-
-			$this->downloadPhotos($nsid, $limit, 0);
-
-			if (!$config->getConfig('flickr_download_step_count', false))
+			if (!$config->getConfig('flickr_download_limit'))
 			{
-				$config->setConfig('flickr_download_limit', (int) $limit + (int) $config->getConfig('flickr_download_step_count'));
+				$maxConnection = Model::getInstance()->getMaxConnection();
+				$config->setConfig('flickr_download_limit', $maxConnection->Value);
 				$config->save();
 			}
+
+			$limit = $config->getConfig('flickr_download_limit', $config->setConfig('flickr_download_limit', 100));
+			$this->downloadPhotos($nsid, $limit, 0);
 		}
 		catch (\Exception $exception)
 		{
 			\XGallery\Log\Helper::getLogger()->error($exception->getMessage(), array('query' => (string) $query));
-
-			$config->setConfig('flickr_download_limit', (int) $limit - (int) $config->getConfig('flickr_download_step_count'));
-			$config->setConfig('flickr_download_limit_lock', true);
-			$config->save();
 
 			$db->disconnect();
 
@@ -329,7 +330,7 @@ class Flickr extends Flickr\Base
 
 		foreach ($pIds as $pid)
 		{
-			$sized = \XGallery\Flickr\Flickr::getInstance()->getPhotoSizes($pid);
+			$sized = \XGallery\Service\Flickr::getInstance()->getPhotoSizes($pid);
 
 			if (!$sized)
 			{

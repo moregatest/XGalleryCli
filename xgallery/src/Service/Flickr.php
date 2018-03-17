@@ -7,7 +7,7 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace XGallery\Flickr;
+namespace XGallery\Service;
 
 defined('_XEXEC') or die;
 
@@ -17,7 +17,7 @@ defined('_XEXEC') or die;
  *
  * @since       2.0.0
  */
-class Flickr extends \XGallery\Oauth\Services\Flickr
+class Flickr extends \XGallery\Oauth\Service\Flickr
 {
 	/**
 	 * @param   array $contacts Contacts

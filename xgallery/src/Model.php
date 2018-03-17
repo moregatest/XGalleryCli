@@ -9,6 +9,8 @@
 
 namespace XGallery;
 
+use Joomla\CMS\Factory;
+
 defined('_XEXEC') or die;
 
 /**
@@ -35,5 +37,16 @@ class Model
 		}
 
 		return $instance;
+	}
+
+	/**
+	 *
+	 * @return null|object
+	 *
+	 * @since  2.0.0
+	 */
+	public function getMaxConnection()
+	{
+		return Factory::getDbo()->setQuery('show variables like \'max_connections\'')->loadObject();
 	}
 }

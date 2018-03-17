@@ -24,7 +24,7 @@ defined('_XEXEC') or die;
  *
  * @since       2.0.0
  */
-class Download extends Application
+class Download extends Application\Cli
 {
 	/**
 	 *
@@ -35,12 +35,8 @@ class Download extends Application
 	 */
 	public function execute()
 	{
-		parent::execute();
-
-		$input = Factory::getApplication()->input->cli;
-		$db    = Factory::getDbo();
-
-		$pid = $input->get('pid');
+		$db  = Factory::getDbo();
+		$pid = $this->input->get('pid');
 
 		$model = Flickr::getInstance();
 
@@ -49,17 +45,19 @@ class Download extends Application
 			try
 			{
 				$db->transactionStart();
-
 				$photo = Flickr::getInstance()->getPhoto($pid);
 
 				if ($photo === null)
 				{
+					\XGallery\Log\Helper::getLogger()->notice('Can not get photo to download from ID: ' . $pid);
+
 					return false;
 				}
 
 				$urls = json_decode($photo->urls);
 				$size = end($urls->sizes->size);
 
+				// Only download photo
 				if ($size->media == 'photo')
 				{
 					$toDir = XPATH_MEDIA . $photo->owner;
@@ -91,7 +89,6 @@ class Download extends Application
 					{
 						throw new \Exception('File download failed: ' . $saveTo);
 					}
-
 				}
 
 				$db->transactionCommit();
