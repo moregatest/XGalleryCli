@@ -52,7 +52,7 @@ class Oauth extends \oauth_client_class
 	 */
 	protected function execute($parameters, $url, $method = 'GET', $options = array())
 	{
-		\XGallery\Log\Helper::getLogger()->info(__FUNCTION__, func_get_args());
+		\XGallery\Log\Helper::getLogger()->info(__FUNCTION__, $parameters);
 
 		$id   = md5($url . md5(serialize(func_get_args())));
 		$item = Helper::getItem($id);
@@ -73,8 +73,6 @@ class Oauth extends \oauth_client_class
 		\XGallery\Log\Helper::getLogger()->info('Oauth executed time: ' . $executeTime, array($return));
 
 		$item->set($respond);
-		$item->expiresAfter(3600);
-
 		Helper::save($item);
 
 		if (!$return)

@@ -7,7 +7,7 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace XGallery\Application;
+namespace XGallery;
 
 defined('_XEXEC') or die;
 
@@ -17,7 +17,7 @@ defined('_XEXEC') or die;
  *
  * @since       2.0.0
  */
-class Base
+class Application
 {
 	/**
 	 * @param   string $name Classname
@@ -32,7 +32,7 @@ class Base
 
 		if (!isset($instances[$name]))
 		{
-			if (class_exists($name) && is_subclass_of($name, '\\XGallery\\Application\\Base'))
+			if (class_exists($name) && is_subclass_of($name, '\\XGallery\\Application'))
 			{
 				$instances[$name] = new $name;
 			}

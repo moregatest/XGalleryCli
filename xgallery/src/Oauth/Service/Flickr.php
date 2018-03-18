@@ -7,7 +7,7 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace XGallery\Oauth\Services;
+namespace XGallery\Oauth\Service;
 
 use XGallery\Oauth\Oauth;
 

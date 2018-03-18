@@ -12,9 +12,9 @@ namespace XGallery\Application\Flickr;
 use Joomla\CMS\Factory;
 use Joomla\Filesystem\File;
 use Joomla\Filesystem\Folder;
-use XGallery\Application\Base;
+use XGallery\Application;
 use XGallery\Environment\Filesystem\Helper;
-use XGallery\Model\Flickr;
+use XGallery\Model;
 
 defined('_XEXEC') or die;
 
@@ -24,7 +24,7 @@ defined('_XEXEC') or die;
  *
  * @since       2.0.0
  */
-class Download extends Base
+class Download extends Application\Cli
 {
 	/**
 	 *
@@ -35,31 +35,29 @@ class Download extends Base
 	 */
 	public function execute()
 	{
-		parent::execute();
+		$db  = Factory::getDbo();
+		$pid = $this->input->get('pid');
 
-		$input = Factory::getApplication()->input->cli;
-		$db    = Factory::getDbo();
-
-		$pid = $input->get('pid');
-
-		$model = Flickr::getInstance();
+		$model = Model::getInstance('Flickr');
 
 		if ($pid)
 		{
 			try
 			{
 				$db->transactionStart();
-
-				$photo = Flickr::getInstance()->getPhoto($pid);
+				$photo = $model->getPhoto($pid);
 
 				if ($photo === null)
 				{
+					\XGallery\Log\Helper::getLogger()->notice('Can not get photo to download from ID: ' . $pid);
+
 					return false;
 				}
 
 				$urls = json_decode($photo->urls);
 				$size = end($urls->sizes->size);
 
+				// Only download photo
 				if ($size->media == 'photo')
 				{
 					$toDir = XPATH_MEDIA . $photo->owner;
@@ -91,7 +89,6 @@ class Download extends Base
 					{
 						throw new \Exception('File download failed: ' . $saveTo);
 					}
-
 				}
 
 				$db->transactionCommit();
