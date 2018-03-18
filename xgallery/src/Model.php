@@ -22,21 +22,23 @@ defined('_XEXEC') or die;
 class Model
 {
 	/**
+	 * @param $name
 	 *
-	 * @return static
+	 * @return mixed
 	 *
 	 * @since  2.0.0
 	 */
-	public static function getInstance()
+	public static function getInstance($name)
 	{
-		static $instance;
+		static $instances;
 
-		if (!isset($instance))
+		if (!isset($instances[$name]))
 		{
-			$instance = new static;
+			$class = '\\XGallery\Model\\' . ucfirst($name);
+			$instances[$name] = new $class;
 		}
 
-		return $instance;
+		return $instances[$name];
 	}
 
 	/**

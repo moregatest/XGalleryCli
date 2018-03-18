@@ -14,7 +14,7 @@ use Joomla\Filesystem\File;
 use Joomla\Filesystem\Folder;
 use XGallery\Application;
 use XGallery\Environment\Filesystem\Helper;
-use XGallery\Model\Flickr;
+use XGallery\Model;
 
 defined('_XEXEC') or die;
 
@@ -38,14 +38,14 @@ class Download extends Application\Cli
 		$db  = Factory::getDbo();
 		$pid = $this->input->get('pid');
 
-		$model = Flickr::getInstance();
+		$model = Model::getInstance('Flickr');
 
 		if ($pid)
 		{
 			try
 			{
 				$db->transactionStart();
-				$photo = Flickr::getInstance()->getPhoto($pid);
+				$photo = $model->getPhoto($pid);
 
 				if ($photo === null)
 				{

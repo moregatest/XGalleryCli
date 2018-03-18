@@ -12,7 +12,7 @@ namespace XGallery\Application\Flickr;
 defined('_XEXEC') or die;
 
 use XGallery\Application;
-use XGallery\Model\Flickr;
+use XGallery\Model;
 use XGallery\System\Configuration;
 
 /**
@@ -32,7 +32,7 @@ class Contacts extends Application\Cli
 	 */
 	public function execute()
 	{
-		if (!Flickr::getInstance()->insertContactsFromFlickr())
+		if (!Model::getInstance('Flickr')->insertContactsFromFlickr())
 		{
 			Configuration::getInstance()->setConfig('flickr_contacts_last_executed', time());
 			Configuration::getInstance()->save();

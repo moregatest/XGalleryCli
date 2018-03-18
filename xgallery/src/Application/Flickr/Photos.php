@@ -12,7 +12,7 @@ namespace XGallery\Application\Flickr;
 defined('_XEXEC') or die;
 
 use XGallery\Application;
-use XGallery\Model\Flickr;
+use XGallery\Model;
 
 /**
  * @package     XGallery.Cli
@@ -31,7 +31,7 @@ class Photos extends Application\Cli
 	 */
 	public function execute()
 	{
-		$model = Flickr::getInstance();
+		$model = Model::getInstance('Flickr');
 
 		// Custom args
 		$url  = $this->input->get('url', null, 'RAW');
