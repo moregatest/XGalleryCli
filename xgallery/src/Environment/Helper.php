@@ -32,14 +32,26 @@ class Helper
 		$exec[] = 'php';
 		$exec[] = $command;
 
+		$result = false;
+
 		if (!$output)
 		{
-			$exec[] = '> /dev/null 2>/dev/null &';
+			if (self::isWindows())
+			{
+				$exec   = "start /B " . implode(' ', $exec);
+				$result = pclose(popen($exec, "r"));
+			}
+			else
+			{
+				$exec[] = '> /dev/null 2>/dev/null &';
+				$exec   = implode(' ', $exec);
+				$result = shell_exec($exec);
+			}
 		}
 
-		\XGallery\Log\Helper::getLogger()->info(__FUNCTION__, $exec);
+		\XGallery\Log\Helper::getLogger()->info($exec, array($result));
 
-		return shell_exec(implode(' ', $exec));
+		return $result;
 	}
 
 	/**
@@ -62,5 +74,21 @@ class Helper
 		}
 
 		return self::exec(trim($command));
+	}
+
+	/**
+	 *
+	 * @return boolean
+	 *
+	 * @since  2.0.0
+	 */
+	public static function isWindows()
+	{
+		if (!strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
+		{
+			return false;
+		}
+
+		return true;
 	}
 }

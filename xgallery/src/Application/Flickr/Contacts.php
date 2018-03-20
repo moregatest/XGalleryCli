@@ -11,10 +11,8 @@ namespace XGallery\Application\Flickr;
 
 defined('_XEXEC') or die;
 
-use Joomla\CMS\Factory;
 use XGallery\Application;
-use XGallery\Environment\Helper;
-use XGallery\Model\Flickr;
+use XGallery\Model;
 use XGallery\System\Configuration;
 
 /**
@@ -23,7 +21,7 @@ use XGallery\System\Configuration;
  *
  * @since       2.0.0
  */
-class Contacts extends Application
+class Contacts extends Application\Cli
 {
 	/**
 	 *
@@ -34,21 +32,19 @@ class Contacts extends Application
 	 */
 	public function execute()
 	{
-		parent::execute();
+		if (!Model::getInstance('Flickr')->insertContactsFromFlickr())
+		{
+			Configuration::getInstance()->setConfig('flickr_contacts_last_executed', time());
+			Configuration::getInstance()->save();
 
-		$input = Factory::getApplication()->input->cli;
+			return false;
+		}
 
-		$result = Flickr::getInstance()->insertContactsFromFlickr();
-
-		$args                = $input->getArray();
-		$args['service']     = 'Flickr';
-		$args['application'] = 'Photos';
-
-		Helper::execService($args);
+		$this->subTask('Flickr', 'Photos');
 
 		Configuration::getInstance()->setConfig('flickr_contacts_last_executed', time());
 		Configuration::getInstance()->save();
 
-		return $result;
+		return true;
 	}
 }

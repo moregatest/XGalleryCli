@@ -58,14 +58,17 @@ class Helper
 	}
 
 	/**
-	 * @param   \Stash\Interfaces\ItemInterface $item Item
+	 * @param   \Stash\Interfaces\ItemInterface $item     Item
+	 * @param   integer                         $interval Interval time
 	 *
 	 * @return  boolean
 	 *
 	 * @since   2.0.0
 	 */
-	public static function save($item)
+	public static function save($item, $interval = 3600)
 	{
+		$item->expiresAfter($interval);
+
 		return self::getPool()->save($item);
 	}
 }
