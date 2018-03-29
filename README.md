@@ -1,5 +1,6 @@
+
 **XGallery Cli**
-Based on Joomla! to fetch images from third party
+A standard alone application based on Joomla! Framework to fetch images from third party
  - Flickr
  
 **How to use**
@@ -9,4 +10,5 @@ Based on Joomla! to fetch images from third party
 - Install database via sql file
 - Execute `composer install`
 - Update Flickr OAuth
-- Execute /cli/xgallery.php
+- Execute php xgallery.php
+- Setup cron to execute xgallery.php if needed
