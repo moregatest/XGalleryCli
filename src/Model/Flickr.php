@@ -11,7 +11,6 @@ namespace XGallery\Model;
 
 use Joomla\CMS\Factory;
 use XGallery\Environment\Helper;
-use XGallery\Model;
 use XGallery\System\Configuration;
 
 defined('_XEXEC') or die;
@@ -46,7 +45,7 @@ class Flickr extends Flickr\Base
 			return true;
 		}
 
-		$contacts          = \XGallery\Service\Flickr::getInstance()->getContactsList();
+		$contacts          = \XGallery\Factory::getService('Flickr')->getContactsList();
 		$totalContacts     = count($contacts);
 		$lastTotalContacts = $config->getConfig('flickr_contacts_count');
 
@@ -184,7 +183,7 @@ class Flickr extends Flickr\Base
 		}
 
 		// Fetch photos
-		$photos = \XGallery\Service\Flickr::getInstance()->getPhotosList($nsid);
+		$photos = \XGallery\Factory::getService('Flickr')->getPhotosList($nsid);
 		\XGallery\Factory::getLogger()->info('Photos: ' . count($photos));
 
 		if (empty($photos))
@@ -320,7 +319,7 @@ class Flickr extends Flickr\Base
 
 		foreach ($pIds as $pid)
 		{
-			$sized = \XGallery\Service\Flickr::getInstance()->getPhotoSizes($pid);
+			$sized = \XGallery\Factory::getService('Flickr')->getPhotoSizes($pid);
 
 			if (!$sized)
 			{

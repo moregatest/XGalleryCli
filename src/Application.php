@@ -9,8 +9,6 @@
 
 namespace XGallery;
 
-use Joomla\Filesystem\File;
-
 defined('_XEXEC') or die;
 
 /**
@@ -37,6 +35,7 @@ class Application
 		if (!is_file(XPATH_CONFIGURATION_FILE) || !file_exists(XPATH_CONFIGURATION_FILE))
 		{
 			$query = file_get_contents(XPATH_ROOT . '/install.sql');
+
 			return Factory::getDbo()->setQuery($query)->execute();
 		}
 

@@ -1,13 +1,13 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: soulevilx
- * Date: 3/29/18
- * Time: 9:25 AM
+ * @package     XGallery.Cli
+ * @subpackage  Factory
+ *
+ * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
 namespace XGallery;
-
 
 use Joomla\Database\DatabaseFactory;
 use Joomla\Input\Input;
@@ -94,5 +94,27 @@ class Factory
 		$logger->pushHandler(new StreamHandler(XPATH_LOG . 'log_' . $level . '.log'), $level);
 
 		return $logger;
+	}
+
+	public static function getService($name)
+	{
+		static $instances;
+
+		$name      = str_replace('.', '\\', $name);
+		$className = '\\XGallery\\Service\\' . $name;
+
+		if (isset($instances[$className]))
+		{
+			return $instances[$name];
+		}
+
+		if (!class_exists($className))
+		{
+			return false;
+		}
+
+		$instances[$name] = new $className;
+
+		return $instances[$name];
 	}
 }

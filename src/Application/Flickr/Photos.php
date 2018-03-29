@@ -12,6 +12,7 @@ namespace XGallery\Application\Flickr;
 defined('_XEXEC') or die;
 
 use XGallery\Application;
+use XGallery\Factory;
 use XGallery\Model;
 
 /**
@@ -40,7 +41,7 @@ class Photos extends Application\Cli
 		// Get nsid from URL
 		if ($url)
 		{
-			$nsid = \XGallery\Service\Flickr::getInstance()->lookupUser($url);
+			$nsid = Factory::getService('Flickr')->lookupUser($url);
 
 			if ($nsid)
 			{
