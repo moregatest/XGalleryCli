@@ -32,7 +32,7 @@ class Base extends Model
 	 */
 	public function getContact($limit = 1)
 	{
-		Helper::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
+		\XGallery\Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
 
 		$db = $this->getDbo();
 
@@ -55,7 +55,7 @@ class Base extends Model
 	 */
 	public function updateContact($nsid, $data = array())
 	{
-		Helper::getLogger()->info(__CLASS__ . '.' . __FUNCTION__, func_get_args());
+		\XGallery\Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__, func_get_args());
 
 		$db    = $this->getDbo();
 		$query = $db->getQuery(true);
