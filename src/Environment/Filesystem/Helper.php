@@ -29,7 +29,7 @@ class Helper
 	 */
 	public static function downloadFile($url, $saveTo)
 	{
-		\XGallery\Log\Helper::getLogger()->info(__FUNCTION__, func_get_args());
+		\XGallery\Factory::getLogger()->info(__FUNCTION__, func_get_args());
 
 		$ch = curl_init();
 
@@ -57,7 +57,7 @@ class Helper
 
 			if ($result === false)
 			{
-				\XGallery\Log\Helper::getLogger()->error('Download failed', array('url' => $url));
+				\XGallery\Factory::getLogger()->error('Download failed', array('url' => $url));
 				curl_close($ch);
 
 				return false;
@@ -70,13 +70,13 @@ class Helper
 
 			curl_close($ch);
 
-			\XGallery\Log\Helper::getLogger()->info('Download completed', array('url' => $url));
+			\XGallery\Factory::getLogger()->info('Download completed', array('url' => $url));
 
 			return $fileSize;
 		}
 		catch (\Exception $exception)
 		{
-			\XGallery\Log\Helper::getLogger()->error($exception->getMessage());
+			\XGallery\Factory::getLogger()->error($exception->getMessage());
 		}
 
 		return false;

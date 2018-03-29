@@ -49,7 +49,7 @@ class Helper
 			}
 		}
 
-		\XGallery\Log\Helper::getLogger()->info($exec, array($result));
+		\XGallery\Factory::getLogger()->info($exec, array($result));
 
 		return $result;
 	}

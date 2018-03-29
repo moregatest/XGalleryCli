@@ -49,7 +49,7 @@ class Download extends Application\Cli
 
 				if ($photo === null)
 				{
-					\XGallery\Log\Helper::getLogger()->notice('Can not get photo to download from ID: ' . $pid);
+					\XGallery\Factory::getLogger()->notice('Can not get photo to download from ID: ' . $pid);
 
 					return false;
 				}
@@ -95,7 +95,7 @@ class Download extends Application\Cli
 			}
 			catch (\Exception $exception)
 			{
-				\XGallery\Log\Helper::getLogger()->error(
+				\XGallery\Factory::getLogger()->error(
 					$exception->getMessage(),
 					array('query' => (string) $db->getQuery(), 'url' => get_object_vars($urls))
 				);

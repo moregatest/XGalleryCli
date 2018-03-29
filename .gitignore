@@ -1,9 +1,3 @@
-/xgallery/composer.lock
-/xgallery/vendor/*
+/composer.lock
+/vendor/*
 /.idea/*
-
-/deletefiles.php
-/finder_indexer.php
-/garbagecron.php
-/index.html
-/update_cron.php

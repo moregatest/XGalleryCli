@@ -3,12 +3,12 @@
   "description": "XGallery",
   "license": "GPL-2.0+",
   "require": {
-    "katzgrau/klogger": "dev-master",
     "tedivm/stash": "^0.14.2",
     "gumlet/php-image-resize": "*",
     "joomla/application": "^1.8",
     "joomla/filesystem": "^1.3",
-    "joomla/database": "^1.5"
+    "joomla/database": "^1.5",
+    "monolog/monolog": "^1.23"
   },
   "autoload": {
     "psr-4": {

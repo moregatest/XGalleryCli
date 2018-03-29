@@ -32,7 +32,7 @@ class Flickr extends Flickr\Base
 	 */
 	public function insertContactsFromFlickr()
 	{
-		\XGallery\Log\Helper::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
+		\XGallery\Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
 
 		$config = Configuration::getInstance();
 
@@ -41,7 +41,7 @@ class Flickr extends Flickr\Base
 		// No need update contact if cache is not expired
 		if ($lastExecutedTime && time() - $lastExecutedTime < 3600)
 		{
-			\XGallery\Log\Helper::getLogger()->notice('Cache is not expired. No need update contacts');
+			\XGallery\Factory::getLogger()->notice('Cache is not expired. No need update contacts');
 
 			return true;
 		}
@@ -50,11 +50,11 @@ class Flickr extends Flickr\Base
 		$totalContacts     = count($contacts);
 		$lastTotalContacts = $config->getConfig('flickr_contacts_count');
 
-		\XGallery\Log\Helper::getLogger()->info('Contacts: ' . $totalContacts);
+		\XGallery\Factory::getLogger()->info('Contacts: ' . $totalContacts);
 
 		if ($lastTotalContacts && $lastTotalContacts == $totalContacts)
 		{
-			\XGallery\Log\Helper::getLogger()->notice('Have no new contacts');
+			\XGallery\Factory::getLogger()->notice('Have no new contacts');
 
 			return true;
 		}
@@ -64,7 +64,7 @@ class Flickr extends Flickr\Base
 
 		if (empty($contacts))
 		{
-			\XGallery\Log\Helper::getLogger()->notice('Have no contacts');
+			\XGallery\Factory::getLogger()->notice('Have no contacts');
 
 			return false;
 		}
@@ -143,7 +143,7 @@ class Flickr extends Flickr\Base
 		}
 		catch (\Exception $exception)
 		{
-			\XGallery\Log\Helper::getLogger()->error($exception->getMessage());
+			\XGallery\Factory::getLogger()->error($exception->getMessage());
 		}
 
 		return $return;
@@ -161,7 +161,7 @@ class Flickr extends Flickr\Base
 		// No nsid provided
 		if (!$nsid || empty($nsid))
 		{
-			\XGallery\Log\Helper::getLogger()->warning('No nsid provided');
+			\XGallery\Factory::getLogger()->warning('No nsid provided');
 
 			return false;
 		}
@@ -179,13 +179,13 @@ class Flickr extends Flickr\Base
 		}
 		catch (\Exception $exception)
 		{
-			\XGallery\Log\Helper::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
+			\XGallery\Factory::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
 			$db->transactionRollback();
 		}
 
 		// Fetch photos
 		$photos = \XGallery\Service\Flickr::getInstance()->getPhotosList($nsid);
-		\XGallery\Log\Helper::getLogger()->info('Photos: ' . count($photos));
+		\XGallery\Factory::getLogger()->info('Photos: ' . count($photos));
 
 		if (empty($photos))
 		{
@@ -268,7 +268,7 @@ class Flickr extends Flickr\Base
 		}
 		catch (\Exception $exception)
 		{
-			\XGallery\Log\Helper::getLogger()->error($exception->getMessage());
+			\XGallery\Factory::getLogger()->error($exception->getMessage());
 
 			return false;
 		}
@@ -290,7 +290,7 @@ class Flickr extends Flickr\Base
 		}
 		catch (\Exception $exception)
 		{
-			\XGallery\Log\Helper::getLogger()->error($exception->getMessage(), array('query' => (string) $query));
+			\XGallery\Factory::getLogger()->error($exception->getMessage(), array('query' => (string) $query));
 
 			return false;
 		}

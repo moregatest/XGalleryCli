@@ -11,6 +11,9 @@ namespace XGallery;
 
 use Joomla\Database\DatabaseFactory;
 use Joomla\Input\Input;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use Psr\Log\LogLevel;
 
 class Factory
 {
@@ -72,8 +75,24 @@ class Factory
 		return $instance;
 	}
 
-	public static function getLogger()
+	/**
+	 * @param string $level
+	 *
+	 * @return Logger
+	 * @throws \Exception
+	 */
+	public static function getLogger($level = LogLevel::DEBUG)
 	{
+		static $logger;
 
+		if (isset($logger))
+		{
+			return $logger;
+		}
+
+		$logger = new Logger('XGallery');
+		$logger->pushHandler(new StreamHandler(XPATH_LOG . 'log_' . $level . '.log'), $level);
+
+		return $logger;
 	}
 }

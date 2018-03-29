@@ -36,7 +36,7 @@ class Cli extends Application
 	{
 		$this->input = \XGallery\Factory::getInput()->cli;
 
-		$this->install();
+		//$this->install();
 	}
 
 	/**
