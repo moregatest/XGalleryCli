@@ -91,7 +91,7 @@ class Factory
 		}
 
 		$logger = new Logger('XGallery');
-		$logger->pushHandler(new StreamHandler(XPATH_LOG . 'log_' . $level . '.log'), $level);
+		$logger->pushHandler(new StreamHandler(XPATH_LOG . 'log_' . $level . '.log'));
 
 		return $logger;
 	}

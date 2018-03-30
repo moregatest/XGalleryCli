@@ -9,7 +9,6 @@
 
 namespace XGallery\Application\Flickr;
 
-use Joomla\CMS\Factory;
 use Joomla\Filesystem\File;
 use Joomla\Filesystem\Folder;
 use XGallery\Application;
@@ -45,7 +44,17 @@ class Download extends Application\Cli
 			try
 			{
 				$db->transactionStart();
-				$photo = $model->getPhoto($pid);
+
+				$photo = \XGallery\Cache\Helper::getItem('flickr/photo/' . $pid);
+
+				if ($photo->isMiss())
+				{
+					$photo = $model->getPhoto($pid);
+				}
+				else
+				{
+					$photo = $photo->get();
+				}
 
 				if ($photo === null)
 				{
@@ -55,6 +64,7 @@ class Download extends Application\Cli
 				}
 
 				$urls = json_decode($photo->urls);
+
 				$size = end($urls->sizes->size);
 
 				// Only download photo

@@ -9,8 +9,7 @@
 
 namespace XGallery\Model\Flickr;
 
-use Joomla\CMS\Factory;
-use XGallery\Log\Helper;
+use XGallery\Factory;
 use XGallery\Model;
 
 defined('_XEXEC') or die;
@@ -29,10 +28,12 @@ class Base extends Model
 	 * @return  mixed
 	 *
 	 * @since   2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	public function getContact($limit = 1)
 	{
-		\XGallery\Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
+		Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
 
 		$db = $this->getDbo();
 
@@ -52,10 +53,12 @@ class Base extends Model
 	 * @return mixed
 	 *
 	 * @since  2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	public function updateContact($nsid, $data = array())
 	{
-		\XGallery\Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__, func_get_args());
+		Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__, func_get_args());
 
 		$db    = $this->getDbo();
 		$query = $db->getQuery(true);
@@ -109,13 +112,13 @@ class Base extends Model
 		$db = $this->getDbo();
 
 		// Get photo sizes of current contact
-		$query = 'SELECT ' . $db->quoteName('id')
+		$query = 'SELECT * '
 			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
 			. ' WHERE ' . $db->quoteName('state') . ' = ' . (int) $state
 			. ' AND ' . $db->quoteName('owner') . ' = ' . $db->quote($nsid)
 			. ' LIMIT ' . (int) $limit . ' OFFSET ' . $offset . ' FOR UPDATE;';
 
-		return $db->setQuery($query)->loadColumn();
+		return $db->setQuery($query)->loadObjectList();
 	}
 
 	/**

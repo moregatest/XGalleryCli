@@ -32,6 +32,9 @@ class Photos extends Application\Cli
 	 */
 	public function execute()
 	{
+		/**
+		 * @var $model Model\Flickr
+		 */
 		$model = Model::getInstance('Flickr');
 
 		// Custom args

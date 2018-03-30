@@ -9,8 +9,8 @@
 
 namespace XGallery\Model;
 
-use Joomla\CMS\Factory;
 use XGallery\Environment\Helper;
+use XGallery\Factory;
 use XGallery\System\Configuration;
 
 defined('_XEXEC') or die;
@@ -24,14 +24,15 @@ defined('_XEXEC') or die;
 class Flickr extends Flickr\Base
 {
 	/**
-	 *
 	 * @return boolean|mixed
 	 *
 	 * @since  2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	public function insertContactsFromFlickr()
 	{
-		\XGallery\Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
+		Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
 
 		$config = Configuration::getInstance();
 
@@ -40,20 +41,20 @@ class Flickr extends Flickr\Base
 		// No need update contact if cache is not expired
 		if ($lastExecutedTime && time() - $lastExecutedTime < 3600)
 		{
-			\XGallery\Factory::getLogger()->notice('Cache is not expired. No need update contacts');
+			Factory::getLogger()->notice('Cache is not expired. No need update contacts');
 
 			return true;
 		}
 
-		$contacts          = \XGallery\Factory::getService('Flickr')->getContactsList();
+		$contacts          = Factory::getService('Flickr')->getContactsList();
 		$totalContacts     = count($contacts);
 		$lastTotalContacts = $config->getConfig('flickr_contacts_count');
 
-		\XGallery\Factory::getLogger()->info('Contacts: ' . $totalContacts);
+		Factory::getLogger()->info('Contacts: ' . $totalContacts);
 
 		if ($lastTotalContacts && $lastTotalContacts == $totalContacts)
 		{
-			\XGallery\Factory::getLogger()->notice('Have no new contacts');
+			Factory::getLogger()->notice('Have no new contacts');
 
 			return true;
 		}
@@ -63,7 +64,7 @@ class Flickr extends Flickr\Base
 
 		if (empty($contacts))
 		{
-			\XGallery\Factory::getLogger()->notice('Have no contacts');
+			Factory::getLogger()->notice('Have no contacts');
 
 			return false;
 		}
@@ -142,7 +143,7 @@ class Flickr extends Flickr\Base
 		}
 		catch (\Exception $exception)
 		{
-			\XGallery\Factory::getLogger()->error($exception->getMessage());
+			Factory::getLogger()->error($exception->getMessage());
 		}
 
 		return $return;
@@ -154,13 +155,15 @@ class Flickr extends Flickr\Base
 	 * @return  boolean
 	 *
 	 * @since   2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	public function insertPhotosFromFlickr($nsid)
 	{
 		// No nsid provided
 		if (!$nsid || empty($nsid))
 		{
-			\XGallery\Factory::getLogger()->warning('No nsid provided');
+			Factory::getLogger()->warning('No nsid provided');
 
 			return false;
 		}
@@ -178,13 +181,13 @@ class Flickr extends Flickr\Base
 		}
 		catch (\Exception $exception)
 		{
-			\XGallery\Factory::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
+			Factory::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
 			$db->transactionRollback();
 		}
 
 		// Fetch photos
-		$photos = \XGallery\Factory::getService('Flickr')->getPhotosList($nsid);
-		\XGallery\Factory::getLogger()->info('Photos: ' . count($photos));
+		$photos = Factory::getService('Flickr')->getPhotosList($nsid);
+		Factory::getLogger()->info('Photos: ' . count($photos));
 
 		if (empty($photos))
 		{
@@ -267,7 +270,7 @@ class Flickr extends Flickr\Base
 		}
 		catch (\Exception $exception)
 		{
-			\XGallery\Factory::getLogger()->error($exception->getMessage());
+			Factory::getLogger()->error($exception->getMessage());
 
 			return false;
 		}
@@ -289,7 +292,7 @@ class Flickr extends Flickr\Base
 		}
 		catch (\Exception $exception)
 		{
-			\XGallery\Factory::getLogger()->error($exception->getMessage(), array('query' => (string) $query));
+			Factory::getLogger()->error($exception->getMessage(), array('query' => (string) $query));
 
 			return false;
 		}
@@ -310,29 +313,38 @@ class Flickr extends Flickr\Base
 	public function downloadPhotos($nsid, $limit, $offset)
 	{
 		// Get photo sizes of current contact
-		$pIds = $this->getPhotos($nsid, $limit, $offset);
+		$photos = $this->getPhotos($nsid, $limit, $offset);
 
-		if (!$pIds || empty($pIds))
+		if (!$photos || empty($photos))
 		{
 			return false;
 		}
 
-		foreach ($pIds as $pid)
+		foreach ($photos as $photo)
 		{
-			$sized = \XGallery\Factory::getService('Flickr')->getPhotoSizes($pid);
+			$sized = Factory::getService('Flickr')->getPhotoSizes($photo->id);
 
 			if (!$sized)
 			{
 				continue;
 			}
 
-			// Update sized
-			$this->updatePhoto($pid, array('urls' => json_encode($sized), 'state' => XGALLERY_FLICKR_PHOTO_STATE_SIZED));
+			$sized = json_encode($sized);
 
-			$input               = \XGallery\Factory::getInput()->cli;
+			// Update sized
+			$this->updatePhoto($photo->id, array('urls' => $sized, 'state' => XGALLERY_FLICKR_PHOTO_STATE_SIZED));
+
+			$input               = Factory::getInput()->cli;
 			$args                = $input->getArray();
 			$args['application'] = 'Flickr.Download';
-			$args['pid']         = $pid;
+			$args['pid']         = $photo->id;
+
+			$photo->urls  = $sized;
+			$photo->state = XGALLERY_FLICKR_PHOTO_STATE_SIZED;
+			$item         = \XGallery\Cache\Helper::getItem('flickr/photo/' . $photo->id);
+			$item->set($photo);
+
+			\XGallery\Cache\Helper::save($item);
 
 			Helper::execService($args);
 		}

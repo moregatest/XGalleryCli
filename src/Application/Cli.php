@@ -9,7 +9,6 @@
 
 namespace XGallery\Application;
 
-use Joomla\CMS\Factory;
 use XGallery\Application;
 use XGallery\Environment\Helper;
 

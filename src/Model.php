@@ -9,8 +9,6 @@
 
 namespace XGallery;
 
-use Joomla\CMS\Factory;
-
 defined('_XEXEC') or die;
 
 /**
