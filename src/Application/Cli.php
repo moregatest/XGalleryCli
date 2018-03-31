@@ -10,7 +10,6 @@
 namespace XGallery\Application;
 
 use XGallery\Application;
-use XGallery\Environment\Helper;
 
 defined('_XEXEC') or die;
 
@@ -38,22 +37,5 @@ class Cli extends Application
 		$this->input = \XGallery\Factory::getInput()->cli;
 
 		// $this->install();
-	}
-
-	/**
-	 * @param   string $application Appication
-	 *
-	 * @return  string
-	 *
-	 * @since   2.0.0
-	 *
-	 * @throws \Exception
-	 */
-	protected function subTask($application)
-	{
-		$args                = $this->input->getArray();
-		$args['application'] = $application;
-
-		return Helper::execService($args);
 	}
 }

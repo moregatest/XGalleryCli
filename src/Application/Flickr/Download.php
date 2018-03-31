@@ -14,7 +14,6 @@ use Joomla\Filesystem\Folder;
 use XGallery\Application;
 use XGallery\Environment\Filesystem\Helper;
 use XGallery\Factory;
-use XGallery\Model;
 
 defined('_XEXEC') or die;
 
@@ -24,21 +23,22 @@ defined('_XEXEC') or die;
  *
  * @since       2.0.0
  */
-class Download extends Application\Cli
+class Download extends Application\Flickr
 {
 	/**
+	 * Entry point
 	 *
 	 * @return  boolean
 	 *
 	 * @since   2.0.0
-	 * @throws \Exception
+	 * @throws  \Exception
 	 */
 	public function execute()
 	{
 		$db  = Factory::getDbo();
 		$pid = $this->input->get('pid');
 
-		$model = Model::getInstance('Flickr');
+		$model = $this->getModel();
 
 		if ($pid)
 		{
@@ -46,10 +46,12 @@ class Download extends Application\Cli
 			{
 				$db->transactionStart();
 
+				// Get photo from cache
 				$photo = \XGallery\Cache\Helper::getItem('flickr/photo/' . $pid);
 
 				if ($photo->isMiss())
 				{
+					// If cache expired then we do query into datbase
 					$photo = $model->getPhoto($pid);
 				}
 				else
@@ -65,7 +67,6 @@ class Download extends Application\Cli
 				}
 
 				$urls = json_decode($photo->urls);
-
 				$size = end($urls->sizes->size);
 
 				// Only download photo
@@ -73,14 +74,12 @@ class Download extends Application\Cli
 				{
 					$toDir = XPATH_MEDIA . $photo->owner;
 
-					if (!is_dir($toDir))
-					{
-						Folder::create($toDir);
-					}
+					Folder::create($toDir);
 
 					$fileName = basename($size->source);
 					$saveTo   = $toDir . '/' . $fileName;
 
+					// Process download
 					$originalFileSize = Helper::downloadFile($size->source, $saveTo);
 
 					if (file_exists($saveTo))

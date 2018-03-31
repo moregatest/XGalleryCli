@@ -9,9 +9,8 @@
 
 namespace XGallery\Model;
 
-use XGallery\Environment\Helper;
 use XGallery\Factory;
-use XGallery\System\Configuration;
+use XGallery\Model;
 
 defined('_XEXEC') or die;
 
@@ -21,54 +20,19 @@ defined('_XEXEC') or die;
  *
  * @since       2.0.0
  */
-class Flickr extends Flickr\Base
+class Flickr extends Model
 {
 	/**
-	 * @return boolean|mixed
+	 * @param   array $contacts Contacts
 	 *
-	 * @since  2.0.0
+	 * @return  boolean|mixed
+	 *
+	 * @since   2.0.0
 	 *
 	 * @throws \Exception
 	 */
-	public function insertContactsFromFlickr()
+	public function insertContacts($contacts)
 	{
-		Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
-
-		$config = Configuration::getInstance();
-
-		$lastExecutedTime = (int) $config->getConfig('flickr_contacts_last_executed');
-
-		// No need update contact if cache is not expired
-		if ($lastExecutedTime && time() - $lastExecutedTime < 3600)
-		{
-			Factory::getLogger()->notice('Cache is not expired. No need update contacts');
-
-			return true;
-		}
-
-		$contacts          = Factory::getService('Flickr')->getContactsList();
-		$totalContacts     = count($contacts);
-		$lastTotalContacts = $config->getConfig('flickr_contacts_count');
-
-		Factory::getLogger()->info('Contacts: ' . $totalContacts);
-
-		if ($lastTotalContacts && $lastTotalContacts == $totalContacts)
-		{
-			Factory::getLogger()->notice('Have no new contacts');
-
-			return true;
-		}
-
-		$config->setConfig('flickr_contacts_count', $totalContacts);
-		$config->save();
-
-		if (empty($contacts))
-		{
-			Factory::getLogger()->notice('Have no contacts');
-
-			return false;
-		}
-
 		$db    = $this->getDbo();
 		$query = $db->getQuery(true);
 		$query->insert($db->quoteName('#__xgallery_flickr_contacts'));
@@ -130,27 +94,11 @@ class Flickr extends Flickr\Base
 			$query->values(implode(',', $values));
 		}
 
-		$return = false;
-
-		// Try to execute INSERT IGNORE
-		try
-		{
-			$query = (string) $query;
-			$query = str_replace('INSERT', 'INSERT IGNORE', $query);
-
-			// Ignore duplicate
-			$return = $db->setQuery($query)->execute();
-		}
-		catch (\Exception $exception)
-		{
-			Factory::getLogger()->error($exception->getMessage());
-		}
-
-		return $return;
+		return $this->insertRows($query);
 	}
 
 	/**
-	 * @param   string $nsid Nsid
+	 * @param   array $photos Photos
 	 *
 	 * @return  boolean
 	 *
@@ -158,37 +106,8 @@ class Flickr extends Flickr\Base
 	 *
 	 * @throws \Exception
 	 */
-	public function insertPhotosFromFlickr($nsid)
+	public function insertPhotos($photos)
 	{
-		// No nsid provided
-		if (!$nsid || empty($nsid))
-		{
-			Factory::getLogger()->warning('No nsid provided');
-
-			return false;
-		}
-
-		$db = $this->getDbo();
-
-		// Transaction: Get a contact then fetch all photos of this contact
-		try
-		{
-			$db->transactionStart();
-
-			$this->updateContact($nsid);
-
-			$db->transactionCommit();
-		}
-		catch (\Exception $exception)
-		{
-			Factory::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
-			$db->transactionRollback();
-		}
-
-		// Fetch photos
-		$photos = Factory::getService('Flickr')->getPhotosList($nsid);
-		Factory::getLogger()->info('Photos: ' . count($photos));
-
 		if (empty($photos))
 		{
 			return false;
@@ -257,98 +176,157 @@ class Flickr extends Flickr\Base
 			$query->values(implode(',', $values));
 		}
 
-		$query = trim($query, ',');
+		return $this->insertRows($query);
+	}
 
-		// Try to execute INSERT IGNORE
+	/**
+	 * @param   integer $limit Limit
+	 *
+	 * @return  mixed
+	 *
+	 * @since   2.0.0
+	 *
+	 * @throws \Exception
+	 */
+	public function getContact($limit = 1)
+	{
+		Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
+
+		$db = $this->getDbo();
+
+		// Fetch photos of a contact
+		$rawQuery = ' SELECT ' . $db->quoteName('nsid')
+			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contacts')
+			. ' ORDER BY ' . $db->quoteName('updated') . ' ASC'
+			. ' LIMIT ' . (int) $limit . ' FOR UPDATE;';
+
+		return $db->setQuery($rawQuery)->loadResult();
+	}
+
+	/**
+	 * @param   string $nsid Nsid
+	 * @param   array  $data Data
+	 *
+	 * @return mixed
+	 *
+	 * @since  2.0.0
+	 *
+	 * @throws \Exception
+	 */
+	public function updateContact($nsid, $data = array())
+	{
+		Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__, func_get_args());
+
+		$db    = $this->getDbo();
+		$query = $db->getQuery(true);
+
+		$query->update($db->quoteName('#__xgallery_flickr_contacts'));
+
+		foreach ($data as $key => $value)
+		{
+			$query->set($db->quoteName($key) . ' = ' . $db->quote($value));
+		}
+
+		$query->set($db->quoteName('updated') . ' = now()');
+
+		$query->where($db->quoteName('nsid') . ' = ' . $db->quote($nsid));
+
+		// Transaction: Get a contact then fetch all photos of this contact
 		try
 		{
-			$query = (string) $query;
-			$query = str_replace('INSERT', 'INSERT IGNORE', $query);
+			$db->transactionStart();
 
-			// Ignore duplicate
-			$db->setQuery($query)->execute();
-		}
-		catch (\Exception $exception)
-		{
-			Factory::getLogger()->error($exception->getMessage());
-
-			return false;
-		}
-
-		$config = Configuration::getInstance();
-
-		// Only process if this user have any photos
-		try
-		{
-			if (!$config->getConfig('flickr_download_limit'))
+			if (!$db->setQuery($query)->execute())
 			{
-				$maxConnection = $this->getMaxConnection();
-				$config->setConfig('flickr_download_limit', $maxConnection->Value);
-				$config->save();
+				Factory::getLogger()->error((string) $db->getQuery());
+
+				return false;
 			}
 
-			$limit = $config->getConfig('flickr_download_limit', $config->setConfig('flickr_download_limit', 100));
-			$this->downloadPhotos($nsid, $limit, 0);
+			$db->transactionCommit();
 		}
 		catch (\Exception $exception)
 		{
-			Factory::getLogger()->error($exception->getMessage(), array('query' => (string) $query));
-
-			return false;
+			Factory::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
+			$db->transactionRollback();
 		}
 
 		return true;
 	}
 
 	/**
+	 * @param   string  $pid   Pid
+	 * @param   integer $limit Limit
+	 *
+	 * @return  mixed
+	 *
+	 * @since   2.0.0
+	 */
+	public function getPhoto($pid, $limit = 1)
+	{
+		$db = $this->getDbo();
+
+		$query = ' SELECT ' . $db->quoteName('urls') . ',' . $db->quoteName('owner')
+			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
+			. ' WHERE ' . $db->quoteName('id') . ' = ' . $db->quote($pid)
+			. ' LIMIT ' . $limit . ' FOR UPDATE ';
+
+		return $db->setQuery($query)->loadObject();
+	}
+
+	/**
 	 * @param   string  $nsid   Nsid
 	 * @param   integer $limit  Limit
 	 * @param   integer $offset Offset
+	 * @param   integer $state  State
 	 *
-	 * @return  boolean
+	 * @return  array
 	 *
 	 * @since   2.0.0
-	 * @throws  \Exception
 	 */
-	public function downloadPhotos($nsid, $limit, $offset)
+	public function getPhotos($nsid, $limit, $offset, $state = XGALLERY_FLICKR_PHOTO_STATE_PENDING)
 	{
-		// Get photo sizes of current contact
-		$photos = $this->getPhotos($nsid, $limit, $offset);
+		$db = $this->getDbo();
 
-		if (!$photos || empty($photos))
+		// Get photo sizes of current contact
+		$query = 'SELECT * '
+			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
+			. ' WHERE ' . $db->quoteName('state') . ' = ' . (int) $state
+			. ' AND ' . $db->quoteName('owner') . ' = ' . $db->quote($nsid)
+			. ' LIMIT ' . (int) $limit . ' OFFSET ' . $offset . ' FOR UPDATE;';
+
+		return $db->setQuery($query)->loadObjectList();
+	}
+
+	/**
+	 * @param   integer $pid  Photo id
+	 * @param   array   $data Data
+	 *
+	 * @return  mixed
+	 *
+	 * @since   2.0.0
+	 */
+	public function updatePhoto($pid, $data = array())
+	{
+		if (empty($data))
 		{
 			return false;
 		}
 
-		foreach ($photos as $photo)
+		$db    = $this->getDbo();
+		$query = $db->getQuery(true);
+
+		$query->update($db->quoteName('#__xgallery_flickr_contact_photos'));
+
+		foreach ($data as $key => $value)
 		{
-			$sized = Factory::getService('Flickr')->getPhotoSizes($photo->id);
-
-			if (!$sized)
-			{
-				continue;
-			}
-
-			$sized = json_encode($sized);
-
-			// Update sized
-			$this->updatePhoto($photo->id, array('urls' => $sized, 'state' => XGALLERY_FLICKR_PHOTO_STATE_SIZED));
-
-			$input               = Factory::getInput()->cli;
-			$args                = $input->getArray();
-			$args['application'] = 'Flickr.Download';
-			$args['pid']         = $photo->id;
-
-			$photo->urls  = $sized;
-			$photo->state = XGALLERY_FLICKR_PHOTO_STATE_SIZED;
-			$item         = \XGallery\Cache\Helper::getItem('flickr/photo/' . $photo->id);
-			$item->set($photo);
-
-			\XGallery\Cache\Helper::save($item);
-
-			Helper::execService($args);
+			$query->set($db->quoteName($key) . ' = ' . $db->quote($value));
 		}
 
-		return true;
+		$query->where($db->quoteName('id') . ' = ' . $db->quote($pid));
+
+		$return = $db->setQuery($query)->execute();
+
+		return $return;
 	}
 }

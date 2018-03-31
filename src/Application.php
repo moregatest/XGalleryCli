@@ -29,21 +29,4 @@ class Application
 	{
 		return true;
 	}
-
-	/**
-	 * @return  boolean|mixed
-	 *
-	 * @since   2.0.02
-	 */
-	public function install()
-	{
-		if (!is_file(XPATH_CONFIGURATION_FILE) || !file_exists(XPATH_CONFIGURATION_FILE))
-		{
-			$query = file_get_contents(XPATH_ROOT . '/install.sql');
-
-			return Factory::getDbo()->setQuery($query)->execute();
-		}
-
-		return true;
-	}
 }

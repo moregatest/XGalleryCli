@@ -74,7 +74,7 @@ class Helper
 
 			curl_close($ch);
 
-			Factory::getLogger()->info('Download completed', array('url' => $url));
+			Factory::getLogger()->info('Download completed', array('url' => $url, 'to' => $saveTo));
 
 			return $fileSize;
 		}

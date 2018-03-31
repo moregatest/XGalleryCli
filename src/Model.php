@@ -9,6 +9,8 @@
 
 namespace XGallery;
 
+use Joomla\Database\DatabaseQuery;
+
 defined('_XEXEC') or die;
 
 /**
@@ -58,5 +60,36 @@ class Model
 	public function getDbo()
 	{
 		return Factory::getDbo();
+	}
+
+	/**
+	 * @param   DatabaseQuery $query Query
+	 *
+	 * @return  boolean|mixed
+	 *
+	 * @since   2.0.0
+	 *
+	 * @throws \Exception
+	 */
+	protected function insertRows($query)
+	{
+		$query = (string) $query;
+		$query = trim($query, ',');
+
+		// Try to execute INSERT IGNORE
+		try
+		{
+			$query = (string) $query;
+			$query = str_replace('INSERT', 'INSERT IGNORE', $query);
+
+			// Ignore duplicate
+			return $this->getDbo()->setQuery($query)->execute();
+		}
+		catch (\Exception $exception)
+		{
+			Factory::getLogger()->error($exception->getMessage());
+
+			return false;
+		}
 	}
 }
