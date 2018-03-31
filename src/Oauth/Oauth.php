@@ -10,6 +10,7 @@
 namespace XGallery\Oauth;
 
 use XGallery\Cache\Helper;
+use XGallery\Factory;
 
 defined('_XEXEC') or die;
 
@@ -48,17 +49,19 @@ class Oauth extends \oauth_client_class
 	 * @return  boolean|mixed
 	 *
 	 * @since   2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	protected function execute($parameters, $url, $method = 'GET', $options = array())
 	{
-		\XGallery\Factory::getLogger()->info(__FUNCTION__, $parameters);
+		Factory::getLogger()->info(__FUNCTION__, $parameters);
 
 		$id   = md5($url . md5(serialize(func_get_args())));
 		$item = Helper::getItem($id);
 
 		if (!$item->isMiss())
 		{
-			\XGallery\Factory::getLogger()->info('Oauth request has cached');
+			Factory::getLogger()->info('Oauth request has cached');
 
 			return $item->get();
 		}
@@ -69,7 +72,7 @@ class Oauth extends \oauth_client_class
 		$endTime     = microtime(true);
 		$executeTime = $endTime - $startTime;
 
-		\XGallery\Factory::getLogger()->info('Oauth executed time: ' . $executeTime, array($return));
+		Factory::getLogger()->info('Oauth executed time: ' . $executeTime, array($return));
 
 		$item->set($respond);
 		Helper::save($item);

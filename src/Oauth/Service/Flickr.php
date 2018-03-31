@@ -91,6 +91,8 @@ class Flickr extends Oauth
 	 * @return  boolean|mixed
 	 *
 	 * @since   2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	protected function execute($parameters, $url = self::API_ENDPOINT, $method = 'GET', $options = array())
 	{

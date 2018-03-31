@@ -9,6 +9,8 @@
 
 namespace XGallery\Environment\Filesystem;
 
+use XGallery\Factory;
+
 defined('_XEXEC') or die;
 
 /**
@@ -26,10 +28,12 @@ class Helper
 	 * @return  boolean|integer
 	 *
 	 * @since   2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	public static function downloadFile($url, $saveTo)
 	{
-		\XGallery\Factory::getLogger()->info(__FUNCTION__, func_get_args());
+		Factory::getLogger()->info(__FUNCTION__, func_get_args());
 
 		$ch = curl_init();
 
@@ -57,7 +61,7 @@ class Helper
 
 			if ($result === false)
 			{
-				\XGallery\Factory::getLogger()->error('Download failed', array('url' => $url));
+				Factory::getLogger()->error('Download failed', array('url' => $url));
 				curl_close($ch);
 
 				return false;
@@ -70,13 +74,13 @@ class Helper
 
 			curl_close($ch);
 
-			\XGallery\Factory::getLogger()->info('Download completed', array('url' => $url));
+			Factory::getLogger()->info('Download completed', array('url' => $url, 'to' => $saveTo));
 
 			return $fileSize;
 		}
 		catch (\Exception $exception)
 		{
-			\XGallery\Factory::getLogger()->error($exception->getMessage());
+			Factory::getLogger()->error($exception->getMessage());
 		}
 
 		return false;

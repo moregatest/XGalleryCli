@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     XGallery.Cli
- * @subpackage  OAuth
+ * @subpackage  Configuration
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE

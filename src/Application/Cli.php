@@ -1,17 +1,17 @@
 <?php
 /**
- * @package     XGallery\Application
- * @subpackage
+ * @package     XGallery.Cli
+ * @subpackage  Application.Cli
  *
- * @copyright   A copyright
- * @license     A "Slug" license name e.g. GPL2
+ * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
 namespace XGallery\Application;
 
-use Joomla\CMS\Factory;
 use XGallery\Application;
-use XGallery\Environment\Helper;
+
+defined('_XEXEC') or die;
 
 /**
  * @package     XGallery\Application
@@ -36,21 +36,6 @@ class Cli extends Application
 	{
 		$this->input = \XGallery\Factory::getInput()->cli;
 
-		//$this->install();
-	}
-
-	/**
-	 * @param   string $application Appication
-	 *
-	 * @return  string
-	 *
-	 * @since   2.0.0
-	 */
-	protected function subTask($application)
-	{
-		$args                = $this->input->getArray();
-		$args['application'] = $application;
-
-		return Helper::execService($args);
+		// $this->install();
 	}
 }
