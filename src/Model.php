@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     XGallery.Cli
- * @subpackage  Model.Base
+ * @subpackage  Model
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
@@ -20,11 +20,11 @@ defined('_XEXEC') or die;
 class Model
 {
 	/**
-	 * @param $name
+	 * @param   string $name Model name
 	 *
-	 * @return mixed
+	 * @return  mixed
 	 *
-	 * @since  2.0.0
+	 * @since   2.0.0
 	 */
 	public static function getInstance($name)
 	{
@@ -50,8 +50,13 @@ class Model
 		return $this->getDbo()->setQuery('show variables like \'max_connections\'')->loadObject();
 	}
 
+	/**
+	 * @return \Joomla\Database\DatabaseDriver
+	 *
+	 * @since   2.0.02
+	 */
 	public function getDbo()
 	{
-		return \XGallery\Factory::getDbo();
+		return Factory::getDbo();
 	}
 }

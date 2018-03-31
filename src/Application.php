@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     XGallery.Cli
- * @subpackage  Application.Base
+ * @subpackage  Application
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
@@ -30,6 +30,11 @@ class Application
 		return true;
 	}
 
+	/**
+	 * @return  boolean|mixed
+	 *
+	 * @since   2.0.02
+	 */
 	public function install()
 	{
 		if (!is_file(XPATH_CONFIGURATION_FILE) || !file_exists(XPATH_CONFIGURATION_FILE))

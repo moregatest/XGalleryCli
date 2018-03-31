@@ -1,18 +1,33 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: soulevilx
- * Date: 3/29/18
- * Time: 4:21 PM
+ * @package     XGallery.Cli
+ * @subpackage  Flickr
+ *
+ * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
 namespace XGallery\Service;
 
-
 use GuzzleHttp\Client;
 
+defined('_XEXEC') or die;
+
+/**
+ * @package     XGallery.Cli
+ * @subpackage  Service
+ *
+ * @since       2.0.0
+ */
 class Nct
 {
+	/**
+	 * @param   string $url Url
+	 *
+	 * @return boolean|string
+	 *
+	 * @since  2.0.0
+	 */
 	public function getFlashLink($url)
 	{
 		$client  = new Client;
@@ -27,6 +42,13 @@ class Nct
 		return $flashLink;
 	}
 
+	/**
+	 * @param   string $url Url
+	 *
+	 * @return string
+	 *
+	 * @since  2.0.0
+	 */
 	public function getDownloadLink($url)
 	{
 		$client  = new Client;

@@ -8,15 +8,28 @@
 
 namespace XGallery\Application\NCT;
 
-
 use Joomla\Filesystem\Folder;
 use XGallery\Application\Cli;
 use XGallery\Environment\Filesystem\Helper;
 use XGallery\Factory;
 use XGallery\Service\Nct;
 
+defined('_XEXEC') or die;
+
+/**
+ * @package     XGallery.Cli
+ * @subpackage  Application.NCT
+ *
+ * @since       2.0.0
+ */
 class Song extends Cli
 {
+	/**
+	 * @return boolean|void
+	 *
+	 * @since  2.0.0
+	 * @throws \Exception
+	 */
 	public function execute()
 	{
 		$id = $this->input->getInt('id');

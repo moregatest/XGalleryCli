@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     XGallery.Cli
- * @subpackage  Flickr
+ * @subpackage  Service
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
@@ -13,7 +13,7 @@ defined('_XEXEC') or die;
 
 /**
  * @package     XGallery.Cli
- * @subpackage  Libraries
+ * @subpackage  Service
  *
  * @since       2.0.0
  */
@@ -26,6 +26,8 @@ class Flickr extends \XGallery\Oauth\Service\Flickr
 	 * @return  array
 	 *
 	 * @since   2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	public function getContactsList(&$contacts = array(), $params = array())
 	{
@@ -50,6 +52,8 @@ class Flickr extends \XGallery\Oauth\Service\Flickr
 	 * @return boolean|object
 	 *
 	 * @since  2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	protected function getContacts($params = array())
 	{
@@ -69,6 +73,8 @@ class Flickr extends \XGallery\Oauth\Service\Flickr
 	 * @return array
 	 *
 	 * @since  2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	public function getPhotosList($nsid, &$photos = array(), $params = array())
 	{
@@ -101,6 +107,8 @@ class Flickr extends \XGallery\Oauth\Service\Flickr
 	 * @return  boolean|object
 	 *
 	 * @since   2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	protected function getPhotos($params)
 	{
@@ -120,6 +128,8 @@ class Flickr extends \XGallery\Oauth\Service\Flickr
 	 * @return  boolean|mixed
 	 *
 	 * @since   2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	public function getPhotoSizes($pid)
 	{
@@ -141,6 +151,8 @@ class Flickr extends \XGallery\Oauth\Service\Flickr
 	 * @return  boolean|mixed
 	 *
 	 * @since   2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	public function lookupUser($url)
 	{
@@ -162,6 +174,8 @@ class Flickr extends \XGallery\Oauth\Service\Flickr
 	 * @return  boolean|mixed
 	 *
 	 * @since   2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	public function getFavortiesList($nsid = null)
 	{

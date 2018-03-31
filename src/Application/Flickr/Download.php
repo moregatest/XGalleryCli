@@ -13,6 +13,7 @@ use Joomla\Filesystem\File;
 use Joomla\Filesystem\Folder;
 use XGallery\Application;
 use XGallery\Environment\Filesystem\Helper;
+use XGallery\Factory;
 use XGallery\Model;
 
 defined('_XEXEC') or die;
@@ -34,7 +35,7 @@ class Download extends Application\Cli
 	 */
 	public function execute()
 	{
-		$db  = \XGallery\Factory::getDbo();
+		$db  = Factory::getDbo();
 		$pid = $this->input->get('pid');
 
 		$model = Model::getInstance('Flickr');
@@ -58,7 +59,7 @@ class Download extends Application\Cli
 
 				if ($photo === null)
 				{
-					\XGallery\Factory::getLogger()->notice('Can not get photo to download from ID: ' . $pid);
+					Factory::getLogger()->notice('Can not get photo to download from ID: ' . $pid);
 
 					return false;
 				}
@@ -105,7 +106,7 @@ class Download extends Application\Cli
 			}
 			catch (\Exception $exception)
 			{
-				\XGallery\Factory::getLogger()->error(
+				Factory::getLogger()->error(
 					$exception->getMessage(),
 					array('query' => (string) $db->getQuery(), 'url' => get_object_vars($urls))
 				);

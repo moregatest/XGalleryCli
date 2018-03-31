@@ -9,11 +9,12 @@
 
 namespace XGallery\Application\Flickr;
 
-defined('_XEXEC') or die;
-
 use XGallery\Application;
 use XGallery\Factory;
 use XGallery\Model;
+
+defined('_XEXEC') or die;
+
 
 /**
  * @package     XGallery.Cli
