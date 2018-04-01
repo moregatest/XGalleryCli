@@ -28,7 +28,7 @@ final class ModelTest extends TestCase
 	 *
 	 * @since  2.0.0
 	 */
-	public function testGetValidModel()
+	public function testGetModel()
 	{
 		foreach ($this->models as $model)
 		{
@@ -45,8 +45,8 @@ final class ModelTest extends TestCase
 	 *
 	 * @since  2.0.0
 	 */
-	public function testGetInvalidModel()
+	public function testGetModelNotFound()
 	{
-		$this->assertFalse(\XGallery\Model::getInstance('Test'));
+		$this->assertFalse(\XGallery\Model::getInstance(uniqid()));
 	}
 }

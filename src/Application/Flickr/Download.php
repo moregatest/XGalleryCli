@@ -113,6 +113,8 @@ class Download extends Application\Flickr
 			}
 		}
 
+		$db->disconnect();
+
 		return true;
 	}
 }

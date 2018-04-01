@@ -97,7 +97,7 @@ class Factory
 				'user'     => $config->get('user'),
 				'password' => $config->get('password'),
 				'database' => $config->get('database'),
-				'prefix'   => ''
+				'prefix'   => $config->get('prefix')
 			)
 		);
 
