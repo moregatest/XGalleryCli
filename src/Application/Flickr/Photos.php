@@ -18,8 +18,8 @@ defined('_XEXEC') or die;
 
 
 /**
- * @package     XGallery.Cli
- * @subpackage  Application.Flickr
+ * @package     XGallery.Application
+ * @subpackage  Flickr.Photos
  *
  * @since       2.0.0
  */
@@ -134,12 +134,12 @@ class Photos extends Application\Flickr
 		try
 		{
 			// Get Flickr download limit. By default use maxConnection
-			$limit = $config->getConfig('flickr_download_limit');
+			$limit = $config->get('flickr_download_limit');
 
 			if (!$limit)
 			{
 				$limit = (int) $model->getMaxConnection()->Value - 10;
-				$config->setConfig('flickr_download_limit', $limit);
+				$config->set('flickr_download_limit', $limit);
 				$config->save();
 			}
 
@@ -166,8 +166,7 @@ class Photos extends Application\Flickr
 				// Update sized
 				$model->updatePhoto($photo->id, array('urls' => $sized, 'state' => XGALLERY_FLICKR_PHOTO_STATE_SIZED));
 
-				$input               = Factory::getInput()->cli;
-				$args                = $input->getArray();
+				$args                = $this->input->getArray();
 				$args['application'] = 'Flickr.Download';
 				$args['pid']         = $photo->id;
 

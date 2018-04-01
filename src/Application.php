@@ -12,10 +12,10 @@ namespace XGallery;
 defined('_XEXEC') or die;
 
 /**
- * @package     XGallery.Application
- * @subpackage  Base
+ * Class Application
+ * @package   XGallery.Application
  *
- * @since       2.0.0
+ * @since     2.0.0
  */
 class Application
 {

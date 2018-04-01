@@ -1,0 +1,11 @@
+{
+  "host": "localhost",
+  "user": "root",
+  "password": "root",
+  "database": "soulevil_xgallery",
+  "prefix": "",
+  "flickr_client_id": "",
+  "flickr_client_secret": "",
+  "flickr_access_token": "",
+  "access_token_secret": ""
+}

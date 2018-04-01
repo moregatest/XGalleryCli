@@ -18,8 +18,8 @@ use XGallery\Factory;
 defined('_XEXEC') or die;
 
 /**
- * @package     XGallery.Cli
- * @subpackage  Application.Flickr
+ * @package     XGallery.Application
+ * @subpackage  Flickr.Download
  *
  * @since       2.0.0
  */

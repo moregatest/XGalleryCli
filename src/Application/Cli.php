@@ -10,13 +10,19 @@
 namespace XGallery\Application;
 
 use XGallery\Application;
+use XGallery\Environment\Helper;
+use XGallery\Factory;
+use XGallery\System\Configuration;
 
 defined('_XEXEC') or die;
 
 /**
- * @package     XGallery\Application
+ * Class Cli
+ * @package      XGallery\Application
+ * @subpackage   Cli
  *
- * @since       2.0.0
+ * @since        2.0.0
+ *
  */
 class Cli extends Application
 {
@@ -30,12 +36,26 @@ class Cli extends Application
 	 * Cli constructor.
 	 *
 	 * @throws \Exception
+	 *
 	 * @since  2.0.0
 	 */
 	public function __construct()
 	{
-		$this->input = \XGallery\Factory::getInput()->cli;
+		$this->input = Factory::getInput()->cli;
+	}
 
-		// $this->install();
+	/**
+	 * @return string
+	 *
+	 * @throws \Exception
+	 *
+	 * @since  2.0.0
+	 */
+	public function install()
+	{
+		$config  = Configuration::getInstance();
+		$command = 'mysql --user=' . $config->get('user') . ' --password=' . $config->get('password') . ' ' . $config->get('database') . ' < ' . XPATH_ROOT . '/install.sql';
+
+		return Helper::exec($command, false);
 	}
 }

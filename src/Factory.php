@@ -15,6 +15,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LogLevel;
 use XGallery\Service\Flickr;
+use XGallery\System\Configuration;
 
 defined('_XEXEC') or die;
 
@@ -88,13 +89,14 @@ class Factory
 			return $instance;
 		}
 
+		$config   = Configuration::getInstance();
 		$factory  = new DatabaseFactory;
 		$instance = $factory->getDriver('mysqli',
 			array(
-				'host'     => 'localhost',
-				'user'     => 'root',
-				'password' => 'root',
-				'database' => 'soulevil_xgallery',
+				'host'     => $config->get('host'),
+				'user'     => $config->get('user'),
+				'password' => $config->get('password'),
+				'database' => $config->get('database'),
 				'prefix'   => ''
 			)
 		);

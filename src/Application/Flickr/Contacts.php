@@ -17,8 +17,8 @@ use XGallery\Factory;
 use XGallery\System\Configuration;
 
 /**
- * @package     XGallery.Cli
- * @subpackage  Application.Flickr
+ * @package     XGallery.Application
+ * @subpackage  Flickr.Contacts
  *
  * @since       2.0.0
  */
@@ -40,11 +40,10 @@ class Contacts extends Application\Flickr
 			return false;
 		}
 
-		Configuration::getInstance()->setConfig('flickr_contacts_last_executed', time());
+		Configuration::getInstance()->set('flickr_contacts_last_executed', time());
 		Configuration::getInstance()->save();
 
-		$input               = Factory::getInput()->cli;
-		$args                = $input->getArray();
+		$args                = $this->input->getArray();
 		$args['application'] = 'Flickr.Photos';
 
 		Helper::execService($args);
@@ -67,7 +66,7 @@ class Contacts extends Application\Flickr
 
 		$config = Configuration::getInstance();
 
-		$lastExecutedTime = (int) $config->getConfig('flickr_contacts_last_executed');
+		$lastExecutedTime = (int) $config->get('flickr_contacts_last_executed');
 
 		// No need update contact if cache is not expired
 		if ($lastExecutedTime && time() - $lastExecutedTime < 3600)
@@ -80,7 +79,7 @@ class Contacts extends Application\Flickr
 		// Get Flickr contacts
 		$contacts          = Factory::getService('Flickr')->getContactsList();
 		$totalContacts     = count($contacts);
-		$lastTotalContacts = $config->getConfig('flickr_contacts_count');
+		$lastTotalContacts = $config->get('flickr_contacts_count');
 
 		Factory::getLogger()->info('Contacts: ' . $totalContacts);
 
@@ -105,7 +104,7 @@ class Contacts extends Application\Flickr
 		}
 
 		// Update total contacts count
-		$config->setConfig('flickr_contacts_count', $totalContacts);
+		$config->set('flickr_contacts_count', $totalContacts);
 
 		return $config->save();
 	}
