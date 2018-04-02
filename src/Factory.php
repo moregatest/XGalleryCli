@@ -105,27 +105,30 @@ class Factory
 	}
 
 	/**
+	 * @param   string $name  Name
 	 * @param   string $level Log level
 	 *
 	 * @return  Logger
 	 *
-	 * @since   2.0.02
+	 * @since   2.0.2
 	 *
 	 * @throws \Exception
 	 */
-	public static function getLogger($level = LogLevel::DEBUG)
+	public static function getLogger($name = 'core', $level = LogLevel::DEBUG)
 	{
-		static $instance;
+		static $instances;
 
-		if (isset($instance))
+		$name = str_replace('\\', '_', strtolower($name));
+
+		if (isset($instances[$name]))
 		{
-			return $instance;
+			return $instances[$name];
 		}
 
-		$instance = new Logger('XGallery');
-		$instance->pushHandler(new StreamHandler(XPATH_LOG . 'log_' . $level . '.log'));
+		$instances[$name] = new Logger('XGallery');
+		$instances[$name]->pushHandler(new StreamHandler(XPATH_LOG . 'log_' . $name . '_' . $level . '.log'));
 
-		return $instance;
+		return $instances[$name];
 	}
 
 	/**

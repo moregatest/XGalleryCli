@@ -23,9 +23,16 @@ defined('_XEXEC') or die;
 class Oauth extends \oauth_client_class
 {
 	/**
+	 * @var \Monolog\Logger|null
+	 */
+	protected $logger = null;
+
+	/**
 	 * Oauth constructor.
 	 *
 	 * @since       2.0.0
+	 *
+	 * @throws \Exception
 	 */
 	public function __construct()
 	{
@@ -38,6 +45,8 @@ class Oauth extends \oauth_client_class
 		{
 			$this->Finalize($success);
 		}
+
+		$this->logger = Factory::getLogger(get_class($this));
 	}
 
 	/**
@@ -54,14 +63,14 @@ class Oauth extends \oauth_client_class
 	 */
 	protected function execute($parameters, $url, $method = 'GET', $options = array())
 	{
-		Factory::getLogger()->info(__FUNCTION__, $parameters);
+		$this->logger->info(__FUNCTION__, $parameters);
 
 		$id   = md5($url . md5(serialize(func_get_args())));
 		$item = Helper::getItem($id);
 
 		if (!$item->isMiss())
 		{
-			Factory::getLogger()->info('Oauth request has cached');
+			$this->logger->info('Oauth request has cached');
 
 			return $item->get();
 		}
@@ -72,7 +81,7 @@ class Oauth extends \oauth_client_class
 		$endTime     = microtime(true);
 		$executeTime = $endTime - $startTime;
 
-		Factory::getLogger()->info('Oauth executed time: ' . $executeTime, array($return));
+		$this->logger->info('Oauth executed time: ' . $executeTime, array($return));
 
 		$item->set($respond);
 		Helper::save($item);
