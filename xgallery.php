@@ -14,8 +14,9 @@ require_once __DIR__ . '/bootstrap.php';
 $input = Factory::getInput()->cli;
 
 $application = Factory::getApplication($input->getCmd('application', XGALLERY_DEFAULT_APPLICATION));
+$task = $input->getCmd('task', 'execute');
 
 if ($application)
 {
-	$application->execute();
+	call_user_func(array($application, $task));
 }

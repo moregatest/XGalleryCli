@@ -23,6 +23,7 @@ class Helper
 {
 	/**
 	 * @param   string  $command Execute command
+	 * @param   boolean $isPhp   PHP execute
 	 * @param   boolean $output  Show output
 	 *
 	 * @return  string
@@ -31,26 +32,32 @@ class Helper
 	 *
 	 * @throws \Exception
 	 */
-	public static function exec($command, $output = false)
+	public static function exec($command, $isPhp = true, $output = false)
 	{
-		$exec[] = 'php';
+		if ($isPhp)
+		{
+			$exec[] = 'php';
+		}
+
 		$exec[] = $command;
 
 		$result = false;
 
+		if (self::isWindows())
+		{
+			$exec   = "start /B " . implode(' ', $exec);
+			$result = pclose(popen($exec, "r"));
+
+			Factory::getLogger()->info($exec, array($result));
+
+			return $result;
+		}
+
 		if (!$output)
 		{
-			if (self::isWindows())
-			{
-				$exec   = "start /B " . implode(' ', $exec);
-				$result = pclose(popen($exec, "r"));
-			}
-			else
-			{
-				$exec[] = '> /dev/null 2>/dev/null &';
-				$exec   = implode(' ', $exec);
-				$result = shell_exec($exec);
-			}
+			$exec[] = '> /dev/null 2>/dev/null &';
+			$exec   = implode(' ', $exec);
+			$result = shell_exec($exec);
 		}
 
 		Factory::getLogger()->info($exec, array($result));

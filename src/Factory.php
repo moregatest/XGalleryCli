@@ -15,6 +15,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LogLevel;
 use XGallery\Service\Flickr;
+use XGallery\System\Configuration;
 
 defined('_XEXEC') or die;
 
@@ -88,14 +89,15 @@ class Factory
 			return $instance;
 		}
 
+		$config   = Configuration::getInstance();
 		$factory  = new DatabaseFactory;
 		$instance = $factory->getDriver('mysqli',
 			array(
-				'host'     => 'localhost',
-				'user'     => 'root',
-				'password' => 'root',
-				'database' => 'soulevil_xgallery',
-				'prefix'   => ''
+				'host'     => $config->get('host'),
+				'user'     => $config->get('user'),
+				'password' => $config->get('password'),
+				'database' => $config->get('database'),
+				'prefix'   => $config->get('prefix')
 			)
 		);
 
@@ -103,27 +105,30 @@ class Factory
 	}
 
 	/**
+	 * @param   string $name  Name
 	 * @param   string $level Log level
 	 *
 	 * @return  Logger
 	 *
-	 * @since   2.0.02
+	 * @since   2.0.2
 	 *
 	 * @throws \Exception
 	 */
-	public static function getLogger($level = LogLevel::DEBUG)
+	public static function getLogger($name = 'core', $level = LogLevel::DEBUG)
 	{
-		static $instance;
+		static $instances;
 
-		if (isset($instance))
+		$name = str_replace('\\', '_', strtolower($name));
+
+		if (isset($instances[$name]))
 		{
-			return $instance;
+			return $instances[$name];
 		}
 
-		$instance = new Logger('XGallery');
-		$instance->pushHandler(new StreamHandler(XPATH_LOG . 'log_' . $level . '.log'));
+		$instances[$name] = new Logger('XGallery');
+		$instances[$name]->pushHandler(new StreamHandler(XPATH_LOG . 'log_' . $name . '_' . $level . '.log'));
 
-		return $instance;
+		return $instances[$name];
 	}
 
 	/**

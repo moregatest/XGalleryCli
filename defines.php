@@ -5,7 +5,7 @@ defined('_XEXEC') or die;
 
 // Paths
 define('JPATH_ROOT', __DIR__);
-define('XPATH_ROOT', __DIR__);
+define('XPATH_ROOT', JPATH_ROOT);
 define('XPATH_3RD', XPATH_ROOT . '/3rd');
 define('XPATH_CACHE', XPATH_ROOT . '/cache');
 define('XPATH_LOG', XPATH_ROOT . '/logs/');

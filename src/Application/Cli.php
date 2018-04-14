@@ -9,33 +9,59 @@
 
 namespace XGallery\Application;
 
-use XGallery\Application;
+use Joomla\Registry\Registry;
+use XGallery\AbstractApplication;
+use XGallery\Environment\Helper;
+use XGallery\System\Configuration;
 
 defined('_XEXEC') or die;
 
 /**
- * @package     XGallery\Application
+ * Class Cli
+ * @package      XGallery\Application
+ * @subpackage   Cli
  *
- * @since       2.0.0
+ * @since        2.0.0
+ *
  */
-class Cli extends Application
+class Cli extends AbstractApplication
 {
 	/**
-	 * @var    \Joomla\Input\Cli
-	 * @since  2.0.0
+	 * Application constructor.
+	 *
+	 * @param   Registry|null $config Configuration
+	 *
+	 * @throws  \Exception
 	 */
-	protected $input;
+	public function __construct(Registry $config = null)
+	{
+		parent::__construct($config);
+
+		$this->input = $this->input->cli;
+	}
 
 	/**
-	 * Cli constructor.
+	 * @return string
 	 *
 	 * @throws \Exception
+	 *
 	 * @since  2.0.0
 	 */
-	public function __construct()
+	public function install()
 	{
-		$this->input = \XGallery\Factory::getInput()->cli;
+		$config  = Configuration::getInstance();
+		$command = 'mysql --user=' . $config->get('user') . ' --password=' . $config->get('password') . ' ' . $config->get('database') . ' < ' . XPATH_ROOT . '/install.sql';
 
-		// $this->install();
+		return Helper::exec($command, false);
+	}
+
+	/**
+	 * @return  boolean
+	 *
+	 * @since   2.1.0
+	 */
+	protected function doExecute()
+	{
+		return true;
 	}
 }

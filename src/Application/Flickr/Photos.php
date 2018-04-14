@@ -18,25 +18,37 @@ defined('_XEXEC') or die;
 
 
 /**
- * @package     XGallery.Cli
- * @subpackage  Application.Flickr
+ * @package     XGallery.Application
+ * @subpackage  Flickr.Photos
  *
  * @since       2.0.0
  */
 class Photos extends Application\Flickr
 {
+
 	/**
-	 * Entry point
+	 * @return boolean
 	 *
-	 * @return  boolean
-	 *
-	 * @since   2.0.0
-	 *
+	 * @since  2.1.0
 	 * @throws \Exception
 	 */
-	public function execute()
+	protected function doExecute()
 	{
 		return $this->insertPhotosFromFlickr($this->getNsid());
+	}
+
+	/**
+	 * @return boolean
+	 *
+	 * @since  2.1.0
+	 * @throws \Exception
+	 */
+	protected function doAfterExecute()
+	{
+		parent::doAfterExecute();
+
+		// Download photos from this nsid
+		return $this->downloadPhotos($this->get('nsid'));
 	}
 
 	/**
@@ -48,7 +60,7 @@ class Photos extends Application\Flickr
 	 */
 	private function getNsid()
 	{
-		Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
+		$this->logger->info(__CLASS__ . '.' . __FUNCTION__);
 
 		$model = $this->getModel();
 
@@ -88,12 +100,12 @@ class Photos extends Application\Flickr
 	 */
 	protected function insertPhotosFromFlickr($nsid)
 	{
-		Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
+		$this->logger->info(__CLASS__ . '.' . __FUNCTION__, func_get_args());
 
 		// No nsid provided
 		if (!$nsid || empty($nsid))
 		{
-			Factory::getLogger()->warning('No nsid provided');
+			$this->logger->warning('No nsid provided');
 
 			return false;
 		}
@@ -105,15 +117,12 @@ class Photos extends Application\Flickr
 		// Fetch photos
 		$photos = Factory::getService('Flickr')->getPhotosList($nsid);
 
-		Factory::getLogger()->info('Photos: ' . count($photos));
+		$this->logger->info('Photos: ' . count($photos));
+
+		$this->config->set('nsid', $nsid);
 
 		// Insert photos into database
-		$model->insertPhotos($photos);
-
-		// Download photos from this nsid
-		$this->downloadPhotos($nsid);
-
-		return true;
+		return $model->insertPhotos($photos);
 	}
 
 	/**
@@ -125,7 +134,7 @@ class Photos extends Application\Flickr
 	 */
 	protected function downloadPhotos($nsid)
 	{
-		Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
+		$this->logger->info(__CLASS__ . '.' . __FUNCTION__);
 
 		$model  = $this->getModel();
 		$config = Configuration::getInstance();
@@ -134,12 +143,12 @@ class Photos extends Application\Flickr
 		try
 		{
 			// Get Flickr download limit. By default use maxConnection
-			$limit = $config->getConfig('flickr_download_limit');
+			$limit = $config->get('flickr_download_limit');
 
 			if (!$limit)
 			{
 				$limit = (int) $model->getMaxConnection()->Value - 10;
-				$config->setConfig('flickr_download_limit', $limit);
+				$config->set('flickr_download_limit', $limit);
 				$config->save();
 			}
 
@@ -166,8 +175,7 @@ class Photos extends Application\Flickr
 				// Update sized
 				$model->updatePhoto($photo->id, array('urls' => $sized, 'state' => XGALLERY_FLICKR_PHOTO_STATE_SIZED));
 
-				$input               = Factory::getInput()->cli;
-				$args                = $input->getArray();
+				$args                = $this->input->getArray();
 				$args['application'] = 'Flickr.Download';
 				$args['pid']         = $photo->id;
 
@@ -186,7 +194,7 @@ class Photos extends Application\Flickr
 		}
 		catch (\Exception $exception)
 		{
-			Factory::getLogger()->error($exception->getMessage());
+			$this->logger->error($exception->getMessage());
 
 			return false;
 		}

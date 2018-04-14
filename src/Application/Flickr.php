@@ -9,14 +9,15 @@
 
 namespace XGallery\Application;
 
-use XGallery\Factory;
 use XGallery\Model;
 
 /**
  * Class Flickr
- * @package     XGallery\Application
+ * @package      XGallery\Application
+ * @subpackage   Cli.Flickr
  *
- * @since       2.0.0
+ * @since        2.0.0
+ *
  */
 class Flickr extends Cli
 {
@@ -28,22 +29,5 @@ class Flickr extends Cli
 	protected function getModel($name = 'Flickr')
 	{
 		return Model::getInstance($name);
-	}
-
-	/**
-	 * @return  boolean|mixed
-	 *
-	 * @since   2.0.02
-	 */
-	protected function install()
-	{
-		if (!is_file(XPATH_CONFIGURATION_FILE) || !file_exists(XPATH_CONFIGURATION_FILE))
-		{
-			$query = file_get_contents(XPATH_ROOT . '/install.sql');
-
-			return Factory::getDbo()->setQuery($query)->execute();
-		}
-
-		return true;
 	}
 }

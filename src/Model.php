@@ -34,7 +34,13 @@ class Model
 
 		if (!isset($instances[$name]))
 		{
-			$class            = '\\XGallery\Model\\' . ucfirst($name);
+			$class = '\\XGallery\Model\\' . ucfirst($name);
+
+			if (!class_exists($class))
+			{
+				return false;
+			}
+
 			$instances[$name] = new $class;
 		}
 

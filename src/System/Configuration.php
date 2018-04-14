@@ -74,7 +74,7 @@ class Configuration
 	 *
 	 * @since   2.0.0.
 	 */
-	public function getConfig($name, $default = null)
+	public function get($name, $default = null)
 	{
 		if (isset($this->data->{$name}))
 		{
@@ -92,7 +92,7 @@ class Configuration
 	 *
 	 * @since   2.0.0
 	 */
-	public function setConfig($name, $value)
+	public function set($name, $value)
 	{
 		$this->data->{$name} = $value;
 	}

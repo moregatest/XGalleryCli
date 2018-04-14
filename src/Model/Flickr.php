@@ -98,6 +98,76 @@ class Flickr extends Model
 	}
 
 	/**
+	 * @param   integer $limit Limit
+	 *
+	 * @return  mixed
+	 *
+	 * @since   2.0.0
+	 *
+	 * @throws \Exception
+	 */
+	public function getContact($limit = 1)
+	{
+		$db = $this->getDbo();
+
+		// Fetch photos of a contact
+		$rawQuery = ' SELECT ' . $db->quoteName('nsid')
+			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contacts')
+			. ' ORDER BY ' . $db->quoteName('updated') . ' ASC'
+			. ' LIMIT ' . (int) $limit . ' FOR UPDATE;';
+
+		return $db->setQuery($rawQuery)->loadResult();
+	}
+
+	/**
+	 * @param   string $nsid Nsid
+	 * @param   array  $data Data
+	 *
+	 * @return mixed
+	 *
+	 * @since  2.0.0
+	 *
+	 * @throws \Exception
+	 */
+	public function updateContact($nsid, $data = array())
+	{
+		$db    = $this->getDbo();
+		$query = $db->getQuery(true);
+
+		$query->update($db->quoteName('#__xgallery_flickr_contacts'));
+
+		foreach ($data as $key => $value)
+		{
+			$query->set($db->quoteName($key) . ' = ' . $db->quote($value));
+		}
+
+		$query->set($db->quoteName('updated') . ' = now()');
+
+		$query->where($db->quoteName('nsid') . ' = ' . $db->quote($nsid));
+
+		try
+		{
+			$db->transactionStart();
+
+			if (!$db->setQuery($query)->execute())
+			{
+				Factory::getLogger()->error((string) $db->getQuery());
+
+				return false;
+			}
+
+			$db->transactionCommit();
+		}
+		catch (\Exception $exception)
+		{
+			Factory::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
+			$db->transactionRollback();
+		}
+
+		return true;
+	}
+
+	/**
 	 * @param   array $photos Photos
 	 *
 	 * @return  boolean
@@ -179,80 +249,6 @@ class Flickr extends Model
 		return $this->insertRows($query);
 	}
 
-	/**
-	 * @param   integer $limit Limit
-	 *
-	 * @return  mixed
-	 *
-	 * @since   2.0.0
-	 *
-	 * @throws \Exception
-	 */
-	public function getContact($limit = 1)
-	{
-		Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__);
-
-		$db = $this->getDbo();
-
-		// Fetch photos of a contact
-		$rawQuery = ' SELECT ' . $db->quoteName('nsid')
-			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contacts')
-			. ' ORDER BY ' . $db->quoteName('updated') . ' ASC'
-			. ' LIMIT ' . (int) $limit . ' FOR UPDATE;';
-
-		return $db->setQuery($rawQuery)->loadResult();
-	}
-
-	/**
-	 * @param   string $nsid Nsid
-	 * @param   array  $data Data
-	 *
-	 * @return mixed
-	 *
-	 * @since  2.0.0
-	 *
-	 * @throws \Exception
-	 */
-	public function updateContact($nsid, $data = array())
-	{
-		Factory::getLogger()->info(__CLASS__ . '.' . __FUNCTION__, func_get_args());
-
-		$db    = $this->getDbo();
-		$query = $db->getQuery(true);
-
-		$query->update($db->quoteName('#__xgallery_flickr_contacts'));
-
-		foreach ($data as $key => $value)
-		{
-			$query->set($db->quoteName($key) . ' = ' . $db->quote($value));
-		}
-
-		$query->set($db->quoteName('updated') . ' = now()');
-
-		$query->where($db->quoteName('nsid') . ' = ' . $db->quote($nsid));
-
-		// Transaction: Get a contact then fetch all photos of this contact
-		try
-		{
-			$db->transactionStart();
-
-			if (!$db->setQuery($query)->execute())
-			{
-				Factory::getLogger()->error((string) $db->getQuery());
-
-				return false;
-			}
-
-			$db->transactionCommit();
-		}
-		catch (\Exception $exception)
-		{
-			Factory::getLogger()->error($exception->getMessage(), array('query' => (string) $db->getQuery()));
-			$db->transactionRollback();
-		}
-
-		return true;
-	}
 
 	/**
 	 * @param   string  $pid   Pid

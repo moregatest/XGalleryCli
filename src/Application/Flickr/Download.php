@@ -18,23 +18,36 @@ use XGallery\Factory;
 defined('_XEXEC') or die;
 
 /**
- * @package     XGallery.Cli
- * @subpackage  Application.Flickr
+ * @package     XGallery.Application
+ * @subpackage  Flickr.Download
  *
  * @since       2.0.0
  */
 class Download extends Application\Flickr
 {
 	/**
-	 * Entry point
-	 *
 	 * @return  boolean
 	 *
-	 * @since   2.0.0
-	 * @throws  \Exception
+	 * @since   2.1.0
+	 *
+	 * @throws \Exception
 	 */
-	public function execute()
+	protected function doExecute()
 	{
+		return $this->downloadFromNsid();
+	}
+
+	/**
+	 * @return boolean
+	 *
+	 * @since   2.1.0
+	 *
+	 * @throws \Exception
+	 */
+	protected function downloadFromNsid()
+	{
+		$this->logger->info(__FUNCTION__, $this->input->getArray());
+
 		$db  = Factory::getDbo();
 		$pid = $this->input->get('pid');
 
@@ -61,7 +74,7 @@ class Download extends Application\Flickr
 
 				if ($photo === null)
 				{
-					Factory::getLogger()->notice('Can not get photo to download from ID: ' . $pid);
+					$this->logger->notice('Can not get photo to download from ID: ' . $pid);
 
 					return false;
 				}
@@ -105,13 +118,15 @@ class Download extends Application\Flickr
 			}
 			catch (\Exception $exception)
 			{
-				Factory::getLogger()->error(
+				$this->logger->error(
 					$exception->getMessage(),
 					array('query' => (string) $db->getQuery(), 'url' => get_object_vars($urls))
 				);
 				$db->transactionRollback();
 			}
 		}
+
+		$db->disconnect();
 
 		return true;
 	}
