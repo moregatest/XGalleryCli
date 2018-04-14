@@ -70,7 +70,7 @@ class Oauth extends \oauth_client_class
 
 		if (!$item->isMiss())
 		{
-			$this->logger->info('Oauth request has cached');
+			$this->logger->notice('Oauth request has cached');
 
 			return $item->get();
 		}
@@ -81,7 +81,7 @@ class Oauth extends \oauth_client_class
 		$endTime     = microtime(true);
 		$executeTime = $endTime - $startTime;
 
-		$this->logger->info('Oauth executed time: ' . $executeTime, array($return));
+		$this->logger->debug('Oauth executed time: ' . $executeTime, array($return));
 
 		$item->set($respond);
 		Helper::save($item);

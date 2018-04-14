@@ -26,7 +26,6 @@ defined('_XEXEC') or die;
  */
 class Cli extends AbstractApplication
 {
-
 	/**
 	 * Application constructor.
 	 *

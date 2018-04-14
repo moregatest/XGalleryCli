@@ -46,14 +46,8 @@ abstract class AbstractApplication
 	 */
 	public function __construct(Registry $config = null)
 	{
-		$this->input  = Factory::getInput()->cli;
+		$this->input  = Factory::getInput();
 		$this->config = $config instanceof Registry ? $config : new Registry;
-
-		// Set the execution datetime and timestamp;
-		$this->set('execution.datetime', gmdate('Y-m-d H:i:s'));
-		$this->set('execution.timestamp', time());
-		$this->set('execution.microtimestamp', microtime(true));
-
 		$this->logger = Factory::getLogger(get_class($this));
 	}
 
@@ -107,7 +101,8 @@ abstract class AbstractApplication
 	public function execute()
 	{
 		$start = (float) memory_get_peak_usage(true);
-		$this->set('start_memory_usage', $start);
+		$this->set('memory.start', $start);
+		$this->set('execution.start', microtime(true));
 
 		// Primary execute
 		if (!$this->doExecute())
@@ -116,15 +111,13 @@ abstract class AbstractApplication
 		}
 
 		$end = (float) memory_get_peak_usage(true);
-		$this->set('end_memory_usage', $end);
-		$this->set('execution.complete.microtimestamp', microtime(true));
+		$this->set('memory.end', $end);
+		$this->set('execution.end', microtime(true));
 
 		Configuration::getInstance()->set(strtolower(get_class($this)) . '_executed', time());
 		Configuration::getInstance()->save();
 
-		$this->doAfterExecute();
-
-		return true;
+		return $this->doAfterExecute();
 	}
 
 	/**
@@ -143,10 +136,12 @@ abstract class AbstractApplication
 	 */
 	protected function doAfterExecute()
 	{
-		$memoryUsage = $this->config->get('end_memory_usage') - $this->config->get('start_memory_usage');
-		$executeTime = $this->config->get('execution.complete.microtimestamp') - $this->config->get('execution.microtimestamp');
-		$this->logger->info('Memory usage: ' . $memoryUsage);
-		$this->logger->info('Execute time: ' . $executeTime);
+		$memoryUsage = (float) $this->config->get('memory.end') - (float) $this->config->get('memory.start');
+		$executeTime = (float) $this->config->get('execution.end') - (float) $this->config->get('execution.start');
+
+		$this->logger->info('Task execute completed');
+		$this->logger->debug('Memory usage: ' . $memoryUsage);
+		$this->logger->debug('Executed time: ' . $executeTime);
 
 		return true;
 	}

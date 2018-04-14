@@ -71,7 +71,7 @@ class Contacts extends Application\Flickr
 		$lastExecutedTime = (int) $config->get(strtolower(get_class($this)) . '_executed');
 
 		// No need update contact if cache is not expired
-		if ($lastExecutedTime && time() - $lastExecutedTime < 3600)
+		if ($lastExecutedTime && time() - $lastExecutedTime < $config->get('limit_flickr_contacts_execute_', 3600))
 		{
 			$this->logger->notice('Cache is not expired. No need update contacts');
 
