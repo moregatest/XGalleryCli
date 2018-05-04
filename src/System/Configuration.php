@@ -9,7 +9,8 @@
 
 namespace XGallery\System;
 
-use Joomla\Filesystem\File;
+use Joomla\Registry\Registry;
+use XGallery\Environment\Filesystem\File;
 
 /**
  * @package     XGallery.System
@@ -20,11 +21,11 @@ use Joomla\Filesystem\File;
 class Configuration
 {
 	/**
-	 * @var    object|null
+	 * @var    Registry
 	 *
 	 * @since  2.0.0
 	 */
-	protected $data = null;
+	protected $config = null;
 
 	/**
 	 * Configuration constructor.
@@ -33,18 +34,11 @@ class Configuration
 	 */
 	public function __construct()
 	{
-		$this->data = new \stdClass;
+		$this->config = new Registry;
 
-		if (is_file(XPATH_CONFIGURATION_FILE)
-			&& file_exists(XPATH_CONFIGURATION_FILE)
-		)
+		if ($buffer = File::read(XPATH_CONFIGURATION_FILE))
 		{
-			$buffer = file_get_contents(XPATH_CONFIGURATION_FILE);
-
-			if ($buffer)
-			{
-				$this->data = json_decode($buffer);
-			}
+			$this->config->loadString($buffer);
 		}
 	}
 
@@ -76,12 +70,7 @@ class Configuration
 	 */
 	public function get($name, $default = null)
 	{
-		if (isset($this->data->{$name}))
-		{
-			$default = $this->data->{$name};
-		}
-
-		return $default;
+		return $this->config->get($name, $default);
 	}
 
 	/**
@@ -94,7 +83,7 @@ class Configuration
 	 */
 	public function set($name, $value)
 	{
-		$this->data->{$name} = $value;
+		$this->config->set($name, $value);
 	}
 
 	/**
@@ -105,8 +94,6 @@ class Configuration
 	 */
 	public function save()
 	{
-		$buffer = json_encode($this->data);
-
-		return File::write(XPATH_CONFIGURATION_FILE, $buffer);
+		return File::write(XPATH_CONFIGURATION_FILE, $this->config->toString());
 	}
 }
