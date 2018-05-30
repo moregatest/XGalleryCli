@@ -9,13 +9,13 @@
 
 namespace XGallery\Application\Flickr;
 
-use Joomla\Filesystem\File;
-use Joomla\Filesystem\Folder;
+defined('_XEXEC') or die;
+
 use XGallery\Application;
+use XGallery\Environment\Filesystem\Directory;
+use XGallery\Environment\Filesystem\File;
 use XGallery\Environment\Filesystem\Helper;
 use XGallery\Factory;
-
-defined('_XEXEC') or die;
 
 /**
  * @package     XGallery.Application
@@ -38,6 +38,7 @@ class Download extends Application\Flickr
 	}
 
 	/**
+	 *
 	 * @return boolean
 	 *
 	 * @since   2.1.0
@@ -51,13 +52,13 @@ class Download extends Application\Flickr
 		$db  = Factory::getDbo();
 		$pid = $this->input->get('pid');
 
-		$model = $this->getModel();
-
 		if ($pid)
 		{
 			try
 			{
 				$db->transactionStart();
+
+				$model = $this->getModel();
 
 				// Get photo from cache
 				$photo = \XGallery\Cache\Helper::getItem('flickr/photo/' . $pid);
@@ -87,7 +88,7 @@ class Download extends Application\Flickr
 				{
 					$toDir = XPATH_MEDIA . $photo->owner;
 
-					Folder::create($toDir);
+					Directory::create($toDir);
 
 					$fileName = basename($size->source);
 					$saveTo   = $toDir . '/' . $fileName;
@@ -95,7 +96,7 @@ class Download extends Application\Flickr
 					// Process download
 					$originalFileSize = Helper::downloadFile($size->source, $saveTo);
 
-					if (file_exists($saveTo))
+					if (File::exists($saveTo))
 					{
 						if ($originalFileSize === false || $originalFileSize != filesize($saveTo))
 						{

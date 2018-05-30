@@ -9,6 +9,8 @@
 
 namespace XGallery\Application;
 
+defined('_XEXEC') or die;
+
 use XGallery\Model;
 
 /**

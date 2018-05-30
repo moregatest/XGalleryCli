@@ -9,13 +9,12 @@
 
 namespace XGallery\Application\Flickr;
 
+defined('_XEXEC') or die;
+
 use XGallery\Application;
 use XGallery\Cache\Helper;
 use XGallery\Factory;
 use XGallery\System\Configuration;
-
-defined('_XEXEC') or die;
-
 
 /**
  * @package     XGallery.Application
@@ -25,7 +24,6 @@ defined('_XEXEC') or die;
  */
 class Photos extends Application\Flickr
 {
-
 	/**
 	 * @return boolean
 	 *
@@ -119,7 +117,7 @@ class Photos extends Application\Flickr
 
 		$this->logger->info('Photos: ' . count($photos));
 
-		$this->config->set('nsid', $nsid);
+		$this->set('nsid', $nsid);
 
 		// Insert photos into database
 		return $model->insertPhotos($photos);

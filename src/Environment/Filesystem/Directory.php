@@ -9,6 +9,8 @@
 
 namespace XGallery\Environment\Filesystem;
 
+use Joomla\Filesystem\Folder;
+
 defined('_XEXEC') or die;
 
 /**
@@ -17,7 +19,7 @@ defined('_XEXEC') or die;
  *
  * @since       2.0.0
  */
-class Directory
+class Directory extends Folder
 {
 
 	/**
@@ -66,5 +68,15 @@ class Directory
 		}
 
 		return $list;
+	}
+
+	/**
+	 * @param   string $dir Directory path
+	 *
+	 * @return boolean
+	 */
+	public static function exists($dir)
+	{
+		return is_dir($dir) && file_exists($dir);
 	}
 }
