@@ -249,27 +249,6 @@ class Flickr extends Model
 		return $this->insertRows($query);
 	}
 
-
-	/**
-	 * @param   string  $pid   Pid
-	 * @param   integer $limit Limit
-	 *
-	 * @return  mixed
-	 *
-	 * @since   2.0.0
-	 */
-	public function getPhoto($pid, $limit = 1)
-	{
-		$db = $this->getDbo();
-
-		$query = ' SELECT ' . $db->quoteName('urls') . ',' . $db->quoteName('owner')
-			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
-			. ' WHERE ' . $db->quoteName('id') . ' = ' . $db->quote($pid)
-			. ' LIMIT ' . $limit . ' FOR UPDATE ';
-
-		return $db->setQuery($query)->loadObject();
-	}
-
 	/**
 	 * @param   string  $nsid   Nsid
 	 * @param   integer $limit  Limit
@@ -292,6 +271,26 @@ class Flickr extends Model
 			. ' LIMIT ' . (int) $limit . ' OFFSET ' . $offset . ' FOR UPDATE;';
 
 		return $db->setQuery($query)->loadObjectList();
+	}
+
+	/**
+	 * @param   string  $pid   Pid
+	 * @param   integer $limit Limit
+	 *
+	 * @return  mixed
+	 *
+	 * @since   2.0.0
+	 */
+	public function getPhoto($pid, $limit = 1)
+	{
+		$db = $this->getDbo();
+
+		$query = ' SELECT ' . $db->quoteName('urls') . ',' . $db->quoteName('owner')
+			. ' FROM ' . $db->quoteName('#__xgallery_flickr_contact_photos')
+			. ' WHERE ' . $db->quoteName('id') . ' = ' . $db->quote($pid)
+			. ' LIMIT ' . $limit . ' FOR UPDATE ';
+
+		return $db->setQuery($query)->loadObject();
 	}
 
 	/**
@@ -321,8 +320,6 @@ class Flickr extends Model
 
 		$query->where($db->quoteName('id') . ' = ' . $db->quote($pid));
 
-		$return = $db->setQuery($query)->execute();
-
-		return $return;
+		return $db->setQuery($query)->execute();
 	}
 }
