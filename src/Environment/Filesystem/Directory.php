@@ -21,7 +21,6 @@ defined('_XEXEC') or die;
  */
 class Directory extends Folder
 {
-
 	/**
 	 * @param   string  $directory Directory path
 	 * @param   boolean $recursive Recursive

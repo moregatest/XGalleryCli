@@ -49,15 +49,14 @@ class Helper
 			)
 		);
 
+		if (!is_resource($ch))
+		{
+			return false;
+		}
+
 		try
 		{
-			if (!is_resource($ch))
-			{
-				return false;
-			}
-
 			$result   = curl_exec($ch);
-			$fileSize = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
 
 			if ($result === false)
 			{
@@ -66,6 +65,8 @@ class Helper
 
 				return false;
 			}
+
+			$fileSize = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
 
 			// The following lines write the contents to a file in the same directory (provided permissions etc)
 			$fp = fopen($saveTo, 'w');

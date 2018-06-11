@@ -14,7 +14,6 @@ defined('_XEXEC') or die;
 use XGallery\Application;
 use XGallery\Cache\Helper;
 use XGallery\Factory;
-use XGallery\System\Configuration;
 
 /**
  * @package     XGallery.Application
@@ -134,20 +133,18 @@ class Photos extends Application\Flickr
 	{
 		$this->logger->info(__CLASS__ . '.' . __FUNCTION__);
 
-		$model  = $this->getModel();
-		$config = Configuration::getInstance();
+		$model = $this->getModel();
 
 		// Only process if this user have any photos
 		try
 		{
 			// Get Flickr download limit. By default use maxConnection
-			$limit = $config->get('flickr_download_limit');
+			$limit = $this->get('flickr_download_limit');
 
 			if (!$limit)
 			{
 				$limit = (int) $model->getMaxConnection()->Value - 10;
-				$config->set('flickr_download_limit', $limit);
-				$config->save();
+				$this->set('flickr_download_limit', $limit);
 			}
 
 			// Get photo sizes of current contact

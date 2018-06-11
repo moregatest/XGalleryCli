@@ -30,34 +30,37 @@ class Configuration
 	/**
 	 * Configuration constructor.
 	 *
-	 * @since  2.0.0
+	 * @param   string $name Config file
+	 *
+	 * @since   2.0.0
 	 */
-	public function __construct()
+	public function __construct($name)
 	{
 		$this->config = new Registry;
 
-		if ($buffer = File::read(XPATH_CONFIGURATION_FILE))
+		if ($buffer = File::read(XPATH_ROOT . '/' . $name))
 		{
 			$this->config->loadString($buffer);
 		}
 	}
 
 	/**
+	 * @param   string $name Config file
 	 *
 	 * @return  static
-	 *
-	 * @since   2.0.0
 	 */
-	public static function getInstance()
+	public static function getInstance($name = 'config.json')
 	{
-		static $instance;
+		static $instances;
 
-		if (!isset($instance))
+		if (isset($instances[$name]))
 		{
-			$instance = new static;
+			return $instances[$name];
 		}
 
-		return $instance;
+		$instances[$name] = new static($name);
+
+		return $instances[$name];
 	}
 
 	/**

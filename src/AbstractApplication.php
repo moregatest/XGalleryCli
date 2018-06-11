@@ -10,6 +10,7 @@
 namespace XGallery;
 
 use Joomla\Registry\Registry;
+use XGallery\Environment\Filesystem\File;
 use XGallery\System\Configuration;
 
 defined('_XEXEC') or die;
@@ -48,6 +49,13 @@ abstract class AbstractApplication
 	{
 		$this->input  = Factory::getInput();
 		$this->config = $config instanceof Registry ? $config : new Registry;
+		$filePath     = XPATH_ROOT . '/' . md5(get_class($this));
+
+		if (File::exists($filePath))
+		{
+			$this->config->loadFile($filePath);
+		}
+
 		$this->logger = Factory::getLogger(get_class($this));
 	}
 
@@ -56,6 +64,13 @@ abstract class AbstractApplication
 	 */
 	public function __destruct()
 	{
+		if (Configuration::getInstance()->get('debug', false))
+		{
+			$buffer = $this->config->toString();
+
+			File::write(XPATH_ROOT . '/' . md5(get_class($this)) . '.json', $buffer);
+		}
+
 		$this->cleanup();
 	}
 
@@ -114,8 +129,7 @@ abstract class AbstractApplication
 		$this->set('memory.end', $end);
 		$this->set('execution.end', microtime(true));
 
-		Configuration::getInstance()->set(strtolower(get_class($this)) . '_executed', time());
-		Configuration::getInstance()->save();
+		$this->set(strtolower(get_class($this)) . '_executed', time());
 
 		return $this->doAfterExecute();
 	}
