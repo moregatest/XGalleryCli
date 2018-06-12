@@ -9,6 +9,8 @@
 
 namespace XGallery\Service;
 
+use XGallery\Service\Flickr\Traits\Urls;
+
 defined('_XEXEC') or die;
 
 /**
@@ -19,6 +21,8 @@ defined('_XEXEC') or die;
  */
 class Flickr extends \XGallery\Oauth\Service\Flickr
 {
+	use Urls;
+
 	/**
 	 * @param   array $contacts Contacts
 	 * @param   array $params   Params
@@ -141,29 +145,6 @@ class Flickr extends \XGallery\Oauth\Service\Flickr
 		return $this->execute(array(
 				'method'   => 'flickr.photos.getSizes',
 				'photo_id' => $pid
-			)
-		);
-	}
-
-	/**
-	 * @param   string $url Url
-	 *
-	 * @return  boolean|mixed
-	 *
-	 * @since   2.0.0
-	 *
-	 * @throws \Exception
-	 */
-	public function lookupUser($url)
-	{
-		if (empty($url))
-		{
-			return false;
-		}
-
-		return $this->execute(array(
-				'method' => 'flickr.urls.lookupUser',
-				'url'    => $url
 			)
 		);
 	}

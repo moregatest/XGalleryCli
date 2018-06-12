@@ -11,6 +11,8 @@ namespace XGallery\Application;
 
 defined('_XEXEC') or die;
 
+use Joomla\Registry\Registry;
+use XGallery\Factory;
 use XGallery\Model;
 
 /**
@@ -19,10 +21,29 @@ use XGallery\Model;
  * @subpackage   Cli.Flickr
  *
  * @since        2.0.0
- *
  */
 class Flickr extends Cli
 {
+	/**
+	 * @var  boolean|\XGallery\Service\Flickr
+	 */
+	protected $service;
+
+	/**
+	 * Flickr constructor.
+	 *
+	 * @param   Registry|null $config
+	 *
+	 * @throws  \Exception
+	 * @since   2.1.0
+	 */
+	public function __construct(Registry $config = null)
+	{
+		parent::__construct($config);
+
+		$this->service = Factory::getService('Flickr');
+	}
+
 	/**
 	 * @param   string $name Model name
 	 *

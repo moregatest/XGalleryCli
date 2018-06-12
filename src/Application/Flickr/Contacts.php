@@ -13,7 +13,6 @@ defined('_XEXEC') or die;
 
 use XGallery\Application;
 use XGallery\Environment\Helper;
-use XGallery\Factory;
 
 /**
  * @package     XGallery.Application
@@ -76,7 +75,7 @@ class Contacts extends Application\Flickr
 		}
 
 		// Get Flickr contacts
-		$contacts          = Factory::getService('Flickr')->getContactsList();
+		$contacts          = $this->service->getContactsList();
 		$totalContacts     = count($contacts);
 		$lastTotalContacts = $this->get('flickr_contacts_count');
 

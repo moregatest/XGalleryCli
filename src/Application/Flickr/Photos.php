@@ -76,7 +76,7 @@ class Photos extends Application\Flickr
 		$model->updateContact($nsid);
 
 		// Fetch photos
-		$photos = Factory::getService('Flickr')->getPhotosList($nsid);
+		$photos = $this->service->getPhotosList($nsid);
 
 		$this->log('Photos: ' . count($photos));
 
@@ -122,7 +122,7 @@ class Photos extends Application\Flickr
 			// Process download photos
 			foreach ($photos as $photo)
 			{
-				$sized = Factory::getService('Flickr')->getPhotoSizes($photo->id);
+				$sized = $this->service->getPhotoSizes($photo->id);
 
 				if (!$sized)
 				{
@@ -153,7 +153,7 @@ class Photos extends Application\Flickr
 		}
 		catch (\Exception $exception)
 		{
-			$this->logger->error($exception->getMessage());
+			$this->log($exception->getMessage(), null, 'error');
 
 			return false;
 		}
@@ -179,7 +179,7 @@ class Photos extends Application\Flickr
 		// Get nsid from URL
 		if ($url)
 		{
-			$nsid = Factory::getService('Flickr')->lookupUser($url);
+			$nsid = $this->service->lookupUser($url);
 
 			if ($nsid)
 			{
