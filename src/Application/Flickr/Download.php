@@ -47,7 +47,7 @@ class Download extends Application\Flickr
 	 */
 	protected function downloadFromNsid()
 	{
-		$this->logger->info(__FUNCTION__, $this->input->getArray());
+		$this->log(__FUNCTION__, $this->input->getArray());
 
 		$db  = Factory::getDbo();
 		$pid = $this->input->get('pid');
@@ -75,7 +75,7 @@ class Download extends Application\Flickr
 
 				if ($photo === null)
 				{
-					$this->logger->notice('Can not get photo to download from ID: ' . $pid);
+					$this->log('Can not get photo to download from ID: ' . $pid, null, 'notice');
 
 					return false;
 				}

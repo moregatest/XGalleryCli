@@ -100,11 +100,28 @@ abstract class AbstractApplication
 	 * @param   string $key     Key
 	 * @param   mixed  $default Value
 	 *
-	 * @return mixed
+	 * @return  mixed
 	 */
 	public function get($key, $default = null)
 	{
 		return $this->config->get($key, $default);
+	}
+
+	/**
+	 * @param   string $message
+	 * @param   array  $data
+	 * @param   string $type
+	 *
+	 * @return  mixed
+	 */
+	protected function log($message, $data = array(), $type = 'info')
+	{
+		if ($data)
+		{
+			return call_user_func_array(array($this->logger, $type), array($message, $data));
+		}
+
+		return call_user_func_array(array($this->logger, $type), array($message));
 	}
 
 	/**

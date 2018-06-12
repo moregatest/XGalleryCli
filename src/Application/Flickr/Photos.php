@@ -49,42 +49,6 @@ class Photos extends Application\Flickr
 	}
 
 	/**
-	 * @return  boolean|string
-	 *
-	 * @since   2.0.0
-	 *
-	 * @throws \Exception
-	 */
-	private function getNsid()
-	{
-		$this->logger->info(__CLASS__ . '.' . __FUNCTION__);
-
-		$model = $this->getModel();
-
-		// Custom args
-		$url  = $this->input->get('url', null, 'RAW');
-		$nsid = $this->input->get('nsid', null);
-
-		// Get nsid from URL
-		if ($url)
-		{
-			$nsid = Factory::getService('Flickr')->lookupUser($url);
-
-			if ($nsid)
-			{
-				$nsid = $nsid->user->id;
-			}
-		}
-
-		if ($nsid === null)
-		{
-			$nsid = $model->getContact();
-		}
-
-		return $nsid;
-	}
-
-	/**
 	 * Get photos from Nsid and insert into database
 	 *
 	 * @param   string $nsid Flickr Nsid
@@ -97,12 +61,12 @@ class Photos extends Application\Flickr
 	 */
 	protected function insertPhotosFromFlickr($nsid)
 	{
-		$this->logger->info(__CLASS__ . '.' . __FUNCTION__, func_get_args());
+		$this->log(__CLASS__ . '.' . __FUNCTION__, func_get_args());
 
 		// No nsid provided
 		if (!$nsid || empty($nsid))
 		{
-			$this->logger->warning('No nsid provided');
+			$this->log('No nsid provided', null, 'warning');
 
 			return false;
 		}
@@ -114,7 +78,7 @@ class Photos extends Application\Flickr
 		// Fetch photos
 		$photos = Factory::getService('Flickr')->getPhotosList($nsid);
 
-		$this->logger->info('Photos: ' . count($photos));
+		$this->log('Photos: ' . count($photos));
 
 		$this->set('nsid', $nsid);
 
@@ -131,7 +95,7 @@ class Photos extends Application\Flickr
 	 */
 	protected function downloadPhotos($nsid)
 	{
-		$this->logger->info(__CLASS__ . '.' . __FUNCTION__);
+		$this->log(__CLASS__ . '.' . __FUNCTION__, func_get_args());
 
 		$model = $this->getModel();
 
@@ -193,5 +157,41 @@ class Photos extends Application\Flickr
 
 			return false;
 		}
+	}
+
+	/**
+	 * @return  boolean|string
+	 *
+	 * @since   2.0.0
+	 *
+	 * @throws \Exception
+	 */
+	private function getNsid()
+	{
+		$this->log(__CLASS__ . '.' . __FUNCTION__);
+
+		$model = $this->getModel();
+
+		// Custom args
+		$url  = $this->input->get('url', null, 'RAW');
+		$nsid = $this->input->get('nsid', null);
+
+		// Get nsid from URL
+		if ($url)
+		{
+			$nsid = Factory::getService('Flickr')->lookupUser($url);
+
+			if ($nsid)
+			{
+				$nsid = $nsid->user->id;
+			}
+		}
+
+		if ($nsid === null)
+		{
+			$nsid = $model->getContact();
+		}
+
+		return $nsid;
 	}
 }
