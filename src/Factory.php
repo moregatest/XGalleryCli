@@ -23,7 +23,7 @@ defined('_XEXEC') or die;
  * Class Factory
  * @package XGallery
  *
- * @since   2.0.02
+ * @since   2.0.2
  */
 class Factory
 {
@@ -32,7 +32,7 @@ class Factory
 	 *
 	 * @return  boolean
 	 *
-	 * @since   2.0.02
+	 * @since   2.0.2
 	 */
 	public static function getApplication($name)
 	{
@@ -59,7 +59,7 @@ class Factory
 	/**
 	 * @return  Input
 	 *
-	 * @since   2.0.02
+	 * @since   2.0.2
 	 */
 	public static function getInput()
 	{
@@ -78,7 +78,7 @@ class Factory
 	/**
 	 * @return  \Joomla\Database\DatabaseDriver
 	 *
-	 * @since   2.0.02
+	 * @since   2.0.2
 	 */
 	public static function getDbo()
 	{
@@ -126,7 +126,7 @@ class Factory
 		}
 
 		$instances[$name] = new Logger('XGallery');
-		$instances[$name]->pushHandler(new StreamHandler(XPATH_LOG . 'log_' . $name . '_' . $level . '.log'));
+		$instances[$name]->pushHandler(new StreamHandler(XPATH_LOG . 'log_' . time() . '_' . $name . '_' . $level . '.log'));
 
 		return $instances[$name];
 	}
