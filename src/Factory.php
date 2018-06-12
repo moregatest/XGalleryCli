@@ -126,7 +126,7 @@ class Factory
 		}
 
 		$instances[$name] = new Logger('XGallery');
-		$instances[$name]->pushHandler(new StreamHandler(XPATH_LOG . 'log_' . time() . '_' . $name . '_' . $level . '.log'));
+		$instances[$name]->pushHandler(new StreamHandler(XPATH_LOG . time() . '_' . $name . '_' . $level . '.log'));
 
 		return $instances[$name];
 	}
