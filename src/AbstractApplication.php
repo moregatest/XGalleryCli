@@ -49,7 +49,7 @@ abstract class AbstractApplication
 	{
 		$this->input  = Factory::getInput();
 		$this->config = $config instanceof Registry ? $config : new Registry;
-		$filePath     = XPATH_ROOT . '/' . md5(get_class($this));
+		$filePath     = XPATH_CONFIGURATIONS_DIR . '/' . md5(get_class($this)) . '.json';
 
 		if (File::exists($filePath))
 		{
@@ -64,12 +64,8 @@ abstract class AbstractApplication
 	 */
 	public function __destruct()
 	{
-		if (Configuration::getInstance()->get('debug', false))
-		{
-			$buffer = $this->config->toString();
-
-			File::write(XPATH_ROOT . '/' . md5(get_class($this)) . '.json', $buffer);
-		}
+		$buffer = $this->config->toString();
+		File::write(XPATH_CONFIGURATIONS_DIR . '/' . md5(get_class($this)) . '.json', $buffer);
 
 		$this->cleanup();
 	}
@@ -116,8 +112,8 @@ abstract class AbstractApplication
 	public function execute()
 	{
 		$start = (float) memory_get_peak_usage(true);
-		$this->set('memory.start', $start);
-		$this->set('execution.start', microtime(true));
+		$this->set('memory_start', $start);
+		$this->set('execution_start', microtime(true));
 
 		// Primary execute
 		if (!$this->doExecute())
@@ -126,8 +122,8 @@ abstract class AbstractApplication
 		}
 
 		$end = (float) memory_get_peak_usage(true);
-		$this->set('memory.end', $end);
-		$this->set('execution.end', microtime(true));
+		$this->set('memory_end', $end);
+		$this->set('execution_end', microtime(true));
 
 		$this->set(strtolower(get_class($this)) . '_executed', time());
 
@@ -150,8 +146,8 @@ abstract class AbstractApplication
 	 */
 	protected function doAfterExecute()
 	{
-		$memoryUsage = (float) $this->config->get('memory.end') - (float) $this->config->get('memory.start');
-		$executeTime = (float) $this->config->get('execution.end') - (float) $this->config->get('execution.start');
+		$memoryUsage = (float) $this->get('memory_end') - (float) $this->get('memory_start');
+		$executeTime = (float) $this->get('execution_end') - (float) $this->get('execution_start');
 
 		$this->logger->info('Task execute completed');
 		$this->logger->debug('Memory usage: ' . $memoryUsage);

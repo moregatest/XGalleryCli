@@ -86,7 +86,7 @@ class Download extends Application\Flickr
 				// Only download photo
 				if ($size->media == 'photo')
 				{
-					$toDir = XPATH_MEDIA . $photo->owner;
+					$toDir = Factory::getConfiguration()->get('media_dir') . '/' . $photo->owner;
 
 					Directory::create($toDir);
 

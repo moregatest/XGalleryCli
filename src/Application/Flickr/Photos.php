@@ -24,6 +24,16 @@ use XGallery\Factory;
 class Photos extends Application\Flickr
 {
 	/**
+	 * @since   2.0.0
+	 */
+	public function __destruct()
+	{
+		$this->set('nsid', null);
+
+		parent::__destruct();
+	}
+
+	/**
 	 * @return boolean
 	 *
 	 * @since  2.1.0

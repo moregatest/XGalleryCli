@@ -159,4 +159,12 @@ class Factory
 
 		return $instances[$name];
 	}
+
+	/**
+	 * @return Configuration
+	 */
+	public static function getConfiguration()
+	{
+		return Configuration::getInstance();
+	}
 }
