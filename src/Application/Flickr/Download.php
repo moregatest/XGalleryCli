@@ -61,11 +61,12 @@ class Download extends Application\Flickr
 				$model = $this->getModel();
 
 				// Get photo from cache
-				$photo = \XGallery\Cache\Helper::getItem('flickr/photo/' . $pid);
+				$cache = Factory::getCache();
+				$photo = $cache->getItem('flickr/photo/' . $pid);
 
 				if ($photo->isMiss())
 				{
-					// If cache expired then we do query into datbase
+					// If cache expired then we do query into database
 					$photo = $model->getPhoto($pid);
 				}
 				else
@@ -86,7 +87,7 @@ class Download extends Application\Flickr
 				// Only download photo
 				if ($size->media == 'photo')
 				{
-					$toDir = Factory::getConfiguration()->get('media_dir') . '/' . $photo->owner;
+					$toDir = Factory::getConfiguration()->get('media_dir', __DIR__ . '/media') . '/' . $photo->owner;
 
 					Directory::create($toDir);
 

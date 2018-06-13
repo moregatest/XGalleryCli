@@ -14,6 +14,10 @@ use Joomla\Input\Input;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LogLevel;
+use Stash\Driver\Apc;
+use Stash\Driver\FileSystem;
+use Stash\Pool;
+use XGallery\Cache\Helper;
 use XGallery\Service\Flickr;
 use XGallery\System\Configuration;
 
@@ -166,5 +170,35 @@ class Factory
 	public static function getConfiguration()
 	{
 		return Configuration::getInstance();
+	}
+
+	/**
+	 * @param  string $driver
+	 *
+	 * @return Cache
+	 */
+	public static function getCache($driver = 'FileSystem')
+	{
+		static $caches;
+
+		if (isset($caches[$driver]))
+		{
+			return $caches[$driver];
+		}
+
+		switch ($driver)
+		{
+			default:
+			case 'FileSystem':
+				$cacheDriver = new FileSystem(array('path' => XPATH_CACHE));
+				break;
+			case 'APC':
+				$cacheDriver = new Apc(array('ttl' => 3600));
+				break;
+		}
+
+		$caches[$driver] = new Cache($cacheDriver);
+
+		return $caches[$driver];
 	}
 }

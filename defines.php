@@ -11,7 +11,6 @@ define('XPATH_CACHE', XPATH_ROOT . '/cache');
 define('XPATH_LOG', XPATH_ROOT . '/logs/');
 
 define('XPATH_CONFIGURATION_FILE', XPATH_ROOT . '/config.json');
-define('XPATH_CONFIGURATIONS_DIR', XPATH_ROOT . '/Configurations');
 
 // XGallery.Application
 define('XGALLERY_DEFAULT_APPLICATION', 'Flickr.Contacts');

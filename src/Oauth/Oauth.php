@@ -65,8 +65,10 @@ class Oauth extends \oauth_client_class
 	{
 		$this->logger->info(__FUNCTION__, $parameters);
 
-		$id   = md5($url . md5(serialize(func_get_args())));
-		$item = Helper::getItem($id);
+		$id = md5($url . md5(serialize(func_get_args())));
+
+		$cache = Factory::getCache();
+		$item  = $cache->getItem($id);
 
 		if (!$item->isMiss())
 		{
@@ -84,7 +86,7 @@ class Oauth extends \oauth_client_class
 		$this->logger->debug('Oauth executed time: ' . $executeTime, array($return));
 
 		$item->set($respond);
-		Helper::save($item);
+		$cache->saveWithExpires($item);
 
 		if (!$return)
 		{

@@ -10,8 +10,8 @@
 namespace XGallery;
 
 use Joomla\Registry\Registry;
+use Psr\Log\LogLevel;
 use XGallery\Environment\Filesystem\File;
-use XGallery\System\Configuration;
 
 defined('_XEXEC') or die;
 
@@ -49,14 +49,14 @@ abstract class AbstractApplication
 	{
 		$this->input  = Factory::getInput();
 		$this->config = $config instanceof Registry ? $config : new Registry;
-		$filePath     = XPATH_CONFIGURATIONS_DIR . '/' . md5(get_class($this)) . '.json';
+		$filePath     = XPATH_LOG . '/' . md5(get_class($this)) . '.json';
 
 		if (File::exists($filePath))
 		{
 			$this->config->loadFile($filePath);
 		}
 
-		$this->logger = Factory::getLogger(get_class($this));
+		$this->logger = Factory::getLogger(get_class($this), Factory::getConfiguration()->get('logger_level', LogLevel::NOTICE));
 	}
 
 	/**
@@ -64,9 +64,6 @@ abstract class AbstractApplication
 	 */
 	public function __destruct()
 	{
-		$buffer = $this->config->toString();
-		File::write(XPATH_CONFIGURATIONS_DIR . '/' . md5(get_class($this)) . '.json', $buffer);
-
 		$this->cleanup();
 	}
 
@@ -77,6 +74,9 @@ abstract class AbstractApplication
 	 */
 	protected function cleanup()
 	{
+		$buffer = $this->config->toString();
+		File::write(XPATH_LOG . '/' . md5(get_class($this)) . '.json', $buffer);
+
 		$this->input  = null;
 		$this->config = null;
 	}
@@ -128,9 +128,12 @@ abstract class AbstractApplication
 	 */
 	public function execute()
 	{
-		$start = (float) memory_get_peak_usage(true);
-		$this->set('memory_start', $start);
-		$this->set('execution_start', microtime(true));
+		if (Factory::getConfiguration()->get('debug', false))
+		{
+			$start = (float) memory_get_peak_usage(true);
+			$this->set('memory_start', $start);
+			$this->set('execution_start', microtime(true));
+		}
 
 		// Primary execute
 		if (!$this->doExecute())
@@ -138,9 +141,12 @@ abstract class AbstractApplication
 			return false;
 		}
 
-		$end = (float) memory_get_peak_usage(true);
-		$this->set('memory_end', $end);
-		$this->set('execution_end', microtime(true));
+		if (Factory::getConfiguration()->get('debug', false))
+		{
+			$end = (float) memory_get_peak_usage(true);
+			$this->set('memory_end', $end);
+			$this->set('execution_end', microtime(true));
+		}
 
 		$this->set(strtolower(get_class($this)) . '_executed', time());
 
