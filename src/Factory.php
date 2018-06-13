@@ -16,7 +16,6 @@ use Monolog\Logger;
 use Psr\Log\LogLevel;
 use Stash\Driver\Apc;
 use Stash\Driver\FileSystem;
-use Stash\Pool;
 use XGallery\Cache\Helper;
 use XGallery\Service\Flickr;
 use XGallery\System\Configuration;
