@@ -13,7 +13,6 @@ defined('_XEXEC') or die;
 
 use XGallery\Application;
 use XGallery\Environment\Helper;
-use XGallery\Factory;
 
 /**
  * @package     XGallery.Application
@@ -63,24 +62,24 @@ class Contacts extends Application\Flickr
 	 */
 	protected function insertContactsFromFlickr()
 	{
-		$this->logger->info(__FUNCTION__);
+		$this->log(__CLASS__ . '.' . __FUNCTION__);
 
 		$lastExecutedTime = (int) $this->get(strtolower(get_class($this)) . '_executed');
 
 		// No need update contact if cache is not expired
 		if ($lastExecutedTime && time() - $lastExecutedTime < $this->get('limit_flickr_contacts_execute_', 3600))
 		{
-			$this->logger->notice('Cache is not expired. No need update contacts');
+			$this->log('Cache is not expired. No need update contacts', null, 'notice');
 
 			return true;
 		}
 
 		// Get Flickr contacts
-		$contacts          = Factory::getService('Flickr')->getContactsList();
+		$contacts          = $this->service->getContactsList();
 		$totalContacts     = count($contacts);
 		$lastTotalContacts = $this->get('flickr_contacts_count');
 
-		$this->logger->info('Contacts: ' . $totalContacts);
+		$this->log('Contacts: ' . $totalContacts);
 
 		// No new contact then no need execute database update
 		if ($lastTotalContacts && $lastTotalContacts == $totalContacts)
@@ -92,7 +91,7 @@ class Contacts extends Application\Flickr
 
 		if (empty($contacts))
 		{
-			$this->logger->notice('Have no contacts');
+			$this->log('Have no contacts', null, 'notice');
 
 			return true;
 		}
