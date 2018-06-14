@@ -35,10 +35,9 @@ class Helper
 	{
 		Factory::getLogger()->info(__FUNCTION__, func_get_args());
 
-		$ch = curl_init();
+		$ch = curl_init($url);
 
 		curl_setopt_array($ch, array(
-				CURLOPT_URL            => $url,
 				CURLOPT_VERBOSE        => 1,
 				CURLOPT_RETURNTRANSFER => 1,
 				CURLOPT_AUTOREFERER    => false,

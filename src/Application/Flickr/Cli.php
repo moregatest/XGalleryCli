@@ -22,8 +22,20 @@ defined('_XEXEC') or die;
  */
 class Cli extends Flickr
 {
+	/**
+	 * @return boolean|void
+	 *
+	 * @since  2.1.0
+	 */
 	protected function doExecute()
 	{
-		var_dump($this->service->getGroup());
+		$data   = $this->input->getArray();
+		$method = $data['method'];
+		$method = explode('.', $method);
+
+		unset($data['application']);
+		unset($data['method']);
+
+		print_r(call_user_func_array(array($this->service->{$method[0]}, $method[1]), $data));
 	}
 }

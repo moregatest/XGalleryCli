@@ -75,7 +75,7 @@ class Contacts extends Application\Flickr
 		}
 
 		// Get Flickr contacts
-		$contacts          = $this->service->getContactsList();
+		$contacts          = $this->service->contacts->getContactsList();
 		$totalContacts     = count($contacts);
 		$lastTotalContacts = $this->get('flickr_contacts_count');
 

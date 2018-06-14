@@ -7,23 +7,24 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace XGallery\Service\Flickr\Traits;
+namespace XGallery\Service\Flickr;
 
 defined('_XEXEC') or die;
 
 /**
- * Trait Urls
- * @package    XGallery\Service\Flickr\Traits
- * @subpackage Urls
+ * Class Urls
+ * @package   XGallery\Service\Flickr
+ *
+ * @since     2.1.0
  */
-Trait Urls
+class Urls extends \XGallery\Oauth\Service\Flickr
 {
 	/**
 	 * @param   string $nsid Url
 	 *
 	 * @return  boolean|mixed
 	 *
-	 * @since   2.0.0
+	 * @since   2.1.0
 	 *
 	 * @throws  \Exception
 	 */
@@ -46,7 +47,7 @@ Trait Urls
 	 *
 	 * @return  boolean|mixed
 	 *
-	 * @since   2.0.0
+	 * @since   2.1.0
 	 *
 	 * @throws  \Exception
 	 */
