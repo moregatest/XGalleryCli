@@ -13,6 +13,12 @@ use Stash\Pool;
 
 defined('_XEXEC') or die;
 
+/**
+ * Class Cache
+ * @package XGallery
+ *
+ * @since   2.1.0
+ */
 class Cache extends Pool
 {
 	/**

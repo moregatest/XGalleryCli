@@ -9,7 +9,6 @@
 
 namespace XGallery\Oauth;
 
-use XGallery\Cache\Helper;
 use XGallery\Factory;
 
 defined('_XEXEC') or die;

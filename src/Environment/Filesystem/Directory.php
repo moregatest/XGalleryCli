@@ -22,14 +22,13 @@ defined('_XEXEC') or die;
 class Directory extends Folder
 {
 	/**
-	 * @param   string  $directory Directory path
-	 * @param   boolean $recursive Recursive
+	 * @param   string $directory Directory path
 	 *
 	 * @return  array
 	 *
 	 * @since   2.0.0
 	 */
-	public static function getDirectories($directory, $recursive = false)
+	public static function getDirectories($directory)
 	{
 		$list = array();
 		$dir  = new \DirectoryIterator($directory);
@@ -46,14 +45,13 @@ class Directory extends Folder
 	}
 
 	/**
-	 * @param   string  $directory Directory path
-	 * @param   boolean $recursive Recursive
+	 * @param   string $directory Directory path
 	 *
 	 * @return  array
 	 *
 	 * @since   2.0.0
 	 */
-	public static function getFiles($directory, $recursive = false)
+	public static function getFiles($directory)
 	{
 		$list = array();
 		$dir  = new \DirectoryIterator($directory);
@@ -72,7 +70,7 @@ class Directory extends Folder
 	/**
 	 * @param   string $dir Directory path
 	 *
-	 * @return boolean
+	 * @return  boolean
 	 */
 	public static function exists($dir)
 	{

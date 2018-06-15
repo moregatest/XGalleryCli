@@ -16,7 +16,7 @@ use Monolog\Logger;
 use Psr\Log\LogLevel;
 use Stash\Driver\Apc;
 use Stash\Driver\FileSystem;
-use XGallery\Cache\Helper;
+use Stash\Driver\Memcache;
 use XGallery\Service\Flickr;
 use XGallery\System\Configuration;
 
@@ -129,7 +129,7 @@ class Factory
 		}
 
 		$instances[$name] = new Logger('XGallery');
-		$instances[$name]->pushHandler(new StreamHandler(XPATH_LOG . time() . '_' . $name . '_' . $level . '.log'));
+		$instances[$name]->pushHandler(new StreamHandler(XPATH_LOG . date("Y-m-d", time()) . '/' . $name . '_' . $level . '.log'));
 
 		return $instances[$name];
 	}
@@ -172,9 +172,9 @@ class Factory
 	}
 
 	/**
-	 * @param  string $driver
+	 * @param   string $driver Driver
 	 *
-	 * @return Cache
+	 * @return  Cache
 	 */
 	public static function getCache($driver = 'FileSystem')
 	{
@@ -193,6 +193,9 @@ class Factory
 				break;
 			case 'APC':
 				$cacheDriver = new Apc(array('ttl' => 3600));
+				break;
+			case 'Memcache':
+				$cacheDriver = new Memcache(array('servers' => array('127.0.0.1', '11211')));
 				break;
 		}
 

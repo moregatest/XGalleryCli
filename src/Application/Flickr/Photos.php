@@ -12,6 +12,7 @@ namespace XGallery\Application\Flickr;
 defined('_XEXEC') or die;
 
 use XGallery\Application;
+use XGallery\Environment\Helper;
 use XGallery\Factory;
 
 /**
@@ -89,7 +90,6 @@ class Photos extends Application\Flickr
 		$photos = $this->service->people->getPhotosList($nsid);
 
 		$this->log('Photos: ' . count($photos));
-
 		$this->set('nsid', $nsid);
 
 		// Insert photos into database
@@ -150,14 +150,14 @@ class Photos extends Application\Flickr
 
 				$photo->urls  = $sized;
 				$photo->state = XGALLERY_FLICKR_PHOTO_STATE_SIZED;
-				$cache        = Factory::getCache();
+				$cache        = Factory::getCache('Memcache');
 				$item         = $cache->getItem('flickr/photo/' . $photo->id);
-				$item->set($photo);
 
 				// Save this photo with sized to cache then we can re-use without query
+				$item->set($photo);
 				$cache->saveWithExpires($item);
 
-				\XGallery\Environment\Helper::execService($args);
+				Helper::execService($args);
 			}
 
 			return true;
