@@ -150,7 +150,7 @@ class Photos extends Application\Flickr
 
 				$photo->urls  = $sized;
 				$photo->state = XGALLERY_FLICKR_PHOTO_STATE_SIZED;
-				$cache        = Factory::getCache('Memcache');
+				$cache        = Factory::getCache();
 				$item         = $cache->getItem('flickr/photo/' . $photo->id);
 
 				// Save this photo with sized to cache then we can re-use without query

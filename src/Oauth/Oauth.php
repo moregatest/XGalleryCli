@@ -39,8 +39,9 @@ class Oauth extends \oauth_client_class
 		$this->offline            = true;
 		$this->debug              = false;
 		$this->debug_http         = false;
+		$success                  = $this->Initialize();
 
-		if ($success = $this->Initialize())
+		if ($success)
 		{
 			$this->Finalize($success);
 		}

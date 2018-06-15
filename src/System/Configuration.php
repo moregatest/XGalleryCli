@@ -37,8 +37,9 @@ class Configuration
 	public function __construct($name)
 	{
 		$this->config = new Registry;
+		$buffer       = File::read(XPATH_ROOT . '/' . $name);
 
-		if ($buffer = File::read(XPATH_ROOT . '/' . $name))
+		if ($buffer)
 		{
 			$this->config->loadString($buffer);
 		}

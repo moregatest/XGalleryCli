@@ -57,7 +57,6 @@ class Contacts extends Application\Flickr
 	 * @return  boolean
 	 *
 	 * @since   2.0.0
-	 *
 	 * @throws  \Exception
 	 */
 	protected function insertContactsFromFlickr()

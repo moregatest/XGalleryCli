@@ -3,6 +3,8 @@
 // No direct access.
 defined('_XEXEC') or die;
 
+define('XGALLERY_NAMESPACE', 'XGallery');
+
 // Paths
 define('JPATH_ROOT', __DIR__);
 define('XPATH_ROOT', JPATH_ROOT);

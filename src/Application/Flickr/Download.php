@@ -61,7 +61,7 @@ class Download extends Application\Flickr
 				$model = $this->getModel();
 
 				// Get photo from cache
-				$cache = Factory::getCache('Memcache');
+				$cache = Factory::getCache();
 				$photo = $cache->getItem('flickr/photo/' . $pid);
 
 				if ($photo->isMiss())

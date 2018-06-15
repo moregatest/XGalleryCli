@@ -9,7 +9,9 @@
 
 namespace XGallery;
 
+use Joomla\Input\Input;
 use Joomla\Registry\Registry;
+use Monolog\Logger;
 use Psr\Log\LogLevel;
 use XGallery\Environment\Filesystem\File;
 
@@ -24,7 +26,7 @@ defined('_XEXEC') or die;
 abstract class AbstractApplication
 {
 	/**
-	 * @var \Joomla\Input\Input
+	 * @var Input
 	 */
 	protected $input;
 
@@ -34,7 +36,7 @@ abstract class AbstractApplication
 	protected $config = null;
 
 	/**
-	 * @var \Monolog\Logger|null
+	 * @var Logger|null
 	 */
 	protected $logger = null;
 
@@ -104,9 +106,9 @@ abstract class AbstractApplication
 	}
 
 	/**
-	 * @param   string $message
-	 * @param   array  $data
-	 * @param   string $type
+	 * @param   string $message Log message
+	 * @param   array  $data    Extend data
+	 * @param   string $type    Log type
 	 *
 	 * @return  mixed
 	 */
@@ -169,12 +171,15 @@ abstract class AbstractApplication
 	 */
 	protected function doAfterExecute()
 	{
-		$memoryUsage = (float) $this->get('memory_end') - (float) $this->get('memory_start');
-		$executeTime = (float) $this->get('execution_end') - (float) $this->get('execution_start');
+		if (Factory::getConfiguration()->get('debug', false))
+		{
+			$memoryUsage = (float) $this->get('memory_end') - (float) $this->get('memory_start');
+			$executeTime = (float) $this->get('execution_end') - (float) $this->get('execution_start');
 
-		$this->logger->info('Task execute completed');
-		$this->logger->debug('Memory usage: ' . $memoryUsage);
-		$this->logger->debug('Executed time: ' . $executeTime);
+			$this->logger->info('Task execute completed');
+			$this->logger->debug('Memory usage: ' . $memoryUsage);
+			$this->logger->debug('Executed time: ' . $executeTime);
+		}
 
 		return true;
 	}

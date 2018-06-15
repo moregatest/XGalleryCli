@@ -42,14 +42,14 @@ class Factory
 		static $instances;
 
 		$name      = str_replace('.', '\\', $name);
-		$className = '\\XGallery\\Application\\' . $name;
+		$className = '\\' . XGALLERY_NAMESPACE . '\\Application\\' . $name;
 
 		if (isset($instances[$className]))
 		{
 			return $instances[$name];
 		}
 
-		if (!class_exists($className) && !is_subclass_of($name, '\\XGallery\\Application'))
+		if (!class_exists($className) && !is_subclass_of($name, '\\' . XGALLERY_NAMESPACE . '\\Application'))
 		{
 			return false;
 		}
@@ -128,7 +128,7 @@ class Factory
 			return $instances[$name];
 		}
 
-		$instances[$name] = new Logger('XGallery');
+		$instances[$name] = new Logger(XGALLERY_NAMESPACE);
 		$instances[$name]->pushHandler(new StreamHandler(XPATH_LOG . date("Y-m-d", time()) . '/' . $name . '_' . $level . '.log'));
 
 		return $instances[$name];
@@ -146,7 +146,7 @@ class Factory
 		static $instances;
 
 		$name      = str_replace('.', '\\', $name);
-		$className = '\\XGallery\\Service\\' . $name;
+		$className = '\\' . XGALLERY_NAMESPACE . '\\Service\\' . $name;
 
 		if (isset($instances[$className]))
 		{
@@ -176,13 +176,18 @@ class Factory
 	 *
 	 * @return  Cache
 	 */
-	public static function getCache($driver = 'FileSystem')
+	public static function getCache($driver = null)
 	{
 		static $caches;
 
 		if (isset($caches[$driver]))
 		{
 			return $caches[$driver];
+		}
+
+		if ($driver === null)
+		{
+			$driver = self::getConfiguration()->get('cache_driver', 'FileSystem');
 		}
 
 		switch ($driver)

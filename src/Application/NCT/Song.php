@@ -59,7 +59,6 @@ class Song extends Cli
 			$saveTo = $toDir . '/' . $fileName;
 
 			Helper::downloadFile($downloadLink, $saveTo);
-
 		}
 	}
 }

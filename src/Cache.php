@@ -9,6 +9,7 @@
 
 namespace XGallery;
 
+use Stash\Interfaces\ItemInterface;
 use Stash\Pool;
 
 defined('_XEXEC') or die;
@@ -22,8 +23,8 @@ defined('_XEXEC') or die;
 class Cache extends Pool
 {
 	/**
-	 * @param   \Stash\Interfaces\ItemInterface $item     Item
-	 * @param   integer                         $interval Interval time
+	 * @param   ItemInterface $item     Item
+	 * @param   integer       $interval Interval time
 	 *
 	 * @return  boolean
 	 *

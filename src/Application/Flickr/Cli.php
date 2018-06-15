@@ -23,7 +23,7 @@ defined('_XEXEC') or die;
 class Cli extends Flickr
 {
 	/**
-	 * @return boolean|void
+	 * @return boolean
 	 *
 	 * @since  2.1.0
 	 */
@@ -37,5 +37,7 @@ class Cli extends Flickr
 		unset($data['method']);
 
 		print_r(call_user_func_array(array($this->service->{$method[0]}, $method[1]), $data));
+
+		return parent::doExecute();
 	}
 }
