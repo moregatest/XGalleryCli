@@ -138,4 +138,11 @@ class Nct
 
 		return (string) $dom->track->location;
 	}
+
+	public function builderSearchUrl($condition = array())
+	{
+		$baseUrl = 'https://www.nhaccuatui.com/tim-nang-cao';
+
+		return $baseUrl . '?' . http_build_query($condition);
+	}
 }

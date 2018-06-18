@@ -31,8 +31,15 @@ class Search extends Nct
 	 */
 	public function doExecute()
 	{
-		$filter = $this->input->get('filter');
-		$pages  = $this->service->getPages($filter);
+		$pages = $this->service->getPages(
+			$this->service->builderSearchUrl(
+				array(
+					'keyword' => $this->input->get('keyword'),
+					'singer'  => $this->input->get('singer'),
+					'type'    => $this->input->get('type'),
+				)
+			)
+		);
 
 		// Get a db connection.
 		$db = Factory::getDbo();

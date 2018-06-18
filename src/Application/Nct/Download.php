@@ -81,7 +81,10 @@ class Download extends Nct
 
 			$saveTo = $toDir . '/' . $fileName;
 
-			Helper::downloadFile($downloadLink, $saveTo);
+			if (!Helper::downloadFile($downloadLink, $saveTo))
+			{
+				return false;
+			}
 
 			$song->singer    = $songData['singer'];
 			$song->flash_url = $songData['flashlink'];
