@@ -22,7 +22,7 @@ defined('_XEXEC') or die;
 class Flickr extends \XGallery\Oauth\Service\Flickr
 {
 	/**
-	 * @param   string $name  Variable name
+	 * @param   string $name Variable name
 	 *
 	 * @return  boolean|mixed
 	 * @since   2.1.0

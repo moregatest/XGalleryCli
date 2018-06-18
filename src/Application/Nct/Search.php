@@ -10,7 +10,6 @@
 namespace XGallery\Application\Nct;
 
 use XGallery\Application\Nct;
-use XGallery\Environment\Helper;
 use XGallery\Factory;
 
 defined('_XEXEC') or die;

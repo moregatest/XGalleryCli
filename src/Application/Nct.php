@@ -10,12 +10,7 @@
 namespace XGallery\Application;
 
 use GuzzleHttp\Client;
-use Joomla\Filesystem\Folder;
 use Joomla\Registry\Registry;
-use Joomla\Uri\Uri;
-use Symfony\Component\DomCrawler\Crawler;
-use XGallery\Environment\Filesystem\Helper;
-use XGallery\Factory;
 
 
 /**

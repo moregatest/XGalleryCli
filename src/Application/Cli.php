@@ -1,6 +1,6 @@
 <?php
 /**
- * @package     XGallery.Cli
+ * @package     XGalleryCli
  * @subpackage  Application.Cli
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
@@ -50,7 +50,8 @@ class Cli extends AbstractApplication
 	public function install()
 	{
 		$config  = Configuration::getInstance();
-		$command = 'mysql --user=' . $config->get('user') . ' --password=' . $config->get('password') . ' ' . $config->get('database') . ' < ' . XPATH_ROOT . '/install.sql';
+		$command = 'mysql --user=' . $config->get('user') . ' --password=' . $config->get('password')
+			. ' ' . $config->get('database') . ' < ' . XPATH_ROOT . '/install.sql';
 
 		return Helper::exec($command, false);
 	}

@@ -1,9 +1,10 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: soulevilx
- * Date: 3/29/18
- * Time: 2:55 PM
+ * @package     XGallery.Cli
+ * @subpackage  Application.NCT
+ *
+ * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
 namespace XGallery\Application\Nct;

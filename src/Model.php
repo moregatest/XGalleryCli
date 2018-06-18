@@ -1,6 +1,6 @@
 <?php
 /**
- * @package     XGallery.Cli
+ * @package     XGalleryCli
  * @subpackage  Model
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
