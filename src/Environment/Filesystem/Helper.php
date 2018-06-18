@@ -55,7 +55,7 @@ class Helper
 
 		try
 		{
-			$result   = curl_exec($ch);
+			$result = curl_exec($ch);
 
 			if ($result === false)
 			{
