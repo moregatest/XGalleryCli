@@ -80,28 +80,9 @@ class Nct
 
 		foreach ($crawler->filter('ul.search_returns_list li.list_song div.item_content a.name_song') as $node)
 		{
-
 			$song['name'] = $node->nodeValue;
 			$song['href'] = $node->getAttribute('href');
 			$songs[]      = $song;
-
-			continue;
-			//$flashLink    = $this->getFlashLink();
-			//print_r (); exit();
-			$downloadLink = trim($this->service->getDownloadLink($flashLink));
-			$fileName     = explode('?', basename($downloadLink));
-			$fileName     = $fileName[0];
-
-
-			$toDir = Factory::getConfiguration()->get('media_dir', XPATH_ROOT . '/NCT');
-
-			if (!is_dir($toDir))
-			{
-				Folder::create($toDir);
-			}
-
-			$saveTo = $toDir . '/' . $fileName;
-			Helper::downloadFile($downloadLink, $saveTo);
 		}
 
 		return $songs;
