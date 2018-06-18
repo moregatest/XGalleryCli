@@ -148,9 +148,9 @@ abstract class AbstractApplication
 			$end = (float) memory_get_peak_usage(true);
 			$this->set('memory_end', $end);
 			$this->set('execution_end', microtime(true));
-		}
 
-		$this->set(strtolower(get_class($this)) . '_executed', time());
+			$this->set(strtolower(get_class($this)) . '_executed', time());
+		}
 
 		return $this->doAfterExecute();
 	}

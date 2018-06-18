@@ -24,9 +24,10 @@ class Nct
 	/**
 	 * @param   string $url Url
 	 *
-	 * @return boolean|string
+	 * @return  boolean|string
+	 * @throws  \GuzzleHttp\Exception\GuzzleException
 	 *
-	 * @since  2.0.0
+	 * @since   2.0.0
 	 */
 	public function getFlashLink($url)
 	{
@@ -45,9 +46,10 @@ class Nct
 	/**
 	 * @param   string $url Url
 	 *
-	 * @return string
+	 * @return  string
+	 * @throws  \GuzzleHttp\Exception\GuzzleException
 	 *
-	 * @since  2.0.0
+	 * @since   2.0.0
 	 */
 	public function getDownloadLink($url)
 	{

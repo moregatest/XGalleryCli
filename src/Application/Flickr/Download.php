@@ -30,7 +30,7 @@ class Download extends Application\Flickr
 	 *
 	 * @since   2.1.0
 	 *
-	 * @throws \Exception
+	 * @throws  \Exception
 	 */
 	protected function doExecute()
 	{
@@ -38,12 +38,9 @@ class Download extends Application\Flickr
 	}
 
 	/**
-	 *
 	 * @return boolean
 	 *
 	 * @since   2.1.0
-	 *
-	 * @throws \Exception
 	 */
 	protected function downloadFromNsid()
 	{
@@ -71,8 +68,8 @@ class Download extends Application\Flickr
 				}
 				else
 				{
-					$this->log('Found pid from cache', null, 'notice');
 					$photo = $photo->get();
+					$this->log('Found pid from cache: ', array($photo), 'notice');
 				}
 
 				if ($photo === null)

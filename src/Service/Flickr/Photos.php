@@ -9,6 +9,8 @@
 
 namespace XGallery\Service\Flickr;
 
+use XGallery\Oauth\Service\Flickr;
+
 defined('_XEXEC') or die;
 
 /**
@@ -17,7 +19,7 @@ defined('_XEXEC') or die;
  *
  * @since     2.1.0
  */
-class Photos extends \XGallery\Oauth\Service\Flickr
+class Photos extends Flickr
 {
 	/**
 	 * @param   string $pid Pid

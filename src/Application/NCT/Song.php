@@ -49,7 +49,7 @@ class Song extends Cli
 			$fileName     = explode('?', basename($downloadLink));
 			$fileName     = $fileName[0];
 
-			$toDir = Factory::getConfiguration()->get('media_dir', XPATH_ROOT . '/NCT');
+			$toDir = Factory::getConfiguration()->get('media_nct_dir', XPATH_ROOT . '/NCT');
 
 			if (!is_dir($toDir))
 			{

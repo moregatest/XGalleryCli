@@ -28,10 +28,9 @@ class Oauth extends \oauth_client_class
 
 	/**
 	 * Oauth constructor.
-	 *
-	 * @since       2.0.0
-	 *
 	 * @throws \Exception
+	 *
+	 * @since  2.0.0
 	 */
 	public function __construct()
 	{
@@ -59,7 +58,7 @@ class Oauth extends \oauth_client_class
 	 *
 	 * @since   2.0.0
 	 *
-	 * @throws \Exception
+	 * @throws  \Exception
 	 */
 	protected function execute($parameters, $url, $method = 'GET', $options = array())
 	{
@@ -77,21 +76,28 @@ class Oauth extends \oauth_client_class
 			return $item->get();
 		}
 
-		$startTime = microtime(true);
-		$return    = $this->CallAPI($url, $method, $parameters, $options, $respond);
+		if (Factory::getConfiguration('debug', false))
+		{
+			$startTime = microtime(true);
+		}
 
-		$endTime     = microtime(true);
-		$executeTime = $endTime - $startTime;
-
-		$this->logger->debug('Oauth executed time: ' . $executeTime, array($return));
-
-		$item->set($respond);
-		$cache->saveWithExpires($item);
+		$return = $this->CallAPI($url, $method, $parameters, $options, $respond);
 
 		if (!$return)
 		{
 			return false;
 		}
+
+		if (Factory::getConfiguration('debug', false))
+		{
+			$endTime     = microtime(true);
+			$executeTime = $endTime - $startTime;
+
+			$this->logger->debug('Oauth executed time: ' . $executeTime, array($return));
+		}
+
+		$item->set($respond);
+		$cache->saveWithExpires($item);
 
 		return $respond;
 	}

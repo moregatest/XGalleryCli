@@ -22,7 +22,7 @@ defined('_XEXEC') or die;
 class Flickr extends \XGallery\Oauth\Service\Flickr
 {
 	/**
-	 * @param   string $name  Variable name
+	 * @param   string $name Variable name
 	 *
 	 * @return  boolean|mixed
 	 * @since   2.1.0
@@ -33,7 +33,7 @@ class Flickr extends \XGallery\Oauth\Service\Flickr
 
 		if (File::exists(__DIR__ . '/Flickr/' . $name . '.php'))
 		{
-			return call_user_func('XGallery\\Service\\Flickr\\' . $name . '::getInstance');
+			return call_user_func(XGALLERY_NAMESPACE . '\\Service\\Flickr\\' . $name . '::getInstance');
 		}
 
 		return false;

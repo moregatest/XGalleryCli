@@ -11,8 +11,8 @@ namespace XGallery\Application;
 
 use Joomla\Registry\Registry;
 use XGallery\AbstractApplication;
-use XGallery\Environment\Helper;
-use XGallery\System\Configuration;
+use XGallery\Environment;
+use XGallery\Factory;
 
 defined('_XEXEC') or die;
 
@@ -49,10 +49,11 @@ class Cli extends AbstractApplication
 	 */
 	public function install()
 	{
-		$config  = Configuration::getInstance();
-		$command = 'mysql --user=' . $config->get('user') . ' --password=' . $config->get('password') . ' ' . $config->get('database') . ' < ' . XPATH_ROOT . '/install.sql';
+		$config  = Factory::getConfiguration();
+		$command = 'mysql --user=' . $config->get('user') . ' --password=' . $config->get('password') . ' ' . $config->get('database')
+			. ' < ' . XPATH_ROOT . '/install.sql';
 
-		return Helper::exec($command, false);
+		return Environment::exec($command, false);
 	}
 
 	/**

@@ -9,6 +9,8 @@
 
 namespace XGallery\Service\Flickr;
 
+use XGallery\Oauth\Service\Flickr;
+
 defined('_XEXEC') or die;
 
 /**
@@ -17,7 +19,7 @@ defined('_XEXEC') or die;
  *
  * @since     2.1.0
  */
-class Contacts extends \XGallery\Oauth\Service\Flickr
+class Contacts extends Flickr
 {
 	/**
 	 * @param   array $contacts Contacts

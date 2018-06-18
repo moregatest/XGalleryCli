@@ -12,7 +12,7 @@ namespace XGallery\Application\Flickr;
 defined('_XEXEC') or die;
 
 use XGallery\Application;
-use XGallery\Environment\Helper;
+use XGallery\Environment;
 use XGallery\Factory;
 
 /**
@@ -121,6 +121,8 @@ class Photos extends Application\Flickr
 				$this->set('flickr_download_limit', $limit);
 			}
 
+			$this->log('Download limit: ' . $limit);
+
 			// Get photo sizes of current contact
 			$photos = $model->getPhotos($nsid, $limit, 0);
 
@@ -157,7 +159,9 @@ class Photos extends Application\Flickr
 				$item->set($photo);
 				$cache->saveWithExpires($item);
 
-				Helper::execService($args);
+				Environment::execService($args);
+
+				return true;
 			}
 
 			return true;
