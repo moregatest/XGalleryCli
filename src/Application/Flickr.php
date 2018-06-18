@@ -32,7 +32,7 @@ class Flickr extends Cli
 	/**
 	 * Flickr constructor.
 	 *
-	 * @param   Registry|null $config
+	 * @param   Registry|null $config Configuration
 	 *
 	 * @throws  \Exception
 	 * @since   2.1.0

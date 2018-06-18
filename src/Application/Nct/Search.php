@@ -7,9 +7,11 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace XGallery\Application\NCT;
+namespace XGallery\Application\Nct;
 
 use XGallery\Application\Nct;
+use XGallery\Environment\Helper;
+use XGallery\Factory;
 
 defined('_XEXEC') or die;
 
@@ -30,11 +32,29 @@ class Search extends Nct
 	public function doExecute()
 	{
 		$filter = $this->input->get('filter');
-		$pages  = $this->getPages($filter);
+		$pages  = $this->service->getPages($filter);
+
+		// Get a db connection.
+		$db = Factory::getDbo();
 
 		for ($page = 1; $page <= $pages; $page++)
 		{
-			$this->getSongs('https://www.nhaccuatui.com/tim-nang-cao?' . $filter . '&page=' . $page);
+			$songs = $this->service->getSongs($page);
+
+			foreach ($songs as $song)
+			{
+				$data            = new \stdClass;
+				$data->song_name = $song['name'];
+				$data->play_url  = $song['href'];
+
+				try
+				{
+					$db->insertObject('#__nct_songs', $data);
+				}
+				catch (\Exception $exception)
+				{
+				}
+			}
 		}
 
 		return parent::doExecute();
