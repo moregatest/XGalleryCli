@@ -10,6 +10,7 @@
 namespace XGallery\Application\Nct;
 
 use XGallery\Application\Nct;
+use XGallery\Environment;
 use XGallery\Factory;
 
 defined('_XEXEC') or die;
@@ -30,22 +31,22 @@ class Search extends Nct
 	 */
 	public function doExecute()
 	{
-		$pages = $this->service->getPages(
-			$this->service->builderSearchUrl(
-				array(
-					'keyword' => $this->input->get('keyword'),
-					'singer'  => $this->input->get('singer'),
-					'type'    => $this->input->get('type'),
-				)
+		$url = $this->service->builderSearchUrl(
+			array(
+				'title' => $this->input->get('title'),
+				'singer'  => $this->input->get('singer'),
+				'type'    => $this->input->get('type'),
 			)
 		);
+
+		$pages = $this->service->getPages($url);
 
 		// Get a db connection.
 		$db = Factory::getDbo();
 
 		for ($page = 1; $page <= $pages; $page++)
 		{
-			$songs = $this->service->getSongs($page);
+			$songs = $this->service->getSongs($url . '&page=' . $page);
 
 			foreach ($songs as $song)
 			{
@@ -55,7 +56,13 @@ class Search extends Nct
 
 				try
 				{
-					$db->insertObject('#__nct_songs', $data);
+					$db->insertObject('#__nct_songs', $data, 'id');
+
+					$args                = $this->input->getArray();
+					$args['application'] = 'Nct.Download';
+					$args['id']          = $data->id;
+
+					Environment::execService();
 				}
 				catch (\Exception $exception)
 				{

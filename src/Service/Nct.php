@@ -64,11 +64,11 @@ class Nct
 	 *
 	 * @since   2.1.0
 	 */
-	public function getSongs($page)
+	public function getSongs($url)
 	{
 		$songs = array();
 
-		$respond = $this->client->request('GET', 'https://www.nhaccuatui.com/tim-nang-cao?page=' . $page);
+		$respond = $this->client->request('GET', $url);
 		$html    = $respond->getBody();
 
 		if (!$html)

@@ -25,10 +25,10 @@ defined('_XEXEC') or die;
 class Download extends Nct
 {
 	/**
-	 * @return boolean|void
+	 * @return boolean
+	 * @throws \GuzzleHttp\Exception\GuzzleException
 	 *
 	 * @since  2.0.0
-	 * @throws \Exception
 	 */
 	public function execute()
 	{
@@ -42,8 +42,10 @@ class Download extends Nct
 		{
 			$query->where($db->quoteName('id') . ' = ' . (int) $id);
 		}
-
-		$query->where($db->quoteName('state') . ' = 0');
+		else
+		{
+			$query->where($db->quoteName('state') . ' = 0');
+		}
 
 		$songs = $db->setQuery($query)->loadObjectList();
 
@@ -51,13 +53,15 @@ class Download extends Nct
 		{
 			$this->download($song);
 		}
+
+		return true;
 	}
 
 	/**
 	 * @param   object $song Song object
 	 *
 	 * @return  boolean
-	 * @throws  \Exception
+	 * @throws  \GuzzleHttp\Exception\GuzzleException
 	 *
 	 * @since   2.1.0
 	 */
@@ -73,7 +77,7 @@ class Download extends Nct
 			$fileName = explode('?', basename($downloadLink));
 			$fileName = $fileName[0];
 
-			$toDir = Factory::getConfiguration()->get('media_dir', XPATH_ROOT . '/NCT/' . $songData['singer']);
+			$toDir = Factory::getConfiguration()->get('nct_media_dir', XPATH_ROOT . '/NCT/' . $songData['singer']);
 
 			if (!is_dir($toDir))
 			{
