@@ -1,3 +1,5 @@
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/jooservices/XGalleryCli/badges/quality-score.png?b=develop)](https://scrutinizer-ci.com/g/jooservices/XGalleryCli/?branch=develop)
+[![Build Status](https://scrutinizer-ci.com/g/jooservices/XGalleryCli/badges/build.png?b=develop)](https://scrutinizer-ci.com/g/jooservices/XGalleryCli/build-status/develop)
 
 **XGallery Cli**
 A standard alone application based on Joomla! Framework to fetch images from third party
