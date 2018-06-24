@@ -46,7 +46,6 @@ class Download extends Application\Flickr
 	{
 		$this->log(__FUNCTION__, $this->input->getArray());
 
-		$db  = Factory::getDbo();
 		$pid = $this->input->get('pid');
 
 		if (!$pid)
@@ -56,6 +55,7 @@ class Download extends Application\Flickr
 
 		try
 		{
+			$db = Factory::getDbo();
 			$db->transactionStart();
 
 			$photo = $this->getPhoto($pid);
@@ -68,35 +68,12 @@ class Download extends Application\Flickr
 			$urls = json_decode($photo->urls);
 			$size = end($urls->sizes->size);
 
-			// Only download photo
-			if ($size->media == 'photo')
+			switch ($size->media)
 			{
-				$toDir = Factory::getConfiguration()->get('media_dir', XPATH_ROOT . '/media') . '/' . $photo->owner;
-
-				Directory::create($toDir);
-
-				$saveTo = $toDir . '/' . basename($size->source);
-
-				// Process download
-				$originalFileSize = Helper::downloadFile($size->source, $saveTo);
-
-				if (File::exists($saveTo))
-				{
-					if ($originalFileSize === false || $originalFileSize != filesize($saveTo))
-					{
-						File::delete($saveTo);
-
-						throw new \Exception('File is not validated: ' . $saveTo);
-					}
-					else
-					{
-						$this->getModel()->updatePhoto($pid, array('state' => XGALLERY_FLICKR_PHOTO_STATE_DOWNLOADED));
-					}
-				}
-				else
-				{
-					throw new \Exception('File download failed: ' . $saveTo);
-				}
+				default:
+				case 'photo':
+					$this->downloadPhoto($photo, $size, $pid);
+					break;
 			}
 
 			$db->transactionCommit();
@@ -112,6 +89,42 @@ class Download extends Application\Flickr
 		}
 
 		return true;
+	}
+
+	/**
+	 * @param   object  $photo Photo object
+	 * @param   object  $size  Size object
+	 * @param   integer $pid   Pid
+	 *
+	 * @return  boolean
+	 * @throws  \Exception
+	 *
+	 * @since   2.1.0
+	 */
+	private function downloadPhoto($photo, $size, $pid)
+	{
+		$toDir = Factory::getConfiguration()->get('media_dir', XPATH_ROOT . '/media') . '/' . $photo->owner;
+
+		Directory::create($toDir);
+
+		$saveTo = $toDir . '/' . basename($size->source);
+
+		// Process download
+		$originalFileSize = Helper::downloadFile($size->source, $saveTo);
+
+		if (!File::exists($saveTo))
+		{
+			throw new \Exception('File download failed: ' . $saveTo);
+		}
+
+		if ($originalFileSize === false || $originalFileSize != filesize($saveTo))
+		{
+			File::delete($saveTo);
+
+			throw new \Exception('File is not validated: ' . $saveTo);
+		}
+
+		return $this->getModel()->updatePhoto($pid, array('state' => XGALLERY_FLICKR_PHOTO_STATE_DOWNLOADED));
 	}
 
 	/**
