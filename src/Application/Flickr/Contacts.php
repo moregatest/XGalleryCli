@@ -1,7 +1,7 @@
 <?php
 /**
- * @package     XGallery.Cli
- * @subpackage  Application.Flickr
+ * @package     XGalleryCli.Application
+ * @subpackage  Flickr.Contacts
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
@@ -12,9 +12,7 @@ namespace XGallery\Application\Flickr;
 defined('_XEXEC') or die;
 
 use XGallery\Application;
-use XGallery\Environment\Helper;
-use XGallery\Factory;
-use XGallery\System\Configuration;
+use XGallery\Environment;
 
 /**
  * @package     XGallery.Application
@@ -48,7 +46,7 @@ class Contacts extends Application\Flickr
 		$args                = $this->input->getArray();
 		$args['application'] = 'Flickr.Photos';
 
-		Helper::execService($args);
+		Environment::execService($args);
 
 		return true;
 	}
@@ -59,31 +57,28 @@ class Contacts extends Application\Flickr
 	 * @return  boolean
 	 *
 	 * @since   2.0.0
-	 *
 	 * @throws  \Exception
 	 */
 	protected function insertContactsFromFlickr()
 	{
-		$this->logger->info(__FUNCTION__);
+		$this->log(__CLASS__ . '.' . __FUNCTION__);
 
-		$config = Configuration::getInstance();
-
-		$lastExecutedTime = (int) $config->get(strtolower(get_class($this)) . '_executed');
+		$lastExecutedTime = (int) $this->get(strtolower(get_class($this)) . '_executed');
 
 		// No need update contact if cache is not expired
-		if ($lastExecutedTime && time() - $lastExecutedTime < $config->get('limit_flickr_contacts_execute_', 3600))
+		if ($lastExecutedTime && time() - $lastExecutedTime < $this->get('limit_flickr_contacts_executed', 3600))
 		{
-			$this->logger->notice('Cache is not expired. No need update contacts');
+			$this->log('Cache is not expired. No need update contacts', null, 'notice');
 
 			return true;
 		}
 
 		// Get Flickr contacts
-		$contacts          = Factory::getService('Flickr')->getContactsList();
+		$contacts          = $this->service->contacts->getContactsList();
 		$totalContacts     = count($contacts);
-		$lastTotalContacts = $config->get('flickr_contacts_count');
+		$lastTotalContacts = $this->get('flickr_contacts_count');
 
-		$this->logger->info('Contacts: ' . $totalContacts);
+		$this->log('Contacts: ' . $totalContacts);
 
 		// No new contact then no need execute database update
 		if ($lastTotalContacts && $lastTotalContacts == $totalContacts)
@@ -95,7 +90,7 @@ class Contacts extends Application\Flickr
 
 		if (empty($contacts))
 		{
-			$this->logger->notice('Have no contacts');
+			$this->log('Have no contacts', null, 'notice');
 
 			return true;
 		}
@@ -106,8 +101,8 @@ class Contacts extends Application\Flickr
 		}
 
 		// Update total contacts count
-		$config->set('flickr_contacts_count', $totalContacts);
+		$this->set('flickr_contacts_count', $totalContacts);
 
-		return $config->save();
+		return true;
 	}
 }

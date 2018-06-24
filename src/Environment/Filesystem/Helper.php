@@ -9,6 +9,7 @@
 
 namespace XGallery\Environment\Filesystem;
 
+use XGallery\Environment;
 use XGallery\Factory;
 
 defined('_XEXEC') or die;
@@ -29,18 +30,18 @@ class Helper
 	 *
 	 * @since   2.0.0
 	 *
-	 * @throws \Exception
+	 * @throws  \Exception
 	 */
 	public static function downloadFile($url, $saveTo)
 	{
 		Factory::getLogger()->info(__FUNCTION__, func_get_args());
 
-		$ch = curl_init();
+		$ch = curl_init($url);
 
 		curl_setopt_array($ch, array(
-				CURLOPT_URL            => $url,
 				CURLOPT_VERBOSE        => 1,
 				CURLOPT_RETURNTRANSFER => 1,
+				CURLOPT_FOLLOWLOCATION => 1,
 				CURLOPT_AUTOREFERER    => false,
 				CURLOPT_ENCODING       => 'gzip,deflate',
 				CURLOPT_HEADER         => 0,
@@ -49,17 +50,31 @@ class Helper
 			)
 		);
 
+		curl_setopt($ch, CURLOPT_COOKIESESSION, true);
+		curl_setopt($ch, CURLOPT_REFERER, true);
+		curl_setopt($ch, CURLOPT_COOKIEJAR, true);
+		curl_setopt($ch, CURLOPT_COOKIEFILE, true);
+
+		if (!is_resource($ch))
+		{
+			return false;
+		}
+
 		try
 		{
-			if (!is_resource($ch))
+			$result = curl_exec($ch);
+
+			if ($result === false)
 			{
+				Factory::getLogger()->error('Download failed', array('url' => $url));
+				curl_close($ch);
+
 				return false;
 			}
 
-			$result   = curl_exec($ch);
 			$fileSize = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
 
-			if ($result === false)
+			if ($fileSize <= 0)
 			{
 				Factory::getLogger()->error('Download failed', array('url' => $url));
 				curl_close($ch);
@@ -84,5 +99,21 @@ class Helper
 		}
 
 		return false;
+	}
+
+	/**
+	 * @param   string $from Download from
+	 * @param   string $to   Save to
+	 *
+	 * @throws  \Exception
+	 * @return  boolean
+	 *
+	 * @since  2.1.0
+	 */
+	public static function wget($from, $to)
+	{
+		$command = 'wget ' . $from . ' -O ' . $to;
+
+		return Environment::exec($command, false);
 	}
 }

@@ -1,7 +1,7 @@
 <?php
 /**
- * @package     XGallery.Cli
- * @subpackage  Application.Flickr
+ * @package     XGalleryCli.Application
+ * @subpackage  Flickr.Photos
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
@@ -12,9 +12,8 @@ namespace XGallery\Application\Flickr;
 defined('_XEXEC') or die;
 
 use XGallery\Application;
-use XGallery\Cache\Helper;
+use XGallery\Environment;
 use XGallery\Factory;
-use XGallery\System\Configuration;
 
 /**
  * @package     XGallery.Application
@@ -46,43 +45,7 @@ class Photos extends Application\Flickr
 		parent::doAfterExecute();
 
 		// Download photos from this nsid
-		return $this->downloadPhotos($this->get('nsid'));
-	}
-
-	/**
-	 * @return  boolean|string
-	 *
-	 * @since   2.0.0
-	 *
-	 * @throws \Exception
-	 */
-	private function getNsid()
-	{
-		$this->logger->info(__CLASS__ . '.' . __FUNCTION__);
-
-		$model = $this->getModel();
-
-		// Custom args
-		$url  = $this->input->get('url', null, 'RAW');
-		$nsid = $this->input->get('nsid', null);
-
-		// Get nsid from URL
-		if ($url)
-		{
-			$nsid = Factory::getService('Flickr')->lookupUser($url);
-
-			if ($nsid)
-			{
-				$nsid = $nsid->user->id;
-			}
-		}
-
-		if ($nsid === null)
-		{
-			$nsid = $model->getContact();
-		}
-
-		return $nsid;
+		return $this->downloadPhotos($this->input->get('nsid'));
 	}
 
 	/**
@@ -98,12 +61,12 @@ class Photos extends Application\Flickr
 	 */
 	protected function insertPhotosFromFlickr($nsid)
 	{
-		$this->logger->info(__CLASS__ . '.' . __FUNCTION__, func_get_args());
+		$this->log(__CLASS__ . '.' . __FUNCTION__, func_get_args());
 
 		// No nsid provided
 		if (!$nsid || empty($nsid))
 		{
-			$this->logger->warning('No nsid provided');
+			$this->log('No nsid provided', null, 'warning');
 
 			return false;
 		}
@@ -113,11 +76,9 @@ class Photos extends Application\Flickr
 		$model->updateContact($nsid);
 
 		// Fetch photos
-		$photos = Factory::getService('Flickr')->getPhotosList($nsid);
+		$photos = $this->service->people->getPhotosList($nsid);
 
-		$this->logger->info('Photos: ' . count($photos));
-
-		$this->set('nsid', $nsid);
+		$this->log('Photos: ' . count($photos));
 
 		// Insert photos into database
 		return $model->insertPhotos($photos);
@@ -132,23 +93,23 @@ class Photos extends Application\Flickr
 	 */
 	protected function downloadPhotos($nsid)
 	{
-		$this->logger->info(__CLASS__ . '.' . __FUNCTION__);
+		$this->log(__CLASS__ . '.' . __FUNCTION__, func_get_args());
 
-		$model  = $this->getModel();
-		$config = Configuration::getInstance();
+		$model = $this->getModel();
 
 		// Only process if this user have any photos
 		try
 		{
 			// Get Flickr download limit. By default use maxConnection
-			$limit = $config->get('flickr_download_limit');
+			$limit = $this->get('flickr_download_limit');
 
 			if (!$limit)
 			{
 				$limit = (int) $model->getMaxConnection()->Value - 10;
-				$config->set('flickr_download_limit', $limit);
-				$config->save();
+				$this->set('flickr_download_limit', $limit);
 			}
+
+			$this->log('Download limit: ' . $limit);
 
 			// Get photo sizes of current contact
 			$photos = $model->getPhotos($nsid, $limit, 0);
@@ -161,7 +122,7 @@ class Photos extends Application\Flickr
 			// Process download photos
 			foreach ($photos as $photo)
 			{
-				$sized = Factory::getService('Flickr')->getPhotoSizes($photo->id);
+				$sized = $this->service->photos->getPhotoSizes($photo->id);
 
 				if (!$sized)
 				{
@@ -179,22 +140,63 @@ class Photos extends Application\Flickr
 
 				$photo->urls  = $sized;
 				$photo->state = XGALLERY_FLICKR_PHOTO_STATE_SIZED;
-				$item         = Helper::getItem('flickr/photo/' . $photo->id);
-				$item->set($photo);
+				$cache        = Factory::getCache();
+				$item         = $cache->getItem('flickr/photo/' . $photo->id);
 
 				// Save this photo with sized to cache then we can re-use without query
-				Helper::save($item);
+				$item->set($photo);
+				$cache->saveWithExpires($item);
 
-				\XGallery\Environment\Helper::execService($args);
+				Environment::execService($args);
+
+				return true;
 			}
 
 			return true;
 		}
 		catch (\Exception $exception)
 		{
-			$this->logger->error($exception->getMessage());
+			$this->log($exception->getMessage(), null, 'error');
 
 			return false;
 		}
+	}
+
+	/**
+	 * @return  boolean|string
+	 *
+	 * @since   2.0.0
+	 *
+	 * @throws \Exception
+	 */
+	private function getNsid()
+	{
+		$this->log(__CLASS__ . '.' . __FUNCTION__);
+
+		$model = $this->getModel();
+
+		// Custom args
+		$url  = $this->input->get('url', null, 'RAW');
+		$nsid = $this->input->get('nsid', null);
+
+		// Get nsid from URL
+		if ($url)
+		{
+			$nsid = $this->service->urls->lookupUser($url);
+
+			if ($nsid)
+			{
+				$nsid = $nsid->user->id;
+			}
+		}
+
+		if ($nsid === null)
+		{
+			$nsid = $model->getContact();
+		}
+
+		$this->input->set('nsid', $nsid);
+
+		return $nsid;
 	}
 }

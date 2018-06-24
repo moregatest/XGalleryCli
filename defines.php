@@ -3,13 +3,15 @@
 // No direct access.
 defined('_XEXEC') or die;
 
+define('XGALLERY_NAMESPACE', 'XGallery');
+
 // Paths
 define('JPATH_ROOT', __DIR__);
 define('XPATH_ROOT', JPATH_ROOT);
 define('XPATH_3RD', XPATH_ROOT . '/3rd');
 define('XPATH_CACHE', XPATH_ROOT . '/cache');
 define('XPATH_LOG', XPATH_ROOT . '/logs/');
-define('XPATH_MEDIA', XPATH_ROOT . '/media/');
+
 define('XPATH_CONFIGURATION_FILE', XPATH_ROOT . '/config.json');
 
 // XGallery.Application

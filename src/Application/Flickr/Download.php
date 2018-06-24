@@ -1,7 +1,7 @@
 <?php
 /**
- * @package     XGallery.Cli
- * @subpackage  Application.Flickr
+ * @package     XGalleryCli.Application
+ * @subpackage  Flickr.Download
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
@@ -30,7 +30,7 @@ class Download extends Application\Flickr
 	 *
 	 * @since   2.1.0
 	 *
-	 * @throws \Exception
+	 * @throws  \Exception
 	 */
 	protected function doExecute()
 	{
@@ -38,16 +38,13 @@ class Download extends Application\Flickr
 	}
 
 	/**
-	 *
 	 * @return boolean
 	 *
 	 * @since   2.1.0
-	 *
-	 * @throws \Exception
 	 */
 	protected function downloadFromNsid()
 	{
-		$this->logger->info(__FUNCTION__, $this->input->getArray());
+		$this->log(__FUNCTION__, $this->input->getArray());
 
 		$db  = Factory::getDbo();
 		$pid = $this->input->get('pid');
@@ -61,21 +58,23 @@ class Download extends Application\Flickr
 				$model = $this->getModel();
 
 				// Get photo from cache
-				$photo = \XGallery\Cache\Helper::getItem('flickr/photo/' . $pid);
+				$cache = Factory::getCache();
+				$photo = $cache->getItem('flickr/photo/' . $pid);
 
 				if ($photo->isMiss())
 				{
-					// If cache expired then we do query into datbase
+					$this->log('Cache not found', null, 'warning');
 					$photo = $model->getPhoto($pid);
 				}
 				else
 				{
 					$photo = $photo->get();
+					$this->log('Found pid from cache: ', array($photo), 'notice');
 				}
 
 				if ($photo === null)
 				{
-					$this->logger->notice('Can not get photo to download from ID: ' . $pid);
+					$this->log('Can not get photo to download from ID: ' . $pid, null, 'notice');
 
 					return false;
 				}
@@ -86,7 +85,7 @@ class Download extends Application\Flickr
 				// Only download photo
 				if ($size->media == 'photo')
 				{
-					$toDir = XPATH_MEDIA . $photo->owner;
+					$toDir = Factory::getConfiguration()->get('media_dir', XPATH_ROOT . '/media') . '/' . $photo->owner;
 
 					Directory::create($toDir);
 

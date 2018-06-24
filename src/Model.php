@@ -1,6 +1,6 @@
 <?php
 /**
- * @package     XGallery.Cli
+ * @package     XGalleryCli
  * @subpackage  Model
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
@@ -34,7 +34,7 @@ class Model
 
 		if (!isset($instances[$name]))
 		{
-			$class = '\\XGallery\Model\\' . ucfirst($name);
+			$class = '\\' . XGALLERY_NAMESPACE . '\\Model\\' . ucfirst($name);
 
 			if (!class_exists($class))
 			{

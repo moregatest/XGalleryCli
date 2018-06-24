@@ -7,9 +7,7 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace XGallery\Environment;
-
-use XGallery\Factory;
+namespace XGallery;
 
 defined('_XEXEC') or die;
 
@@ -19,7 +17,7 @@ defined('_XEXEC') or die;
  *
  * @since       2.0.0
  */
-class Helper
+class Environment
 {
 	/**
 	 * @param   string  $command Execute command
@@ -36,31 +34,31 @@ class Helper
 	{
 		if ($isPhp)
 		{
-			$exec[] = 'php';
+			$execute[] = 'php';
 		}
 
-		$exec[] = $command;
+		$execute[] = $command;
 
 		$result = false;
 
 		if (self::isWindows())
 		{
-			$exec   = "start /B " . implode(' ', $exec);
-			$result = pclose(popen($exec, "r"));
+			$execute = "start /B " . implode(' ', $execute);
+			$result  = pclose(popen($execute, "r"));
 
-			Factory::getLogger()->info($exec, array($result));
+			Factory::getLogger()->info($execute, array($result));
 
 			return $result;
 		}
 
 		if (!$output)
 		{
-			$exec[] = '> /dev/null 2>/dev/null &';
-			$exec   = implode(' ', $exec);
-			$result = shell_exec($exec);
+			$execute[] = '> /dev/null 2>/dev/null &';
+			$execute   = implode(' ', $execute);
+			$result    = shell_exec($execute);
 		}
 
-		Factory::getLogger()->info($exec, array($result));
+		Factory::getLogger()->info($execute, array($result));
 
 		return $result;
 	}

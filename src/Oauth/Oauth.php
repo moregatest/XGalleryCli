@@ -9,7 +9,6 @@
 
 namespace XGallery\Oauth;
 
-use XGallery\Cache\Helper;
 use XGallery\Factory;
 
 defined('_XEXEC') or die;
@@ -29,10 +28,9 @@ class Oauth extends \oauth_client_class
 
 	/**
 	 * Oauth constructor.
-	 *
-	 * @since       2.0.0
-	 *
 	 * @throws \Exception
+	 *
+	 * @since  2.0.0
 	 */
 	public function __construct()
 	{
@@ -40,8 +38,9 @@ class Oauth extends \oauth_client_class
 		$this->offline            = true;
 		$this->debug              = false;
 		$this->debug_http         = false;
+		$success                  = $this->Initialize();
 
-		if (($success = $this->Initialize()))
+		if ($success)
 		{
 			$this->Finalize($success);
 		}
@@ -59,14 +58,16 @@ class Oauth extends \oauth_client_class
 	 *
 	 * @since   2.0.0
 	 *
-	 * @throws \Exception
+	 * @throws  \Exception
 	 */
 	protected function execute($parameters, $url, $method = 'GET', $options = array())
 	{
 		$this->logger->info(__FUNCTION__, $parameters);
 
-		$id   = md5($url . md5(serialize(func_get_args())));
-		$item = Helper::getItem($id);
+		$id = md5($url . md5(serialize(func_get_args())));
+
+		$cache = Factory::getCache();
+		$item  = $cache->getItem($id);
 
 		if (!$item->isMiss())
 		{
@@ -75,21 +76,28 @@ class Oauth extends \oauth_client_class
 			return $item->get();
 		}
 
-		$startTime = microtime(true);
-		$return    = $this->CallAPI($url, $method, $parameters, $options, $respond);
+		if (Factory::getConfiguration('debug', false))
+		{
+			$startTime = microtime(true);
+		}
 
-		$endTime     = microtime(true);
-		$executeTime = $endTime - $startTime;
-
-		$this->logger->debug('Oauth executed time: ' . $executeTime, array($return));
-
-		$item->set($respond);
-		Helper::save($item);
+		$return = $this->CallAPI($url, $method, $parameters, $options, $respond);
 
 		if (!$return)
 		{
 			return false;
 		}
+
+		if (Factory::getConfiguration('debug', false))
+		{
+			$endTime     = microtime(true);
+			$executeTime = $endTime - $startTime;
+
+			$this->logger->debug('Oauth executed time: ' . $executeTime, array($return));
+		}
+
+		$item->set($respond);
+		$cache->saveWithExpires($item);
 
 		return $respond;
 	}

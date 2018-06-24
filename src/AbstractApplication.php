@@ -1,6 +1,6 @@
 <?php
 /**
- * @package     XGallery.Cli
+ * @package     XGalleryCli
  * @subpackage  Application
  *
  * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
@@ -9,8 +9,11 @@
 
 namespace XGallery;
 
+use Joomla\Input\Input;
 use Joomla\Registry\Registry;
-use XGallery\System\Configuration;
+use Monolog\Logger;
+use Psr\Log\LogLevel;
+use XGallery\Environment\Filesystem\File;
 
 defined('_XEXEC') or die;
 
@@ -23,7 +26,7 @@ defined('_XEXEC') or die;
 abstract class AbstractApplication
 {
 	/**
-	 * @var \Joomla\Input\Input
+	 * @var Input
 	 */
 	protected $input;
 
@@ -33,7 +36,7 @@ abstract class AbstractApplication
 	protected $config = null;
 
 	/**
-	 * @var \Monolog\Logger|null
+	 * @var Logger|null
 	 */
 	protected $logger = null;
 
@@ -48,7 +51,25 @@ abstract class AbstractApplication
 	{
 		$this->input  = Factory::getInput();
 		$this->config = $config instanceof Registry ? $config : new Registry;
-		$this->logger = Factory::getLogger(get_class($this));
+		$filePath     = XPATH_LOG . '/' . md5(get_class($this)) . '.json';
+
+		if (File::exists($filePath))
+		{
+			$this->config->loadFile($filePath);
+		}
+
+		$this->logger = Factory::getLogger(get_class($this), Factory::getConfiguration()->get('logger_level', LogLevel::NOTICE));
+	}
+
+	/**
+	 * @return string
+	 * @throws \ReflectionException
+	 *
+	 * @since  2.1.0
+	 */
+	public function __toString()
+	{
+		return $this->toString();
 	}
 
 	/**
@@ -60,12 +81,28 @@ abstract class AbstractApplication
 	}
 
 	/**
+	 * @return string
+	 * @throws \ReflectionException
+	 *
+	 * @since  2.1.0
+	 */
+	public function toString()
+	{
+		$reflect = new \ReflectionClass($this);
+
+		return $reflect->getShortName();
+	}
+
+	/**
 	 * @return  void
 	 *
 	 * @since   2.0.0
 	 */
 	protected function cleanup()
 	{
+		$buffer = $this->config->toString();
+		File::write(XPATH_LOG . '/' . md5(get_class($this)) . '.json', $buffer);
+
 		$this->input  = null;
 		$this->config = null;
 	}
@@ -85,11 +122,28 @@ abstract class AbstractApplication
 	 * @param   string $key     Key
 	 * @param   mixed  $default Value
 	 *
-	 * @return mixed
+	 * @return  mixed
 	 */
 	public function get($key, $default = null)
 	{
 		return $this->config->get($key, $default);
+	}
+
+	/**
+	 * @param   string $message Log message
+	 * @param   array  $data    Extend data
+	 * @param   string $type    Log type
+	 *
+	 * @return  mixed
+	 */
+	protected function log($message, $data = array(), $type = 'info')
+	{
+		if ($data)
+		{
+			return call_user_func_array(array($this->logger, $type), array($message, $data));
+		}
+
+		return call_user_func_array(array($this->logger, $type), array($message));
 	}
 
 	/**
@@ -100,9 +154,12 @@ abstract class AbstractApplication
 	 */
 	public function execute()
 	{
-		$start = (float) memory_get_peak_usage(true);
-		$this->set('memory.start', $start);
-		$this->set('execution.start', microtime(true));
+		if (Factory::getConfiguration()->get('debug', false))
+		{
+			$start = (float) memory_get_peak_usage(true);
+			$this->set('memory_start', $start);
+			$this->set('execution_start', microtime(true));
+		}
 
 		// Primary execute
 		if (!$this->doExecute())
@@ -110,12 +167,14 @@ abstract class AbstractApplication
 			return false;
 		}
 
-		$end = (float) memory_get_peak_usage(true);
-		$this->set('memory.end', $end);
-		$this->set('execution.end', microtime(true));
+		if (Factory::getConfiguration()->get('debug', false))
+		{
+			$end = (float) memory_get_peak_usage(true);
+			$this->set('memory_end', $end);
+			$this->set('execution_end', microtime(true));
 
-		Configuration::getInstance()->set(strtolower(get_class($this)) . '_executed', time());
-		Configuration::getInstance()->save();
+			$this->set(strtolower(get_class($this)) . '_executed', time());
+		}
 
 		return $this->doAfterExecute();
 	}
@@ -136,12 +195,15 @@ abstract class AbstractApplication
 	 */
 	protected function doAfterExecute()
 	{
-		$memoryUsage = (float) $this->config->get('memory.end') - (float) $this->config->get('memory.start');
-		$executeTime = (float) $this->config->get('execution.end') - (float) $this->config->get('execution.start');
+		if (Factory::getConfiguration()->get('debug', false))
+		{
+			$memoryUsage = (float) $this->get('memory_end') - (float) $this->get('memory_start');
+			$executeTime = (float) $this->get('execution_end') - (float) $this->get('execution_start');
 
-		$this->logger->info('Task execute completed');
-		$this->logger->debug('Memory usage: ' . $memoryUsage);
-		$this->logger->debug('Executed time: ' . $executeTime);
+			$this->logger->info('Task execute completed');
+			$this->logger->debug('Memory usage: ' . $memoryUsage);
+			$this->logger->debug('Executed time: ' . $executeTime);
+		}
 
 		return true;
 	}
