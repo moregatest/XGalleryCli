@@ -54,42 +54,28 @@ class Flickr extends Model
 			)
 		);
 
+		$fields = array(
+			'nsid',
+			'username',
+			'iconserver',
+			'iconfarm',
+			'ignored',
+			'rev_ignored',
+			'realname',
+			'friend',
+			'family',
+			'path_alias',
+			'location'
+		);
+
 		foreach ($contacts as $contact)
 		{
 			$values = array();
 
-			// Nsid
-			$values[] = isset($contact->nsid) ? $db->quote($contact->nsid) : $db->quote('');
-
-			// Username
-			$values[] = isset($contact->username) ? $db->quote($contact->username) : $db->quote('');
-
-			// Iconserver
-			$values[] = isset($contact->iconserver) ? $db->quote($contact->iconserver) : $db->quote('');
-
-			// Iconfarm
-			$values[] = isset($contact->iconfarm) ? $db->quote($contact->iconfarm) : $db->quote('');
-
-			// Ignored
-			$values[] = isset($contact->ignored) ? $db->quote($contact->ignored) : $db->quote('');
-
-			// Rev_ignored
-			$values[] = isset($contact->rev_ignored) ? $db->quote($contact->rev_ignored) : $db->quote('');
-
-			// Realname
-			$values[] = isset($contact->realname) ? $db->quote($contact->realname) : $db->quote('');
-
-			// Friend
-			$values[] = isset($contact->friend) ? $db->quote($contact->friend) : $db->quote('');
-
-			// Family
-			$values[] = isset($contact->family) ? $db->quote($contact->family) : $db->quote('');
-
-			// Path_alias
-			$values[] = isset($contact->path_alias) ? $db->quote($contact->path_alias) : $db->quote('');
-
-			// Location
-			$values[] = isset($contact->location) ? $db->quote($contact->location) : $db->quote('');
+			foreach ($fields as $field)
+			{
+				$values[] = isset($contact->{$field}) ? $db->quote($contact->{$field}) : $db->quote('');
+			}
 
 			$query->values(implode(',', $values));
 		}
@@ -206,39 +192,27 @@ class Flickr extends Model
 			)
 		);
 
+		$fields = array(
+			'id',
+			'owner',
+			'secret',
+			'server',
+			'farm',
+			'title',
+			'ispublic',
+			'isfriend',
+			'isfamily',
+			'urls'
+		);
+
 		foreach ($photos as $photo)
 		{
 			$values = array();
 
-			// Id
-			$values[] = isset($photo->id) ? $db->quote($photo->id) : $db->quote('');
-
-			// Owner
-			$values[] = isset($photo->owner) ? $db->quote($photo->owner) : $db->quote('');
-
-			// Secret
-			$values[] = isset($photo->secret) ? $db->quote($photo->secret) : $db->quote('');
-
-			// Server
-			$values[] = isset($photo->server) ? $db->quote($photo->server) : $db->quote('');
-
-			// Farm
-			$values[] = isset($photo->farm) ? $db->quote($photo->farm) : $db->quote('');
-
-			// Title
-			$values[] = isset($photo->title) ? $db->quote($photo->title) : $db->quote('');
-
-			// Is public
-			$values[] = isset($photo->ispublic) ? $db->quote($photo->ispublic) : $db->quote('');
-
-			// Is friend
-			$values[] = isset($photo->isfriend) ? $db->quote($photo->isfriend) : $db->quote('');
-
-			// Is family
-			$values[] = isset($photo->isfamily) ? $db->quote($photo->isfamily) : $db->quote('');
-
-			// Urls
-			$values[] = isset($photo->urls) ? $db->quote($photo->urls) : $db->quote('');
+			foreach ($fields as $field)
+			{
+				$values[] = isset($photo->{$field}) ? $db->quote($photo->{$field}) : $db->quote('');
+			}
 
 			// State
 			$values[] = isset($photo->state) ? $db->quote($photo->state) : XGALLERY_FLICKR_PHOTO_STATE_PENDING;
