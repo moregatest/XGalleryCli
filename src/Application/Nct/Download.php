@@ -30,7 +30,7 @@ class Download extends Nct
 	 *
 	 * @since  2.0.0
 	 */
-	public function execute()
+	public function doExecute()
 	{
 		$id    = $this->input->getInt('id', null);
 		$db    = Factory::getDbo();
@@ -47,7 +47,7 @@ class Download extends Nct
 			$query->where($db->quoteName('state') . ' = 0');
 		}
 
-		$songs = $db->setQuery($query)->loadObjectList();
+		$songs = $db->setQuery($query, 0, 100)->loadObjectList();
 
 		foreach ($songs as $index => $song)
 		{
@@ -67,37 +67,46 @@ class Download extends Nct
 	 */
 	private function download($song)
 	{
-		if ($song)
+		if (!$song)
 		{
-			$db = Factory::getDbo();
-
-			$songData     = $this->service->getData($song->play_url);
-			$downloadLink = trim($this->service->getDownloadLink($songData['flashlink']));
-
-			$fileName = explode('?', basename($downloadLink));
-			$fileName = $fileName[0];
-
-			$toDir = Factory::getConfiguration()->get('nct_media_dir', XPATH_ROOT . '/NCT/' . $songData['singer']);
-
-			if (!is_dir($toDir))
-			{
-				Folder::create($toDir);
-			}
-
-			$saveTo = $toDir . '/' . $fileName;
-
-			if (!Helper::downloadFile($downloadLink, $saveTo))
-			{
-				return false;
-			}
-
-			$song->singer    = $songData['singer'];
-			$song->flash_url = $songData['flashlink'];
-			$song->state     = 1;
-
-			return $db->updateObject('#__nct_songs', $song, 'id');
+			return false;
 		}
 
-		return false;
+		$db = Factory::getDbo();
+
+		$songData     = $this->service->getData($song->playUrl);
+		$downloadLink = trim($this->service->getDownloadLink($songData['flashlink']));
+
+		$fileName = explode('?', basename($downloadLink));
+		$fileName = $fileName[0];
+
+		$toDir = Factory::getConfiguration()->get('nct_media_dir', XPATH_ROOT . '/NCT/' . $songData['singer']);
+
+		if (!is_dir($toDir))
+		{
+			Folder::create($toDir);
+		}
+
+		$saveTo = $toDir . '/' . $fileName;
+
+		if (!Helper::downloadFile($downloadLink, $saveTo))
+		{
+			return false;
+		}
+
+		$song->singer    = $songData['singer'];
+		$song->flashUrl = $songData['flashlink'];
+		$song->state     = 1;
+
+		if (!$db->updateObject('#__nct_songs', $song, 'id'))
+		{
+			$db->disconnect();
+
+			return false;
+		}
+
+		$db->disconnect();
+
+		return true;
 	}
 }

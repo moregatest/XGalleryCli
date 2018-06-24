@@ -53,7 +53,7 @@ class Nct
 
 		$uri = new Uri($crawler->filter('div.box_pageview a')->last()->attr('href'));
 
-		return $uri->getVar('page');
+		return $uri->getVar('page', 0);
 	}
 
 	/**

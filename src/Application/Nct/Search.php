@@ -33,13 +33,18 @@ class Search extends Nct
 	{
 		$url = $this->service->builderSearchUrl(
 			array(
-				'title' => $this->input->get('title'),
-				'singer'  => $this->input->get('singer'),
-				'type'    => $this->input->get('type'),
+				'title'  => $this->input->get('title'),
+				'singer' => $this->input->get('singer'),
+				'type'   => $this->input->get('type'),
 			)
 		);
 
 		$pages = $this->service->getPages($url);
+
+		if (!$pages)
+		{
+			return false;
+		}
 
 		// Get a db connection.
 		$db = Factory::getDbo();
@@ -50,19 +55,13 @@ class Search extends Nct
 
 			foreach ($songs as $song)
 			{
-				$data            = new \stdClass;
-				$data->song_name = $song['name'];
-				$data->play_url  = $song['href'];
+				$data          = new \stdClass;
+				$data->name    = $song['name'];
+				$data->playUrl = $song['href'];
 
 				try
 				{
 					$db->insertObject('#__nct_songs', $data, 'id');
-
-					$args                = $this->input->getArray();
-					$args['application'] = 'Nct.Download';
-					$args['id']          = $data->id;
-
-					Environment::execService();
 				}
 				catch (\Exception $exception)
 				{
@@ -70,6 +69,24 @@ class Search extends Nct
 			}
 		}
 
+		$db->disconnect();
+
 		return parent::doExecute();
+	}
+
+	/**
+	 * @return boolean
+	 *
+	 * @since  2.1.0
+	 * @throws \Exception
+	 */
+	protected function doAfterExecute()
+	{
+		$args                = $this->input->getArray();
+		$args['application'] = 'Nct.Download';
+
+		Environment::execService($args);
+
+		return true;
 	}
 }

@@ -62,11 +62,35 @@ abstract class AbstractApplication
 	}
 
 	/**
+	 * @return string
+	 * @throws \ReflectionException
+	 *
+	 * @since  2.1.0
+	 */
+	public function __toString()
+	{
+		return $this->toString();
+	}
+
+	/**
 	 * @since   2.0.0
 	 */
 	public function __destruct()
 	{
 		$this->cleanup();
+	}
+
+	/**
+	 * @return string
+	 * @throws \ReflectionException
+	 *
+	 * @since  2.1.0
+	 */
+	public function toString()
+	{
+		$reflect = new \ReflectionClass($this);
+
+		return $reflect->getShortName();
 	}
 
 	/**
