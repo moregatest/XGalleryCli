@@ -31,12 +31,12 @@ abstract class AbstractApplication
 	protected $input;
 
 	/**
-	 * @var Registry|null
+	 * @var Registry
 	 */
 	protected $config = null;
 
 	/**
-	 * @var Logger|null
+	 * @var Logger
 	 */
 	protected $logger = null;
 
