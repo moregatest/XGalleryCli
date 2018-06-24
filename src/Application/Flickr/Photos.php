@@ -24,17 +24,6 @@ use XGallery\Factory;
 class Photos extends Application\Flickr
 {
 	/**
-	 * @return  void
-	 * @since  2.1.0
-	 */
-	protected function cleanup()
-	{
-		$this->set('nsid', null);
-
-		parent::cleanup();
-	}
-
-	/**
 	 * @return boolean
 	 *
 	 * @since  2.1.0
@@ -56,7 +45,7 @@ class Photos extends Application\Flickr
 		parent::doAfterExecute();
 
 		// Download photos from this nsid
-		return $this->downloadPhotos($this->get('nsid'));
+		return $this->downloadPhotos($this->input->get('nsid'));
 	}
 
 	/**
@@ -90,7 +79,6 @@ class Photos extends Application\Flickr
 		$photos = $this->service->people->getPhotosList($nsid);
 
 		$this->log('Photos: ' . count($photos));
-		$this->set('nsid', $nsid);
 
 		// Insert photos into database
 		return $model->insertPhotos($photos);
@@ -206,6 +194,8 @@ class Photos extends Application\Flickr
 		{
 			$nsid = $model->getContact();
 		}
+
+		$this->input->set('nsid', $nsid);
 
 		return $nsid;
 	}
