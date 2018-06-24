@@ -114,7 +114,7 @@ class Photos extends Application\Flickr
 			// Get photo sizes of current contact
 			$photos = $model->getPhotos($nsid, $limit, 0);
 
-			if (!$photos || empty($photos))
+			if (!is_array($photos) && empty($photos))
 			{
 				return false;
 			}
