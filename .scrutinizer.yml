@@ -18,7 +18,8 @@ filter:
   - '3rd/*'
   dependency_paths:
   - 'vendor/*'
-  - '3rd/*'
+  - '3rd/httpclient/http.php'
+  - '3rd/oauth-api/oauth_client.php'
 checks:
   php: true
 coding_style:

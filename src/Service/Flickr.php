@@ -25,7 +25,7 @@ defined('_XEXEC') or die;
  * @property     Photos   $photos
  * @property     Contacts $contacts
  * @property     People   $people
- * @property     Urls     $url
+ * @property     Urls     $urls
  *
  * @since       2.0.0
  */
