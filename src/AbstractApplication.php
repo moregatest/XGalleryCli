@@ -31,12 +31,12 @@ abstract class AbstractApplication
 	protected $input;
 
 	/**
-	 * @var Registry|null
+	 * @var Registry
 	 */
 	protected $config = null;
 
 	/**
-	 * @var Logger|null
+	 * @var Logger
 	 */
 	protected $logger = null;
 
@@ -138,7 +138,7 @@ abstract class AbstractApplication
 	 */
 	protected function log($message, $data = array(), $type = 'info')
 	{
-		if ($data)
+		if (!empty($data))
 		{
 			return call_user_func_array(array($this->logger, $type), array($message, $data));
 		}

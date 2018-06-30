@@ -98,6 +98,8 @@ class Configuration
 	 */
 	public function save()
 	{
-		return File::write(XPATH_CONFIGURATION_FILE, $this->config->toString());
+		$buffer = $this->config->toString();
+
+		return File::write(XPATH_CONFIGURATION_FILE, $buffer);
 	}
 }

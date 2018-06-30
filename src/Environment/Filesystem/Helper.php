@@ -84,6 +84,12 @@ class Helper
 
 			// The following lines write the contents to a file in the same directory (provided permissions etc)
 			$fp = fopen($saveTo, 'w');
+
+			if ($fp === false)
+			{
+				return false;
+			}
+
 			fwrite($fp, $result);
 			fclose($fp);
 
@@ -106,9 +112,9 @@ class Helper
 	 * @param   string $to   Save to
 	 *
 	 * @throws  \Exception
-	 * @return  boolean
+	 * @return  boolean|string
 	 *
-	 * @since  2.1.0
+	 * @since   2.1.0
 	 */
 	public static function wget($from, $to)
 	{

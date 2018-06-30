@@ -32,13 +32,13 @@ class Download extends Nct
 	 */
 	public function doExecute()
 	{
-		$id    = $this->input->getInt('id', null);
+		$id    = $this->input->getInt('id');
 		$db    = Factory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select('*')
 			->from($db->quoteName('#__nct_songs'));
 
-		if ($id !== null)
+		if ($id)
 		{
 			$query->where($db->quoteName('id') . ' = ' . (int) $id);
 		}
@@ -67,7 +67,7 @@ class Download extends Nct
 	 */
 	private function download($song)
 	{
-		if (!$song)
+		if (!is_object($song))
 		{
 			return false;
 		}
@@ -94,11 +94,11 @@ class Download extends Nct
 			return false;
 		}
 
-		$song->singer    = $songData['singer'];
+		$song->singer   = $songData['singer'];
 		$song->flashUrl = $songData['flashlink'];
-		$song->state     = 1;
+		$song->state    = 1;
 
-		if (!$db->updateObject('#__nct_songs', $song, 'id'))
+		if (!$db->updateObject('#__nct_songs', $song, array('id')))
 		{
 			$db->disconnect();
 

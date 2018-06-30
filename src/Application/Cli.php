@@ -41,7 +41,7 @@ class Cli extends AbstractApplication
 	}
 
 	/**
-	 * @return string
+	 * @return string|boolean
 	 *
 	 * @throws \Exception
 	 *

@@ -41,7 +41,7 @@ class Search extends Nct
 
 		$pages = $this->service->getPages($url);
 
-		if (!$pages)
+		if ($pages === 0)
 		{
 			return false;
 		}
@@ -52,6 +52,11 @@ class Search extends Nct
 		for ($page = 1; $page <= $pages; $page++)
 		{
 			$songs = $this->service->getSongs($url . '&page=' . $page);
+
+			if (empty($songs))
+			{
+				continue;
+			}
 
 			foreach ($songs as $song)
 			{
@@ -65,6 +70,7 @@ class Search extends Nct
 				}
 				catch (\Exception $exception)
 				{
+					$this->log($exception->getMessage(), array(), 'error');
 				}
 			}
 		}

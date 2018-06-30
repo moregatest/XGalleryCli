@@ -10,12 +10,22 @@
 namespace XGallery\Service;
 
 use XGallery\Environment\Filesystem\File;
+use XGallery\Service\Flickr\Contacts;
+use XGallery\Service\Flickr\People;
+use XGallery\Service\Flickr\Photos;
+use XGallery\Service\Flickr\Urls;
+
 
 defined('_XEXEC') or die;
 
 /**
  * @package     XGallery.Cli
  * @subpackage  Service
+ *
+ * @property     Photos   $photos
+ * @property     Contacts $contacts
+ * @property     People   $people
+ * @property     Urls     $urls
  *
  * @since       2.0.0
  */
