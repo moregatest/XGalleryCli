@@ -112,9 +112,9 @@ class Helper
 	 * @param   string $to   Save to
 	 *
 	 * @throws  \Exception
-	 * @return  boolean
+	 * @return  boolean|string
 	 *
-	 * @since  2.1.0
+	 * @since   2.1.0
 	 */
 	public static function wget($from, $to)
 	{
