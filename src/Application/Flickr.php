@@ -14,6 +14,7 @@ defined('_XEXEC') or die;
 use Joomla\Registry\Registry;
 use XGallery\Factory;
 use XGallery\Model;
+use XGallery\Service\Flickr\Contacts;
 use XGallery\Service\Flickr\Photos;
 
 /**
@@ -21,7 +22,8 @@ use XGallery\Service\Flickr\Photos;
  * @package      XGallery\Application
  * @subpackage   Cli.Flickr
  *
- * @property     Photos $photo
+ * @property     Photos   $photo
+ * @property     Contacts $contact
  *
  * @since        2.0.0
  */
