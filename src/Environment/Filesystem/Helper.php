@@ -84,6 +84,12 @@ class Helper
 
 			// The following lines write the contents to a file in the same directory (provided permissions etc)
 			$fp = fopen($saveTo, 'w');
+
+			if ($fp === false)
+			{
+				return false;
+			}
+
 			fwrite($fp, $result);
 			fclose($fp);
 

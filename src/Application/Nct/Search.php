@@ -70,7 +70,7 @@ class Search extends Nct
 				}
 				catch (\Exception $exception)
 				{
-					$this->log($exception->getMessage(), 'error');
+					$this->log($exception->getMessage(), array(), 'error');
 				}
 			}
 		}
