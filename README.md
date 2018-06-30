@@ -15,7 +15,9 @@ A standard alone application based on Joomla! Framework to fetch images from thi
 - Execute php xgallery.php
 - Setup cron to execute xgallery.php if needed
 	 - php xgallery.php : **_Execute everything_**
-	 - php xgallery.php --Application=Contacts
-	 - php xgallery.php --Application=Photos --url=userUrl
-	 - php xgallery.php --Application=Photos --nsid=nsid
-	 - php xgallery.php --Application=Download --pid=pid 
+	 - php xgallery.php --application=Flickr.Contacts
+	 - php xgallery.php --application=Flickr.Photos --url=userUrl
+	 - php xgallery.php --application=Flickr.Photos --nsid=nsid
+	 - php xgallery.php --application=Flickr.Download --pid=pid 
+	 - php xgallery.php --application=Flickr.Cli --method=Url.lookupUser --url=userUrl 
+	 - php xgallery.php --application=Nct.Search --title="Title" --singer="Singer" --type="Type"
