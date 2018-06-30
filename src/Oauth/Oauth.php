@@ -64,7 +64,8 @@ class Oauth extends \oauth_client_class
 	{
 		$this->logger->info(__FUNCTION__, $parameters);
 
-		$id = md5($url . md5(serialize(func_get_args())));
+		$respond = null;
+		$id      = md5($url . md5(serialize(func_get_args())));
 
 		$cache = Factory::getCache();
 		$item  = $cache->getItem($id);
@@ -76,9 +77,7 @@ class Oauth extends \oauth_client_class
 			return $item->get();
 		}
 
-		$config = Factory::getConfiguration();
-
-		if ($config->get('debug', false))
+		if (Factory::getConfiguration()->get('debug', false))
 		{
 			$startTime = microtime(true);
 		}
@@ -90,7 +89,7 @@ class Oauth extends \oauth_client_class
 			return false;
 		}
 
-		if (Factory::getConfiguration('debug', false))
+		if (Factory::getConfiguration()->get('debug', false))
 		{
 			$endTime     = microtime(true);
 			$executeTime = $endTime - $startTime;
