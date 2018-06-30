@@ -91,7 +91,7 @@ class Nct
 	/**
 	 * @param   string $url Url
 	 *
-	 * @return  boolean|string
+	 * @return  boolean|string|array
 	 * @throws  \GuzzleHttp\Exception\GuzzleException
 	 *
 	 * @since   2.0.0
@@ -141,6 +141,12 @@ class Nct
 		return (string) $dom->track->location;
 	}
 
+	/**
+	 * @param   array $condition Condition
+	 *
+	 * @return  string
+	 * @since   2.1.0
+	 */
 	public function builderSearchUrl($condition = array())
 	{
 		$baseUrl = 'https://www.nhaccuatui.com/tim-nang-cao';
