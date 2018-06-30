@@ -1,6 +1,29 @@
-# .scrutinizer.yml
-
+build:
+  nodes:
+    analysis:
+      project_setup:
+        override:
+        - 'true'
+      tests:
+        override:
+        - php-scrutinizer-run
+        - command: phpcs-run
+          use_website_config: true
+    tests: true
+filter:
+  excluded_paths:
+  - '3rd/*'
+  dependency_paths:
+  - 'vendor/*'
+  - '3rd/*'
 checks:
+  php: true
+coding_style:
   php:
-    code_rating: true
-    duplication: true
+    indentation:
+      general:
+        use_tabs: true
+    spaces:
+      around_operators:
+        relational: false
+        multiplicative: false

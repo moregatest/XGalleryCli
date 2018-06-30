@@ -24,7 +24,7 @@ class Environment
 	 * @param   boolean $isPhp   PHP execute
 	 * @param   boolean $output  Show output
 	 *
-	 * @return  string
+	 * @return  string|boolean
 	 *
 	 * @since   2.0.0
 	 *
@@ -32,6 +32,8 @@ class Environment
 	 */
 	public static function exec($command, $isPhp = true, $output = false)
 	{
+		$execute = array();
+
 		if ($isPhp)
 		{
 			$execute[] = 'php';
@@ -43,8 +45,15 @@ class Environment
 
 		if (self::isWindows())
 		{
-			$execute = "start /B " . implode(' ', $execute);
-			$result  = pclose(popen($execute, "r"));
+			$execute  = "start /B " . implode(' ', $execute);
+			$resource = popen($execute, "r");
+
+			if (!$resource)
+			{
+				return false;
+			}
+
+			$result = pclose($resource);
 
 			Factory::getLogger()->info($execute, array($result));
 
