@@ -32,13 +32,13 @@ class Download extends Nct
 	 */
 	public function doExecute()
 	{
-		$id    = $this->input->getInt('id', null);
+		$id    = $this->input->getInt('id');
 		$db    = Factory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select('*')
 			->from($db->quoteName('#__nct_songs'));
 
-		if ($id !== null)
+		if ($id)
 		{
 			$query->where($db->quoteName('id') . ' = ' . (int) $id);
 		}
