@@ -28,7 +28,7 @@ class Environment
 	 *
 	 * @since   2.0.0
 	 *
-	 * @throws \Exception
+	 * @throws  \Exception
 	 */
 	public static function exec($command, $isPhp = true, $output = false)
 	{
@@ -48,14 +48,14 @@ class Environment
 			$execute  = "start /B " . implode(' ', $execute);
 			$resource = popen($execute, "r");
 
-			if (!$resource)
+			if ($resource === false)
 			{
 				return false;
 			}
 
 			$result = pclose($resource);
 
-			Factory::getLogger()->info($execute, array($result));
+			Factory::getLogger()->info('Exec', array($execute, $result));
 
 			return $result;
 		}
@@ -67,7 +67,7 @@ class Environment
 			$result    = shell_exec($execute);
 		}
 
-		Factory::getLogger()->info($execute, array($result));
+		Factory::getLogger()->info('Exec', array($execute, $result));
 
 		return $result;
 	}
@@ -75,11 +75,11 @@ class Environment
 	/**
 	 * @param   array $args Args
 	 *
-	 * @return  string
+	 * @return  string|boolean
 	 *
 	 * @since   2.0.0
 	 *
-	 * @throws \Exception
+	 * @throws  \Exception
 	 */
 	public static function execService($args = array())
 	{
