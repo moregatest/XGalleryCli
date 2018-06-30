@@ -22,9 +22,9 @@ defined('_XEXEC') or die;
 class Oauth extends \oauth_client_class
 {
 	/**
-	 * @var \Monolog\Logger|null
+	 * @var \Monolog\Logger
 	 */
-	protected $logger = null;
+	protected $logger;
 
 	/**
 	 * Oauth constructor.
