@@ -148,8 +148,6 @@ class Photos extends Application\Flickr
 				$cache->saveWithExpires($item);
 
 				Environment::execService($args);
-
-				return true;
 			}
 
 			return true;
