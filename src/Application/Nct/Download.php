@@ -67,7 +67,7 @@ class Download extends Nct
 	 */
 	private function download($song)
 	{
-		if (!$song)
+		if (!is_object($song))
 		{
 			return false;
 		}
@@ -94,11 +94,11 @@ class Download extends Nct
 			return false;
 		}
 
-		$song->singer    = $songData['singer'];
+		$song->singer   = $songData['singer'];
 		$song->flashUrl = $songData['flashlink'];
-		$song->state     = 1;
+		$song->state    = 1;
 
-		if (!$db->updateObject('#__nct_songs', $song, 'id'))
+		if (!$db->updateObject('#__nct_songs', $song, array('id')))
 		{
 			$db->disconnect();
 

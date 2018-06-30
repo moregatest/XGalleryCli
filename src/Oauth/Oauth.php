@@ -76,7 +76,9 @@ class Oauth extends \oauth_client_class
 			return $item->get();
 		}
 
-		if (Factory::getConfiguration('debug', false))
+		$config = Factory::getConfiguration();
+
+		if ($config->get('debug', false))
 		{
 			$startTime = microtime(true);
 		}

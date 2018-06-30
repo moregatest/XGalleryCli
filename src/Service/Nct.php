@@ -41,7 +41,7 @@ class Nct
 	/**
 	 * @param   string $filter Query filter
 	 *
-	 * @return  mixed
+	 * @return  integer
 	 * @throws  \GuzzleHttp\Exception\GuzzleException
 	 *
 	 * @since   2.1.0
@@ -53,7 +53,7 @@ class Nct
 
 		$uri = new Uri($crawler->filter('div.box_pageview a')->last()->attr('href'));
 
-		return $uri->getVar('page', 0);
+		return (int) $uri->getVar('page', 0);
 	}
 
 	/**
