@@ -115,7 +115,7 @@ class Factory
 	 *
 	 * @since   2.0.2
 	 *
-	 * @throws \Exception
+	 * @throws  \Exception
 	 */
 	public static function getLogger($name = 'core', $level = LogLevel::DEBUG)
 	{
@@ -169,6 +169,16 @@ class Factory
 	public static function getConfiguration()
 	{
 		return Configuration::getInstance();
+	}
+
+	/**
+	 * @return boolean
+	 *
+	 * @since  2.2.0
+	 */
+	public static function isDebug()
+	{
+		return self::getConfiguration()->get('debug', false);
 	}
 
 	/**

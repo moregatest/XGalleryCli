@@ -12,7 +12,6 @@ namespace XGallery\Application\Flickr;
 defined('_XEXEC') or die;
 
 use XGallery\Application;
-use XGallery\Environment;
 
 /**
  * @package     XGallery.Application
@@ -43,10 +42,7 @@ class Contacts extends Application\Flickr
 	{
 		parent::doAfterExecute();
 
-		$args                = $this->input->getArray();
-		$args['application'] = 'Flickr.Photos';
-
-		Environment::execService($args);
+		$this->execService('Photos');
 
 		return true;
 	}
@@ -74,26 +70,19 @@ class Contacts extends Application\Flickr
 		}
 
 		// Get Flickr contacts
-		$contacts          = $this->service->contacts->getContactsList();
-		$totalContacts     = count($contacts);
-		$lastTotalContacts = $this->get('flickr_contacts_count');
+		$contacts = $this->service->contacts->getContactsList();
+		$hashed   = md5(serialize($contacts));
+
+		if (empty($contacts) || ($hashed === $this->get('flickr_contacts_hashed')))
+		{
+			$this->log('There is no new contacts', null, 'notice');
+
+			return true;
+		}
+
+		$totalContacts = count($contacts);
 
 		$this->log('Contacts: ' . $totalContacts);
-
-		// No new contact then no need execute database update
-		if ($lastTotalContacts && $lastTotalContacts == $totalContacts)
-		{
-			$this->logger->notice('Have no new contacts');
-
-			return true;
-		}
-
-		if (empty($contacts))
-		{
-			$this->log('Have no contacts', null, 'notice');
-
-			return true;
-		}
 
 		if (!$this->getModel()->insertContacts($contacts))
 		{
@@ -102,6 +91,7 @@ class Contacts extends Application\Flickr
 
 		// Update total contacts count
 		$this->set('flickr_contacts_count', $totalContacts);
+		$this->set('flickr_contacts_hashed', $hashed);
 
 		return true;
 	}

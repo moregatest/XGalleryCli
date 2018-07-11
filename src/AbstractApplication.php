@@ -49,7 +49,9 @@ abstract class AbstractApplication
 	 */
 	public function __construct(Registry $config = null)
 	{
-		$this->input  = Factory::getInput();
+		$this->input = Factory::getInput();
+
+		// Application config file
 		$this->config = $config instanceof Registry ? $config : new Registry;
 		$filePath     = XPATH_LOG . '/' . md5(get_class($this)) . '.json';
 
@@ -73,7 +75,7 @@ abstract class AbstractApplication
 	}
 
 	/**
-	 * @since   2.0.0
+	 * @since  2.0.0
 	 */
 	public function __destruct()
 	{
@@ -154,10 +156,9 @@ abstract class AbstractApplication
 	 */
 	public function execute()
 	{
-		if (Factory::getConfiguration()->get('debug', false))
+		if (Factory::isDebug())
 		{
-			$start = (float) memory_get_peak_usage(true);
-			$this->set('memory_start', $start);
+			$this->set('memory_start', (float) memory_get_peak_usage(true));
 			$this->set('execution_start', microtime(true));
 		}
 
@@ -167,12 +168,10 @@ abstract class AbstractApplication
 			return false;
 		}
 
-		if (Factory::getConfiguration()->get('debug', false))
+		if (Factory::isDebug())
 		{
-			$end = (float) memory_get_peak_usage(true);
-			$this->set('memory_end', $end);
+			$this->set('memory_end', (float) memory_get_peak_usage(true));
 			$this->set('execution_end', microtime(true));
-
 			$this->set(strtolower(get_class($this)) . '_executed', time());
 		}
 
@@ -195,7 +194,7 @@ abstract class AbstractApplication
 	 */
 	protected function doAfterExecute()
 	{
-		if (Factory::getConfiguration()->get('debug', false))
+		if (Factory::isDebug())
 		{
 			$memoryUsage = (float) $this->get('memory_end') - (float) $this->get('memory_start');
 			$executeTime = (float) $this->get('execution_end') - (float) $this->get('execution_start');

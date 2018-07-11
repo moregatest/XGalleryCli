@@ -16,7 +16,8 @@
     "joomla/registry": "^1.6",
     "phpunit/phpunit": "^7.0",
     "guzzlehttp/guzzle": "^6.3",
-    "php-curl-class/php-curl-class": "^8.1"
+    "php-curl-class/php-curl-class": "^8.1",
+    "ext-json": "^1.6"
   },
   "autoload": {
     "psr-4": {

@@ -29,7 +29,7 @@ class Flickr extends Model
 	 *
 	 * @since   2.0.0
 	 *
-	 * @throws \Exception
+	 * @throws  \Exception
 	 */
 	public function insertContacts($contacts)
 	{

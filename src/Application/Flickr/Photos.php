@@ -12,7 +12,6 @@ namespace XGallery\Application\Flickr;
 defined('_XEXEC') or die;
 
 use XGallery\Application;
-use XGallery\Environment;
 use XGallery\Factory;
 
 /**
@@ -31,7 +30,9 @@ class Photos extends Application\Flickr
 	 */
 	protected function doExecute()
 	{
-		return $this->insertPhotosFromFlickr($this->getNsid());
+		$nsid = $this->getNsid();
+
+		return $this->insertPhotosFromFlickr($nsid);
 	}
 
 	/**
@@ -63,6 +64,11 @@ class Photos extends Application\Flickr
 	{
 		$this->log(__CLASS__ . '.' . __FUNCTION__, func_get_args());
 
+		if (Factory::getConfiguration()->get('flickr_fetch_new_photos', false) === false)
+		{
+			return true;
+		}
+
 		// No nsid provided
 		if (!$nsid || empty($nsid))
 		{
@@ -73,7 +79,6 @@ class Photos extends Application\Flickr
 
 		// Update contact to prevent another thread step over it
 		$model = $this->getModel();
-		$model->updateContact($nsid);
 
 		// Fetch photos
 		$photos = $this->service->people->getPhotosList($nsid);
@@ -116,6 +121,8 @@ class Photos extends Application\Flickr
 
 			if (empty($photos))
 			{
+				$this->log('There is no photos for downloading');
+
 				return false;
 			}
 
@@ -134,10 +141,6 @@ class Photos extends Application\Flickr
 				// Update sized
 				$model->updatePhoto($photo->id, array('urls' => $sized, 'state' => XGALLERY_FLICKR_PHOTO_STATE_SIZED));
 
-				$args                = $this->input->getArray();
-				$args['application'] = 'Flickr.Download';
-				$args['pid']         = $photo->id;
-
 				$photo->urls  = $sized;
 				$photo->state = XGALLERY_FLICKR_PHOTO_STATE_SIZED;
 				$cache        = Factory::getCache();
@@ -147,7 +150,12 @@ class Photos extends Application\Flickr
 				$item->set($photo);
 				$cache->saveWithExpires($item);
 
-				Environment::execService($args);
+				$this->execService(
+					'Download',
+					array(
+						'pid' => $photo->id
+					)
+				);
 			}
 
 			return true;
@@ -165,13 +173,11 @@ class Photos extends Application\Flickr
 	 *
 	 * @since   2.0.0
 	 *
-	 * @throws \Exception
+	 * @throws  \Exception
 	 */
 	private function getNsid()
 	{
 		$this->log(__CLASS__ . '.' . __FUNCTION__);
-
-		$model = $this->getModel();
 
 		// Custom args
 		$url  = $this->input->get('url', null, 'RAW');
@@ -190,7 +196,11 @@ class Photos extends Application\Flickr
 
 		if ($nsid === null)
 		{
-			$nsid = $model->getContact();
+			$model = $this->getModel();
+			$nsid  = $model->getContact();
+
+			// Update contact immediately to prevent another step over
+			$model->updateContact($nsid);
 		}
 
 		$this->input->set('nsid', $nsid);
