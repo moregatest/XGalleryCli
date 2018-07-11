@@ -22,16 +22,15 @@ defined('_XEXEC') or die;
 class Oauth extends \oauth_client_class
 {
 	/**
-	 * @var \Monolog\Logger|null
+	 * @var \Monolog\Logger
 	 */
-	protected $logger = null;
+	protected $logger;
 
 	/**
 	 * Oauth constructor.
-	 *
-	 * @since       2.0.0
-	 *
 	 * @throws \Exception
+	 *
+	 * @since  2.0.0
 	 */
 	public function __construct()
 	{
@@ -59,13 +58,14 @@ class Oauth extends \oauth_client_class
 	 *
 	 * @since   2.0.0
 	 *
-	 * @throws \Exception
+	 * @throws  \Exception
 	 */
 	protected function execute($parameters, $url, $method = 'GET', $options = array())
 	{
 		$this->logger->info(__FUNCTION__, $parameters);
 
-		$id = md5($url . md5(serialize(func_get_args())));
+		$respond = null;
+		$id      = md5($url . md5(serialize(func_get_args())));
 
 		$cache = Factory::getCache();
 		$item  = $cache->getItem($id);
@@ -77,21 +77,28 @@ class Oauth extends \oauth_client_class
 			return $item->get();
 		}
 
-		$startTime = microtime(true);
-		$return    = $this->CallAPI($url, $method, $parameters, $options, $respond);
+		if (Factory::getConfiguration()->get('debug', false))
+		{
+			$startTime = microtime(true);
+		}
 
-		$endTime     = microtime(true);
-		$executeTime = $endTime - $startTime;
-
-		$this->logger->debug('Oauth executed time: ' . $executeTime, array($return));
-
-		$item->set($respond);
-		$cache->saveWithExpires($item);
+		$return = $this->CallAPI($url, $method, $parameters, $options, $respond);
 
 		if (!$return)
 		{
 			return false;
 		}
+
+		if (Factory::getConfiguration()->get('debug', false))
+		{
+			$endTime     = microtime(true);
+			$executeTime = $endTime - $startTime;
+
+			$this->logger->debug('Oauth executed time: ' . $executeTime, array($return));
+		}
+
+		$item->set($respond);
+		$cache->saveWithExpires($item);
 
 		return $respond;
 	}

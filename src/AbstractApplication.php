@@ -31,12 +31,12 @@ abstract class AbstractApplication
 	protected $input;
 
 	/**
-	 * @var Registry|null
+	 * @var Registry
 	 */
 	protected $config = null;
 
 	/**
-	 * @var Logger|null
+	 * @var Logger
 	 */
 	protected $logger = null;
 
@@ -62,11 +62,35 @@ abstract class AbstractApplication
 	}
 
 	/**
+	 * @return string
+	 * @throws \ReflectionException
+	 *
+	 * @since  2.1.0
+	 */
+	public function __toString()
+	{
+		return $this->toString();
+	}
+
+	/**
 	 * @since   2.0.0
 	 */
 	public function __destruct()
 	{
 		$this->cleanup();
+	}
+
+	/**
+	 * @return string
+	 * @throws \ReflectionException
+	 *
+	 * @since  2.1.0
+	 */
+	public function toString()
+	{
+		$reflect = new \ReflectionClass($this);
+
+		return $reflect->getShortName();
 	}
 
 	/**
@@ -114,7 +138,7 @@ abstract class AbstractApplication
 	 */
 	protected function log($message, $data = array(), $type = 'info')
 	{
-		if ($data)
+		if (!empty($data))
 		{
 			return call_user_func_array(array($this->logger, $type), array($message, $data));
 		}
@@ -148,9 +172,9 @@ abstract class AbstractApplication
 			$end = (float) memory_get_peak_usage(true);
 			$this->set('memory_end', $end);
 			$this->set('execution_end', microtime(true));
-		}
 
-		$this->set(strtolower(get_class($this)) . '_executed', time());
+			$this->set(strtolower(get_class($this)) . '_executed', time());
+		}
 
 		return $this->doAfterExecute();
 	}

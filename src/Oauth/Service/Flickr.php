@@ -44,7 +44,8 @@ class Flickr extends Oauth
 	CONST API_ENDPOINT = 'https://api.flickr.com/services/rest/';
 
 	/**
-	 * XgalleryFlickrBase constructor.
+	 * Flickr constructor.
+	 * @throws \Exception
 	 *
 	 * @since  2.0.0
 	 */
@@ -64,8 +65,8 @@ class Flickr extends Oauth
 	}
 
 	/**
-	 *
-	 * @return static
+	 * @return Flickr
+	 * @throws \Exception
 	 *
 	 * @since  2.0.0
 	 */

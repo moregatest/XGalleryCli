@@ -12,7 +12,7 @@ namespace XGallery\Application\Flickr;
 defined('_XEXEC') or die;
 
 use XGallery\Application;
-use XGallery\Environment\Helper;
+use XGallery\Environment;
 
 /**
  * @package     XGallery.Application
@@ -46,7 +46,7 @@ class Contacts extends Application\Flickr
 		$args                = $this->input->getArray();
 		$args['application'] = 'Flickr.Photos';
 
-		Helper::execService($args);
+		Environment::execService($args);
 
 		return true;
 	}
@@ -66,7 +66,7 @@ class Contacts extends Application\Flickr
 		$lastExecutedTime = (int) $this->get(strtolower(get_class($this)) . '_executed');
 
 		// No need update contact if cache is not expired
-		if ($lastExecutedTime && time() - $lastExecutedTime < $this->get('limit_flickr_contacts_execute_', 3600))
+		if ($lastExecutedTime && time() - $lastExecutedTime < $this->get('limit_flickr_contacts_executed', 3600))
 		{
 			$this->log('Cache is not expired. No need update contacts', null, 'notice');
 

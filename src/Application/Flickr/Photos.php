@@ -12,7 +12,7 @@ namespace XGallery\Application\Flickr;
 defined('_XEXEC') or die;
 
 use XGallery\Application;
-use XGallery\Environment\Helper;
+use XGallery\Environment;
 use XGallery\Factory;
 
 /**
@@ -23,17 +23,6 @@ use XGallery\Factory;
  */
 class Photos extends Application\Flickr
 {
-	/**
-	 * @return  void
-	 * @since  2.1.0
-	 */
-	protected function cleanup()
-	{
-		$this->set('nsid', null);
-
-		parent::cleanup();
-	}
-
 	/**
 	 * @return boolean
 	 *
@@ -56,7 +45,7 @@ class Photos extends Application\Flickr
 		parent::doAfterExecute();
 
 		// Download photos from this nsid
-		return $this->downloadPhotos($this->get('nsid'));
+		return $this->downloadPhotos($this->input->get('nsid'));
 	}
 
 	/**
@@ -90,7 +79,6 @@ class Photos extends Application\Flickr
 		$photos = $this->service->people->getPhotosList($nsid);
 
 		$this->log('Photos: ' . count($photos));
-		$this->set('nsid', $nsid);
 
 		// Insert photos into database
 		return $model->insertPhotos($photos);
@@ -121,10 +109,12 @@ class Photos extends Application\Flickr
 				$this->set('flickr_download_limit', $limit);
 			}
 
+			$this->log('Download limit: ' . $limit);
+
 			// Get photo sizes of current contact
 			$photos = $model->getPhotos($nsid, $limit, 0);
 
-			if (!$photos || empty($photos))
+			if (empty($photos))
 			{
 				return false;
 			}
@@ -157,7 +147,7 @@ class Photos extends Application\Flickr
 				$item->set($photo);
 				$cache->saveWithExpires($item);
 
-				Helper::execService($args);
+				Environment::execService($args);
 			}
 
 			return true;
@@ -202,6 +192,8 @@ class Photos extends Application\Flickr
 		{
 			$nsid = $model->getContact();
 		}
+
+		$this->input->set('nsid', $nsid);
 
 		return $nsid;
 	}

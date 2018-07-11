@@ -41,7 +41,7 @@ class Nct
 	/**
 	 * @param   string $filter Query filter
 	 *
-	 * @return  mixed
+	 * @return  integer
 	 * @throws  \GuzzleHttp\Exception\GuzzleException
 	 *
 	 * @since   2.1.0
@@ -53,7 +53,7 @@ class Nct
 
 		$uri = new Uri($crawler->filter('div.box_pageview a')->last()->attr('href'));
 
-		return $uri->getVar('page');
+		return (int) $uri->getVar('page', 0);
 	}
 
 	/**
@@ -64,11 +64,11 @@ class Nct
 	 *
 	 * @since   2.1.0
 	 */
-	public function getSongs($page)
+	public function getSongs($url)
 	{
 		$songs = array();
 
-		$respond = $this->client->request('GET', 'https://www.nhaccuatui.com/tim-nang-cao?page=' . $page);
+		$respond = $this->client->request('GET', $url);
 		$html    = $respond->getBody();
 
 		if (!$html)
@@ -91,9 +91,10 @@ class Nct
 	/**
 	 * @param   string $url Url
 	 *
-	 * @return boolean|string
+	 * @return  boolean|string|array
+	 * @throws  \GuzzleHttp\Exception\GuzzleException
 	 *
-	 * @since  2.0.0
+	 * @since   2.0.0
 	 */
 	public function getData($url)
 	{
@@ -125,9 +126,10 @@ class Nct
 	/**
 	 * @param   string $url Url
 	 *
-	 * @return string
+	 * @return  string
+	 * @throws  \GuzzleHttp\Exception\GuzzleException
 	 *
-	 * @since  2.0.0
+	 * @since   2.0.0
 	 */
 	public function getDownloadLink($url)
 	{
@@ -139,6 +141,12 @@ class Nct
 		return (string) $dom->track->location;
 	}
 
+	/**
+	 * @param   array $condition Condition
+	 *
+	 * @return  string
+	 * @since   2.1.0
+	 */
 	public function builderSearchUrl($condition = array())
 	{
 		$baseUrl = 'https://www.nhaccuatui.com/tim-nang-cao';

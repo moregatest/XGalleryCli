@@ -7,9 +7,7 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace XGallery\Environment;
-
-use XGallery\Factory;
+namespace XGallery;
 
 defined('_XEXEC') or die;
 
@@ -19,48 +17,57 @@ defined('_XEXEC') or die;
  *
  * @since       2.0.0
  */
-class Helper
+class Environment
 {
 	/**
 	 * @param   string  $command Execute command
 	 * @param   boolean $isPhp   PHP execute
 	 * @param   boolean $output  Show output
 	 *
-	 * @return  string
+	 * @return  string|boolean
 	 *
 	 * @since   2.0.0
 	 *
-	 * @throws \Exception
+	 * @throws  \Exception
 	 */
 	public static function exec($command, $isPhp = true, $output = false)
 	{
+		$execute = array();
+
 		if ($isPhp)
 		{
-			$exec[] = 'php';
+			$execute[] = 'php';
 		}
 
-		$exec[] = $command;
+		$execute[] = $command;
 
 		$result = false;
 
 		if (self::isWindows())
 		{
-			$exec   = "start /B " . implode(' ', $exec);
-			$result = pclose(popen($exec, "r"));
+			$execute  = "start /B " . implode(' ', $execute);
+			$resource = popen($execute, "r");
 
-			Factory::getLogger()->info($exec, array($result));
+			if ($resource === false)
+			{
+				return false;
+			}
+
+			$result = pclose($resource);
+
+			Factory::getLogger()->info('Exec', array($execute, $result));
 
 			return $result;
 		}
 
 		if (!$output)
 		{
-			$exec[] = '> /dev/null 2>/dev/null &';
-			$exec   = implode(' ', $exec);
-			$result = shell_exec($exec);
+			$execute[] = '> /dev/null 2>/dev/null &';
+			$execute   = implode(' ', $execute);
+			$result    = shell_exec($execute);
 		}
 
-		Factory::getLogger()->info($exec, array($result));
+		Factory::getLogger()->info('Exec', array($execute, $result));
 
 		return $result;
 	}
@@ -68,11 +75,11 @@ class Helper
 	/**
 	 * @param   array $args Args
 	 *
-	 * @return  string
+	 * @return  string|boolean
 	 *
 	 * @since   2.0.0
 	 *
-	 * @throws \Exception
+	 * @throws  \Exception
 	 */
 	public static function execService($args = array())
 	{

@@ -62,79 +62,108 @@ class Download extends Application\Flickr
 		{
 			$db->transactionStart();
 
-			$model = $this->getModel();
+			$photo = $this->getPhoto($pid);
 
-			// Get photo from cache
-			$cache = Factory::getCache();
-			$photo = $cache->getItem('flickr/photo/' . $pid);
-
-			if ($photo->isMiss())
+			if (!$photo)
 			{
-				$this->log('Cache not found', null, 'warning');
-				$photo = $model->getPhoto($pid);
-			}
-			else
-			{
-				$this->log('Found pid from cache', null, 'notice');
-				$photo = $photo->get();
-			}
-
-			if ($photo === null)
-			{
-				$this->log('Can not get photo to download from ID: ' . $pid, null, 'notice');
-
 				return false;
 			}
 
 			$urls = json_decode($photo->urls);
 			$size = end($urls->sizes->size);
 
-			// Only download photo
-			if ($size->media == 'photo')
+			switch ($size->media)
 			{
-				$toDir = Factory::getConfiguration()->get('media_dir', XPATH_ROOT . '/media') . '/' . $photo->owner;
-
-				Directory::create($toDir);
-
-				$fileName = basename($size->source);
-				$saveTo   = $toDir . '/' . $fileName;
-
-				// Process download
-				$originalFileSize = Helper::downloadFile($size->source, $saveTo);
-
-				if (File::exists($saveTo))
-				{
-					if ($originalFileSize === false || $originalFileSize != filesize($saveTo))
-					{
-						File::delete($saveTo);
-
-						throw new \Exception('File is not validated: ' . $saveTo);
-					}
-					else
-					{
-						$model->updatePhoto($pid, array('state' => XGALLERY_FLICKR_PHOTO_STATE_DOWNLOADED));
-					}
-				}
-				else
-				{
-					throw new \Exception('File download failed: ' . $saveTo);
-				}
+				default:
+				case 'photo':
+					$this->downloadPhoto($photo, $size, $pid);
+					break;
 			}
 
 			$db->transactionCommit();
+			$db->disconnect();
 		}
 		catch (\Exception $exception)
 		{
-			$this->logger->error(
-				$exception->getMessage(),
-				array('query' => (string) $db->getQuery(), 'url' => get_object_vars($urls))
-			);
+			$this->logger->error($exception->getMessage(), array('query' => (string) $db->getQuery(), 'url' => get_object_vars($urls)));
 			$db->transactionRollback();
+			$db->disconnect();
+
+			return false;
 		}
 
-
-		$db->disconnect();
-
 		return true;
+	}
+
+	/**
+	 * @param   object  $photo Photo object
+	 * @param   object  $size  Size object
+	 * @param   integer $pid   Pid
+	 *
+	 * @return  boolean
+	 * @throws  \Exception
+	 *
+	 * @since   2.1.0
+	 */
+	private function downloadPhoto($photo, $size, $pid)
+	{
+		$toDir = Factory::getConfiguration()->get('media_dir', XPATH_ROOT . '/media') . '/' . $photo->owner;
+
+		Directory::create($toDir);
+
+		$saveTo = $toDir . '/' . basename($size->source);
+
+		// Process download
+		$originalFileSize = Helper::downloadFile($size->source, $saveTo);
+
+		if (!File::exists($saveTo))
+		{
+			throw new \Exception('File download failed: ' . $saveTo);
+		}
+
+		if ($originalFileSize === false || $originalFileSize != filesize($saveTo))
+		{
+			File::delete($saveTo);
+
+			throw new \Exception('File is not validated: ' . $saveTo);
+		}
+
+		return $this->getModel()->updatePhoto($pid, array('state' => XGALLERY_FLICKR_PHOTO_STATE_DOWNLOADED));
+	}
+
+	/**
+	 * @param   string $pid Photo ID
+	 *
+	 * @return  boolean|mixed|\Stash\Interfaces\ItemInterface
+	 *
+	 * @since   2.1.0
+	 */
+	protected function getPhoto($pid)
+	{
+		$model = $this->getModel();
+
+		// Get photo from cache
+		$cache = Factory::getCache();
+		$photo = $cache->getItem('flickr/photo/' . $pid);
+
+		if ($photo->isMiss())
+		{
+			$this->log('Cache not found', null, 'warning');
+			$photo = $model->getPhoto($pid);
+		}
+		else
+		{
+			$photo = $photo->get();
+			$this->log('Found pid from cache: ', array($photo), 'notice');
+		}
+
+		if ($photo === null)
+		{
+			$this->log('Can not get photo to download from ID: ' . $pid, null, 'notice');
+
+			return false;
+		}
+
+		return $photo;
 	}
 }

@@ -27,7 +27,7 @@ class Nct extends Cli
 	protected $client;
 
 	/**
-	 * @var \XGallery\Service\Nc
+	 * @var \XGallery\Service\Nct
 	 */
 	protected $service;
 
