@@ -129,7 +129,9 @@ class Factory
 		}
 
 		$instances[$name] = new Logger(XGALLERY_NAMESPACE);
-		$instances[$name]->pushHandler(new StreamHandler(XPATH_LOG . date("Y-m-d", time()) . '/' . $name . '_' . $level . '.log'));
+		$instances[$name]->pushHandler(
+			new StreamHandler(self::getConfiguration()->get('log_path') . '/' . date("Y-m-d", time()) . '/' . $name . '_' . $level . '.log')
+		);
 
 		return $instances[$name];
 	}
@@ -204,7 +206,9 @@ class Factory
 		{
 			default:
 			case 'FileSystem':
-				$cacheDriver = new FileSystem(array('path' => XPATH_CACHE));
+				$cacheDriver = new FileSystem(
+					array('path' => self::getConfiguration()->get('cache_path'))
+				);
 				break;
 			case 'APC':
 				$cacheDriver = new Apc(array('ttl' => 3600));

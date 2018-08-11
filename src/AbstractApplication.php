@@ -53,7 +53,7 @@ abstract class AbstractApplication
 
 		// Application config file
 		$this->config = $config instanceof Registry ? $config : new Registry;
-		$filePath     = XPATH_LOG . '/' . md5(get_class($this)) . '.json';
+		$filePath     = Factory::getConfiguration()->get('log_path') . '/' . md5(get_class($this)) . '.json';
 
 		if (File::exists($filePath))
 		{
@@ -103,7 +103,7 @@ abstract class AbstractApplication
 	protected function cleanup()
 	{
 		$buffer = $this->config->toString();
-		File::write(XPATH_LOG . '/' . md5(get_class($this)) . '.json', $buffer);
+		File::write(Factory::getConfiguration()->get('log_path') . '/' . md5(get_class($this)) . '.json', $buffer);
 
 		$this->input  = null;
 		$this->config = null;

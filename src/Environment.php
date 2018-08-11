@@ -55,7 +55,7 @@ class Environment
 
 			$result = pclose($resource);
 
-			Factory::getLogger()->info('Exec', array($execute, $result));
+			Factory::getLogger('Exec')->info('Exec', array($execute, $result));
 
 			return $result;
 		}
@@ -67,7 +67,7 @@ class Environment
 			$result    = shell_exec($execute);
 		}
 
-		Factory::getLogger()->info('Exec', array($execute, $result));
+		Factory::getLogger('Exec')->info('Exec', array($execute, $result));
 
 		return $result;
 	}

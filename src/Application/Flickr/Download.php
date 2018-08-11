@@ -112,7 +112,7 @@ class Download extends Application\Flickr
 	 */
 	private function downloadPhoto($photo, $size, $pid)
 	{
-		$toDir = Factory::getConfiguration()->get('flickr_dir', XPATH_ROOT . '/media/Flickr') . '/' . $photo->owner;
+		$toDir = Factory::getConfiguration()->get('flickr_path', XPATH_ROOT . '/media/Flickr') . '/' . $photo->owner;
 
 		Directory::create($toDir);
 
