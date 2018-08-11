@@ -117,11 +117,19 @@ class Photos extends Application\Flickr
 			$this->log('Download limit: ' . $limit);
 
 			// Get photo sizes of current contact
+			$photos = $model->getPhotos($nsid, $limit, 0, XGALLERY_FLICKR_PHOTO_STATE_SIZED);
+
+			foreach ($photos as $photo)
+			{
+				$this->downloadPhoto($photo);
+			}
+
+			// Get photo sizes of current contact
 			$photos = $model->getPhotos($nsid, $limit, 0);
 
-			if (empty($photos))
+			if (!empty($photos))
 			{
-				$this->log('There is no photos for downloading');
+				$this->log('There is no photos for getting sizes and download');
 
 				return false;
 			}
@@ -143,19 +151,8 @@ class Photos extends Application\Flickr
 
 				$photo->urls  = $sized;
 				$photo->state = XGALLERY_FLICKR_PHOTO_STATE_SIZED;
-				$cache        = Factory::getCache();
-				$item         = $cache->getItem('flickr/photo/' . $photo->id);
 
-				// Save this photo with sized to cache then we can re-use without query
-				$item->set($photo);
-				$cache->saveWithExpires($item);
-
-				$this->execService(
-					'Download',
-					array(
-						'pid' => $photo->id
-					)
-				);
+				$this->download($photo);
 			}
 
 			return true;
@@ -166,6 +163,28 @@ class Photos extends Application\Flickr
 
 			return false;
 		}
+	}
+
+	/**
+	 * @param   object $photo Photo
+	 *
+	 * @throws  \Exception
+	 */
+	protected function downloadPhoto($photo)
+	{
+		$cache = Factory::getCache();
+		$item  = $cache->getItem('flickr/photo/' . $photo->id);
+
+		// Save this photo with sized to cache then we can re-use without query
+		$item->set($photo);
+		$cache->saveWithExpires($item);
+
+		$this->execService(
+			'Download',
+			array(
+				'pid' => $photo->id
+			)
+		);
 	}
 
 	/**

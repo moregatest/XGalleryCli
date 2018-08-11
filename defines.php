@@ -14,9 +14,6 @@ define('XPATH_LOG', XPATH_ROOT . '/logs/');
 
 define('XPATH_CONFIGURATION_FILE', XPATH_ROOT . '/config.json');
 
-// XGallery.Application
-define('XGALLERY_DEFAULT_APPLICATION', 'Flickr.Contacts');
-
 // Flickr
 define('XGALLERY_FLICKR_SAFE_SEARCH', 3);
 define('XGALLERY_FLICKR_PEOPLE_GETPHOTOS_PERPAGE', 500);

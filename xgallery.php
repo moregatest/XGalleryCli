@@ -13,7 +13,7 @@ require_once __DIR__ . '/bootstrap.php';
 
 $input = Factory::getInput()->cli;
 
-$application = Factory::getApplication($input->getCmd('application', XGALLERY_DEFAULT_APPLICATION));
+$application = Factory::getApplication($input->getCmd('application', Factory::getConfiguration()->get('application')));
 $task        = $input->getCmd('task', 'execute');
 
 if ($application && method_exists($application, $task))
