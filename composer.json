@@ -17,7 +17,10 @@
     "phpunit/phpunit": "^7.0",
     "guzzlehttp/guzzle": "^6.3",
     "php-curl-class/php-curl-class": "^8.1",
-    "ext-json": "^1.6"
+    "ext-json": "^1.6",
+    "ext-curl": "^7.2",
+    "ext-xdebug": "^2.6",
+    "ext-SimpleXML": "^7.2"
   },
   "autoload": {
     "psr-4": {
