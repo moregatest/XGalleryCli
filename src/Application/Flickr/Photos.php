@@ -32,21 +32,51 @@ class Photos extends Application\Flickr
 	{
 		$nsid = $this->getNsid();
 
-		return $this->insertPhotosFromFlickr($nsid);
+		if ($this->insertPhotos($nsid))
+		{
+			return parent::doExecute();
+		}
+
+		return false;
 	}
 
 	/**
-	 * @return boolean
+	 * @return  boolean|string
 	 *
-	 * @since  2.1.0
-	 * @throws \Exception
+	 * @since   2.0.0
+	 * @throws  \Exception
 	 */
-	protected function doAfterExecute()
+	private function getNsid()
 	{
-		parent::doAfterExecute();
+		$this->log(__CLASS__ . '.' . __FUNCTION__);
 
-		// Download photos from this nsid
-		return $this->downloadPhotos($this->input->get('nsid'));
+		// Custom args
+		$url  = $this->input->get('url', null, 'RAW');
+		$nsid = $this->input->get('nsid', null);
+
+		// Get nsid from URL
+		if ($url)
+		{
+			$nsid = $this->service->urls->lookupUser($url);
+
+			if ($nsid)
+			{
+				$nsid = $nsid->user->id;
+			}
+		}
+
+		if ($nsid === null)
+		{
+			$model = $this->getModel();
+			$nsid  = $model->getContact();
+
+			// Update contact immediately to prevent another step over
+			$model->updateContact($nsid);
+		}
+
+		$this->input->set('nsid', $nsid);
+
+		return $nsid;
 	}
 
 	/**
@@ -57,17 +87,11 @@ class Photos extends Application\Flickr
 	 * @return  boolean
 	 *
 	 * @since   2.0.0
-	 *
 	 * @throws  \Exception
 	 */
-	protected function insertPhotosFromFlickr($nsid)
+	protected function insertPhotos($nsid)
 	{
 		$this->log(__CLASS__ . '.' . __FUNCTION__, func_get_args());
-
-		if (Factory::getConfiguration()->get('flickr_fetch_new_photos', false) === false)
-		{
-			return true;
-		}
 
 		// No nsid provided
 		if (!$nsid || empty($nsid))
@@ -118,18 +142,19 @@ class Photos extends Application\Flickr
 
 			// Get photo sizes of current contact
 			$photos = $model->getPhotos($nsid, $limit, 0, XGALLERY_FLICKR_PHOTO_STATE_SIZED);
+			$this->log('Download sized photos: ' . count($photos));
 
 			foreach ($photos as $photo)
 			{
 				$this->downloadPhoto($photo);
 			}
 
-			// Get photo sizes of current contact
+			// Get photo sizes of current contact with pending status
 			$photos = $model->getPhotos($nsid, $limit, 0);
 
 			if (!empty($photos))
 			{
-				$this->log('There is no photos for getting sizes and download');
+				$this->log('There is no photos for getting sizes and download', null, 'notice');
 
 				return false;
 			}
@@ -152,7 +177,7 @@ class Photos extends Application\Flickr
 				$photo->urls  = $sized;
 				$photo->state = XGALLERY_FLICKR_PHOTO_STATE_SIZED;
 
-				$this->download($photo);
+				$this->downloadPhoto($photo);
 			}
 
 			return true;
@@ -168,10 +193,13 @@ class Photos extends Application\Flickr
 	/**
 	 * @param   object $photo Photo
 	 *
+	 * @return  void
 	 * @throws  \Exception
 	 */
 	protected function downloadPhoto($photo)
 	{
+		$this->log(__CLASS__ . '.' . __FUNCTION__, func_get_args(), 'debug');
+
 		$cache = Factory::getCache();
 		$item  = $cache->getItem('flickr/photo/' . $photo->id);
 
@@ -188,42 +216,16 @@ class Photos extends Application\Flickr
 	}
 
 	/**
-	 * @return  boolean|string
+	 * @return boolean
 	 *
-	 * @since   2.0.0
-	 *
-	 * @throws  \Exception
+	 * @since  2.1.0
+	 * @throws \Exception
 	 */
-	private function getNsid()
+	protected function doAfterExecute()
 	{
-		$this->log(__CLASS__ . '.' . __FUNCTION__);
+		parent::doAfterExecute();
 
-		// Custom args
-		$url  = $this->input->get('url', null, 'RAW');
-		$nsid = $this->input->get('nsid', null);
-
-		// Get nsid from URL
-		if ($url)
-		{
-			$nsid = $this->service->urls->lookupUser($url);
-
-			if ($nsid)
-			{
-				$nsid = $nsid->user->id;
-			}
-		}
-
-		if ($nsid === null)
-		{
-			$model = $this->getModel();
-			$nsid  = $model->getContact();
-
-			// Update contact immediately to prevent another step over
-			$model->updateContact($nsid);
-		}
-
-		$this->input->set('nsid', $nsid);
-
-		return $nsid;
+		// Download photos from this nsid
+		return $this->downloadPhotos($this->input->get('nsid'));
 	}
 }

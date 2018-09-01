@@ -17,6 +17,10 @@ defined('_XEXEC') or die;
 /**
  * @package     XGallery.Cli
  * @subpackage  Libraries
+ * @property    $client_id
+ * @property    $client_secret
+ * @property    $access_token
+ * @property    $access_token_secret
  *
  * @since       2.0.0
  */

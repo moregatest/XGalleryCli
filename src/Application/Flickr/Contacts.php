@@ -29,22 +29,12 @@ class Contacts extends Application\Flickr
 	 */
 	protected function doExecute()
 	{
-		return $this->insertContactsFromFlickr();
-	}
+		if ($this->insertContacts())
+		{
+			return parent::doExecute();
+		}
 
-	/**
-	 * @return boolean
-	 *
-	 * @since  2.1.0
-	 * @throws \Exception
-	 */
-	protected function doAfterExecute()
-	{
-		parent::doAfterExecute();
-
-		$this->execService('Photos');
-
-		return true;
+		return false;
 	}
 
 	/**
@@ -55,7 +45,7 @@ class Contacts extends Application\Flickr
 	 * @since   2.0.0
 	 * @throws  \Exception
 	 */
-	protected function insertContactsFromFlickr()
+	protected function insertContacts()
 	{
 		$this->log(__CLASS__ . '.' . __FUNCTION__);
 
@@ -92,6 +82,21 @@ class Contacts extends Application\Flickr
 		// Update total contacts count
 		$this->set('flickr_contacts_count', $totalContacts);
 		$this->set('flickr_contacts_hashed', $hashed);
+
+		return true;
+	}
+
+	/**
+	 * @return boolean
+	 *
+	 * @since  2.1.0
+	 * @throws \Exception
+	 */
+	protected function doAfterExecute()
+	{
+		parent::doAfterExecute();
+
+		$this->execService('Photos');
 
 		return true;
 	}

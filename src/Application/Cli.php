@@ -10,7 +10,6 @@
 namespace XGallery\Application;
 
 use Joomla\Registry\Registry;
-use XGallery\AbstractApplication;
 use XGallery\Environment;
 use XGallery\Factory;
 

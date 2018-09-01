@@ -7,13 +7,14 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace XGallery;
+namespace XGallery\Application;
 
 use Joomla\Input\Input;
 use Joomla\Registry\Registry;
 use Monolog\Logger;
 use Psr\Log\LogLevel;
 use XGallery\Environment\Filesystem\File;
+use XGallery\Factory;
 
 defined('_XEXEC') or die;
 
@@ -138,7 +139,7 @@ abstract class AbstractApplication
 	 *
 	 * @return  mixed
 	 */
-	protected function log($message, $data = array(), $type = 'info')
+	protected function log($message, $data = null, $type = 'info')
 	{
 		if (!empty($data))
 		{
@@ -156,6 +157,8 @@ abstract class AbstractApplication
 	 */
 	public function execute()
 	{
+		$config = Factory::getConfiguration();
+
 		if (Factory::isDebug())
 		{
 			$this->set('memory_start', (float) memory_get_peak_usage(true));
@@ -175,7 +178,17 @@ abstract class AbstractApplication
 			$this->set(strtolower(get_class($this)) . '_executed', time());
 		}
 
-		return $this->doAfterExecute();
+		if (!$config->get('execute_chain', true))
+		{
+			return true;
+		}
+
+		if ($config->get('doAfterExecute', true) === true)
+		{
+			return $this->doAfterExecute();
+		}
+
+		return true;
 	}
 
 	/**

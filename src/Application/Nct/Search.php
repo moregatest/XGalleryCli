@@ -93,6 +93,6 @@ class Search extends Nct
 
 		Environment::execService($args);
 
-		return true;
+		return parent::doAfterExecute();
 	}
 }
