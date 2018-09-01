@@ -17,6 +17,10 @@ defined('_XEXEC') or die;
 /**
  * @package     XGallery.Cli
  * @subpackage  Libraries
+ * @property    $client_id
+ * @property    $client_secret
+ * @property    $access_token
+ * @property    $access_token_secret
  *
  * @since       2.0.0
  */
@@ -56,7 +60,7 @@ class Flickr extends Oauth
 		$this->client_id           = $config->get('flickr_client_id');
 		$this->client_secret       = $config->get('flickr_client_secret');
 		$this->access_token        = $config->get('flickr_access_token');
-		$this->access_token_secret = $config->get('access_token_secret');
+		$this->access_token_secret = $config->get('flickr_access_token_secret');
 
 		// 'read', 'write' or 'delete'
 		$this->scope = $config->get('flickr_scope', 'read');

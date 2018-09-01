@@ -38,9 +38,12 @@ class Download extends Application\Flickr
 	}
 
 	/**
+	 *
 	 * @return  boolean
 	 *
 	 * @since   2.1.0
+	 *
+	 * @throws  \Exception
 	 */
 	protected function downloadFromNsid()
 	{
@@ -66,6 +69,12 @@ class Download extends Application\Flickr
 			}
 
 			$urls = json_decode($photo->urls);
+
+			if (!$urls)
+			{
+				return false;
+			}
+
 			$size = end($urls->sizes->size);
 
 			switch ($size->media)
@@ -103,7 +112,7 @@ class Download extends Application\Flickr
 	 */
 	private function downloadPhoto($photo, $size, $pid)
 	{
-		$toDir = Factory::getConfiguration()->get('media_dir', XPATH_ROOT . '/media') . '/' . $photo->owner;
+		$toDir = Factory::getConfiguration()->get('flickr_path', XPATH_ROOT . '/media/Flickr') . '/' . $photo->owner;
 
 		Directory::create($toDir);
 
@@ -130,7 +139,7 @@ class Download extends Application\Flickr
 	/**
 	 * @param   string $pid Photo ID
 	 *
-	 * @return  boolean|mixed|\Stash\Interfaces\ItemInterface
+	 * @return  boolean|object
 	 *
 	 * @since   2.1.0
 	 */

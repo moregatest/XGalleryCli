@@ -9,13 +9,8 @@ define('XGALLERY_NAMESPACE', 'XGallery');
 define('JPATH_ROOT', __DIR__);
 define('XPATH_ROOT', JPATH_ROOT);
 define('XPATH_3RD', XPATH_ROOT . '/3rd');
-define('XPATH_CACHE', XPATH_ROOT . '/cache');
-define('XPATH_LOG', XPATH_ROOT . '/logs/');
 
 define('XPATH_CONFIGURATION_FILE', XPATH_ROOT . '/config.json');
-
-// XGallery.Application
-define('XGALLERY_DEFAULT_APPLICATION', 'Flickr.Contacts');
 
 // Flickr
 define('XGALLERY_FLICKR_SAFE_SEARCH', 3);

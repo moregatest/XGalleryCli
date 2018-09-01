@@ -54,7 +54,7 @@ class Download extends Nct
 			$this->download($song);
 		}
 
-		return true;
+		return parent::doExecute();
 	}
 
 	/**
@@ -89,7 +89,14 @@ class Download extends Nct
 
 		$saveTo = $toDir . '/' . $fileName;
 
-		if (!Helper::downloadFile($downloadLink, $saveTo))
+		try
+		{
+			if (!Helper::downloadFile($downloadLink, $saveTo))
+			{
+				return false;
+			}
+		}
+		catch (\Exception $exception)
 		{
 			return false;
 		}

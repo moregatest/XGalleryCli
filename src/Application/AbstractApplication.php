@@ -7,13 +7,14 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace XGallery;
+namespace XGallery\Application;
 
 use Joomla\Input\Input;
 use Joomla\Registry\Registry;
 use Monolog\Logger;
 use Psr\Log\LogLevel;
 use XGallery\Environment\Filesystem\File;
+use XGallery\Factory;
 
 defined('_XEXEC') or die;
 
@@ -49,9 +50,11 @@ abstract class AbstractApplication
 	 */
 	public function __construct(Registry $config = null)
 	{
-		$this->input  = Factory::getInput();
+		$this->input = Factory::getInput();
+
+		// Application config file
 		$this->config = $config instanceof Registry ? $config : new Registry;
-		$filePath     = XPATH_LOG . '/' . md5(get_class($this)) . '.json';
+		$filePath     = Factory::getConfiguration()->get('log_path') . '/' . md5(get_class($this)) . '.json';
 
 		if (File::exists($filePath))
 		{
@@ -73,7 +76,7 @@ abstract class AbstractApplication
 	}
 
 	/**
-	 * @since   2.0.0
+	 * @since  2.0.0
 	 */
 	public function __destruct()
 	{
@@ -101,7 +104,7 @@ abstract class AbstractApplication
 	protected function cleanup()
 	{
 		$buffer = $this->config->toString();
-		File::write(XPATH_LOG . '/' . md5(get_class($this)) . '.json', $buffer);
+		File::write(Factory::getConfiguration()->get('log_path') . '/' . md5(get_class($this)) . '.json', $buffer);
 
 		$this->input  = null;
 		$this->config = null;
@@ -136,7 +139,7 @@ abstract class AbstractApplication
 	 *
 	 * @return  mixed
 	 */
-	protected function log($message, $data = array(), $type = 'info')
+	protected function log($message, $data = null, $type = 'info')
 	{
 		if (!empty($data))
 		{
@@ -154,10 +157,11 @@ abstract class AbstractApplication
 	 */
 	public function execute()
 	{
-		if (Factory::getConfiguration()->get('debug', false))
+		$config = Factory::getConfiguration();
+
+		if (Factory::isDebug())
 		{
-			$start = (float) memory_get_peak_usage(true);
-			$this->set('memory_start', $start);
+			$this->set('memory_start', (float) memory_get_peak_usage(true));
 			$this->set('execution_start', microtime(true));
 		}
 
@@ -167,16 +171,24 @@ abstract class AbstractApplication
 			return false;
 		}
 
-		if (Factory::getConfiguration()->get('debug', false))
+		if (Factory::isDebug())
 		{
-			$end = (float) memory_get_peak_usage(true);
-			$this->set('memory_end', $end);
+			$this->set('memory_end', (float) memory_get_peak_usage(true));
 			$this->set('execution_end', microtime(true));
-
 			$this->set(strtolower(get_class($this)) . '_executed', time());
 		}
 
-		return $this->doAfterExecute();
+		if (!$config->get('execute_chain', true))
+		{
+			return true;
+		}
+
+		if ($config->get('doAfterExecute', true) === true)
+		{
+			return $this->doAfterExecute();
+		}
+
+		return true;
 	}
 
 	/**
@@ -195,7 +207,7 @@ abstract class AbstractApplication
 	 */
 	protected function doAfterExecute()
 	{
-		if (Factory::getConfiguration()->get('debug', false))
+		if (Factory::isDebug())
 		{
 			$memoryUsage = (float) $this->get('memory_end') - (float) $this->get('memory_start');
 			$executeTime = (float) $this->get('execution_end') - (float) $this->get('execution_start');

@@ -12,6 +12,7 @@ namespace XGallery\Application;
 defined('_XEXEC') or die;
 
 use Joomla\Registry\Registry;
+use XGallery\Environment;
 use XGallery\Factory;
 use XGallery\Model;
 
@@ -47,10 +48,28 @@ class Flickr extends Cli
 	/**
 	 * @param   string $name Model name
 	 *
-	 * @return Model\Flickr|mixed
+	 * @return  Model\Flickr|mixed
 	 */
 	protected function getModel($name = 'Flickr')
 	{
 		return Model::getInstance($name);
+	}
+
+	/**
+	 * @param   string $application Application name
+	 * @param   array  $data        Extra data
+	 *
+	 * @return  void
+	 * @throws \Exception
+	 *
+	 * @since   2.2.0
+	 */
+	protected function execService($application, $data = array())
+	{
+		$args                = $this->input->getArray();
+		$args['application'] = 'Flickr.' . ucfirst($application);
+		$args                = array_merge($args, $data);
+
+		Environment::execService($args);
 	}
 }

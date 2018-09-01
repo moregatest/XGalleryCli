@@ -34,7 +34,8 @@ class Helper
 	 */
 	public static function downloadFile($url, $saveTo)
 	{
-		Factory::getLogger()->info(__FUNCTION__, func_get_args());
+		$logger = Factory::getLogger('Download');
+		$logger->info(__FUNCTION__, func_get_args());
 
 		$ch = curl_init($url);
 
@@ -66,7 +67,7 @@ class Helper
 
 			if ($result === false)
 			{
-				Factory::getLogger()->error('Download failed', array('url' => $url));
+				$logger->error('Download failed', array('url' => $url));
 				curl_close($ch);
 
 				return false;
@@ -76,7 +77,7 @@ class Helper
 
 			if ($fileSize <= 0)
 			{
-				Factory::getLogger()->error('Download failed', array('url' => $url));
+				$logger->error('Download failed', array('url' => $url));
 				curl_close($ch);
 
 				return false;
@@ -95,13 +96,13 @@ class Helper
 
 			curl_close($ch);
 
-			Factory::getLogger()->info('Download completed', array('url' => $url, 'to' => $saveTo));
+			$logger->info('Download completed', array('url' => $url, 'to' => $saveTo));
 
 			return $fileSize;
 		}
 		catch (\Exception $exception)
 		{
-			Factory::getLogger()->error($exception->getMessage());
+			$logger->error($exception->getMessage());
 		}
 
 		return false;

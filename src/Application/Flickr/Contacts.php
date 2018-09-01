@@ -12,7 +12,6 @@ namespace XGallery\Application\Flickr;
 defined('_XEXEC') or die;
 
 use XGallery\Application;
-use XGallery\Environment;
 
 /**
  * @package     XGallery.Application
@@ -30,25 +29,12 @@ class Contacts extends Application\Flickr
 	 */
 	protected function doExecute()
 	{
-		return $this->insertContactsFromFlickr();
-	}
+		if ($this->insertContacts())
+		{
+			return parent::doExecute();
+		}
 
-	/**
-	 * @return boolean
-	 *
-	 * @since  2.1.0
-	 * @throws \Exception
-	 */
-	protected function doAfterExecute()
-	{
-		parent::doAfterExecute();
-
-		$args                = $this->input->getArray();
-		$args['application'] = 'Flickr.Photos';
-
-		Environment::execService($args);
-
-		return true;
+		return false;
 	}
 
 	/**
@@ -59,7 +45,7 @@ class Contacts extends Application\Flickr
 	 * @since   2.0.0
 	 * @throws  \Exception
 	 */
-	protected function insertContactsFromFlickr()
+	protected function insertContacts()
 	{
 		$this->log(__CLASS__ . '.' . __FUNCTION__);
 
@@ -74,26 +60,19 @@ class Contacts extends Application\Flickr
 		}
 
 		// Get Flickr contacts
-		$contacts          = $this->service->contacts->getContactsList();
-		$totalContacts     = count($contacts);
-		$lastTotalContacts = $this->get('flickr_contacts_count');
+		$contacts = $this->service->contacts->getContactsList();
+		$hashed   = md5(serialize($contacts));
+
+		if (empty($contacts) || ($hashed === $this->get('flickr_contacts_hashed')))
+		{
+			$this->log('There is no new contacts', null, 'notice');
+
+			return true;
+		}
+
+		$totalContacts = count($contacts);
 
 		$this->log('Contacts: ' . $totalContacts);
-
-		// No new contact then no need execute database update
-		if ($lastTotalContacts && $lastTotalContacts == $totalContacts)
-		{
-			$this->logger->notice('Have no new contacts');
-
-			return true;
-		}
-
-		if (empty($contacts))
-		{
-			$this->log('Have no contacts', null, 'notice');
-
-			return true;
-		}
 
 		if (!$this->getModel()->insertContacts($contacts))
 		{
@@ -102,6 +81,22 @@ class Contacts extends Application\Flickr
 
 		// Update total contacts count
 		$this->set('flickr_contacts_count', $totalContacts);
+		$this->set('flickr_contacts_hashed', $hashed);
+
+		return true;
+	}
+
+	/**
+	 * @return boolean
+	 *
+	 * @since  2.1.0
+	 * @throws \Exception
+	 */
+	protected function doAfterExecute()
+	{
+		parent::doAfterExecute();
+
+		$this->execService('Photos');
 
 		return true;
 	}
