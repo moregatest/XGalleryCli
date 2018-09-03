@@ -10,7 +10,6 @@
 namespace XGallery\Application\Nct;
 
 use XGallery\Application\Nct;
-use XGallery\Environment;
 use XGallery\Factory;
 
 defined('_XEXEC') or die;
@@ -85,21 +84,5 @@ class Search extends Nct
 				'type'   => $this->input->get('type'),
 			)
 		);
-	}
-
-	/**
-	 * @return boolean
-	 *
-	 * @since  2.1.0
-	 * @throws \Exception
-	 */
-	protected function doAfterExecute()
-	{
-		$args                = $this->input->getArray();
-		$args['application'] = 'Nct.Download';
-
-		Environment::execService($args);
-
-		return parent::doAfterExecute();
 	}
 }

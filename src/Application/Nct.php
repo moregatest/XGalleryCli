@@ -11,6 +11,7 @@ namespace XGallery\Application;
 
 use GuzzleHttp\Client;
 use Joomla\Registry\Registry;
+use XGallery\Environment;
 
 
 /**
@@ -44,5 +45,21 @@ class Nct extends Cli
 		parent::__construct($config);
 
 		$this->service = new \XGallery\Service\Nct;
+	}
+
+	/**
+	 * @return boolean
+	 *
+	 * @since  2.1.0
+	 * @throws \Exception
+	 */
+	protected function doAfterExecute()
+	{
+		$args                = $this->input->getArray();
+		$args['application'] = 'Nct.Download';
+
+		Environment::execService($args);
+
+		return parent::doAfterExecute();
 	}
 }
