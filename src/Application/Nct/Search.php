@@ -31,14 +31,7 @@ class Search extends Nct
 	 */
 	public function doExecute()
 	{
-		$url = $this->service->builderSearchUrl(
-			array(
-				'title'  => $this->input->get('title'),
-				'singer' => $this->input->get('singer'),
-				'type'   => $this->input->get('type'),
-			)
-		);
-
+		$url   = $this->getSearchUrl();
 		$pages = $this->service->getPages($url);
 
 		if ($pages === 0)
@@ -51,7 +44,7 @@ class Search extends Nct
 
 		for ($page = 1; $page <= $pages; $page++)
 		{
-			$songs = $this->service->getSongs($url . '&page=' . $page);
+			$songs = $this->service->getSongsFromSearchView($url . '&page=' . $page);
 
 			if (empty($songs))
 			{
@@ -78,6 +71,20 @@ class Search extends Nct
 		$db->disconnect();
 
 		return parent::doExecute();
+	}
+
+	/**
+	 * @return string
+	 */
+	protected function getSearchUrl()
+	{
+		return $this->service->builderSearchUrl(
+			array(
+				'title'  => $this->input->get('title'),
+				'singer' => $this->input->get('singer'),
+				'type'   => $this->input->get('type'),
+			)
+		);
 	}
 
 	/**

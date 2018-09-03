@@ -159,7 +159,7 @@ class Download extends Application\Flickr
 		else
 		{
 			$photo = $photo->get();
-			$this->log('Found pid from cache: ', array($photo), 'notice');
+			$this->log('Found pid from cache', null, 'notice');
 		}
 
 		if ($photo === null)

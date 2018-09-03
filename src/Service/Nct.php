@@ -39,6 +39,19 @@ class Nct
 	}
 
 	/**
+	 * @param   array $condition Condition
+	 *
+	 * @return  string
+	 * @since   2.1.0
+	 */
+	public function builderSearchUrl($condition = array())
+	{
+		$baseUrl = 'https://www.nhaccuatui.com/tim-nang-cao';
+
+		return $baseUrl . '?' . http_build_query($condition);
+	}
+
+	/**
 	 * @param   string $filter Query filter
 	 *
 	 * @return  integer
@@ -64,10 +77,9 @@ class Nct
 	 *
 	 * @since   2.1.0
 	 */
-	public function getSongs($url)
+	public function getSongsFromSearchView($url)
 	{
-		$songs = array();
-
+		$songs   = array();
 		$respond = $this->client->request('GET', $url);
 		$html    = $respond->getBody();
 
@@ -79,6 +91,42 @@ class Nct
 		$crawler = new Crawler($html->getContents());
 
 		foreach ($crawler->filter('ul.search_returns_list li.list_song div.item_content a.name_song') as $node)
+		{
+			$song['name'] = $node->nodeValue;
+			$song['href'] = $node->getAttribute('href');
+			$songs[]      = $song;
+		}
+
+		return $songs;
+	}
+
+	/**
+	 * @param   string $url Songs URL
+	 *
+	 * @return  array
+	 * @throws  \GuzzleHttp\Exception\GuzzleException
+	 *
+	 * @since   2.1.1
+	 */
+	public function getSongsFromPlaylist($url)
+	{
+		if (empty($url))
+		{
+			return array();
+		}
+
+		$songs   = array();
+		$respond = $this->client->request('GET', $url);
+		$html    = $respond->getBody();
+
+		if (!$html)
+		{
+			return $songs;
+		}
+
+		$crawler = new Crawler($html->getContents());
+
+		foreach ($crawler->filter('#idScrllSongInAlbum li a.name_song') as $node)
 		{
 			$song['name'] = $node->nodeValue;
 			$song['href'] = $node->getAttribute('href');
@@ -139,18 +187,5 @@ class Nct
 		$dom     = simplexml_load_string($xml);
 
 		return (string) $dom->track->location;
-	}
-
-	/**
-	 * @param   array $condition Condition
-	 *
-	 * @return  string
-	 * @since   2.1.0
-	 */
-	public function builderSearchUrl($condition = array())
-	{
-		$baseUrl = 'https://www.nhaccuatui.com/tim-nang-cao';
-
-		return $baseUrl . '?' . http_build_query($condition);
 	}
 }

@@ -19,10 +19,6 @@ A standard alone application based on Joomla! Framework to fetch images from thi
 	 - php xgallery.php --application=Flickr.Photos
 	 - php xgallery.php --application=Flickr.Photos --url=userUrl
 	 - php xgallery.php --application=Flickr.Photos --nsid=nsid
-	 - php xgallery.php --application=Flickr.Download --pid=pid 
-	 - php xgallery.php --application=Flickr.Contacts
-	 - php xgallery.php --application=Flickr.Photos --url=userUrl
-	 - php xgallery.php --application=Flickr.Photos --nsid=nsid
-	 - php xgallery.php --application=Flickr.Download --pid=pid 
+	 - php xgallery.php --application=Flickr.Download --pid=pid 	  
 	 - php xgallery.php --application=Flickr.Cli --method=Url.lookupUser --url=userUrl 
 	 - php xgallery.php --application=Nct.Search --title="Title" --singer="Singer" --type="Type"

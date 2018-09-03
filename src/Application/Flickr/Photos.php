@@ -198,8 +198,6 @@ class Photos extends Application\Flickr
 	 */
 	protected function downloadPhoto($photo)
 	{
-		$this->log(__CLASS__ . '.' . __FUNCTION__, func_get_args(), 'debug');
-
 		$cache = Factory::getCache();
 		$item  = $cache->getItem('flickr/photo/' . $photo->id);
 

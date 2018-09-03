@@ -183,12 +183,7 @@ abstract class AbstractApplication
 			return true;
 		}
 
-		if ($config->get('doAfterExecute', true) === true)
-		{
-			return $this->doAfterExecute();
-		}
-
-		return true;
+		return $this->doAfterExecute();
 	}
 
 	/**

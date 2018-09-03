@@ -13,6 +13,7 @@ use Joomla\Filesystem\Folder;
 use XGallery\Application\Nct;
 use XGallery\Environment\Filesystem\Helper;
 use XGallery\Factory;
+use XGallery\Model;
 
 defined('_XEXEC') or die;
 
@@ -32,22 +33,8 @@ class Download extends Nct
 	 */
 	public function doExecute()
 	{
-		$id    = $this->input->getInt('id');
-		$db    = Factory::getDbo();
-		$query = $db->getQuery(true);
-		$query->select('*')
-			->from($db->quoteName('#__nct_songs'));
-
-		if ($id)
-		{
-			$query->where($db->quoteName('id') . ' = ' . (int) $id);
-		}
-		else
-		{
-			$query->where($db->quoteName('state') . ' = 0');
-		}
-
-		$songs = $db->setQuery($query, 0, 100)->loadObjectList();
+		$model = Model::getInstance('Nct');
+		$songs = $model->getSongs($this->input->getInt('id'));
 
 		foreach ($songs as $index => $song)
 		{
@@ -80,7 +67,7 @@ class Download extends Nct
 		$fileName = explode('?', basename($downloadLink));
 		$fileName = $fileName[0];
 
-		$toDir = Factory::getConfiguration()->get('nct_media_dir', XPATH_ROOT . '/NCT/' . $songData['singer']);
+		$toDir = Factory::getConfiguration()->get('nct_path', XPATH_ROOT . '/NCT/' . $songData['singer']);
 
 		if (!is_dir($toDir))
 		{
