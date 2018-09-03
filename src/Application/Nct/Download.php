@@ -61,13 +61,19 @@ class Download extends Nct
 
 		$db = Factory::getDbo();
 
-		$songData     = $this->service->getData($song->playUrl);
+		$songData = $this->service->getData($song->playUrl);
+
+		if (!filter_var($songData['flashlink'], FILTER_VALIDATE_URL))
+		{
+			return true;
+		}
+
 		$downloadLink = trim($this->service->getDownloadLink($songData['flashlink']));
 
 		$fileName = explode('?', basename($downloadLink));
 		$fileName = $fileName[0];
 
-		$toDir = Factory::getConfiguration()->get('nct_path', XPATH_ROOT . '/NCT/' . $songData['singer']);
+		$toDir = Factory::getConfiguration()->get('nct_path', XPATH_ROOT . '/NCT/') . '/' . $songData['singer'];
 
 		if (!is_dir($toDir))
 		{
