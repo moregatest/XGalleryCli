@@ -126,14 +126,20 @@ class Download extends Application\Flickr
 			throw new \Exception('File download failed: ' . $saveTo);
 		}
 
-		if ($originalFileSize === false || $originalFileSize != filesize($saveTo))
+		$fileSize = filesize($saveTo);
+
+		if ($originalFileSize === false || $originalFileSize != $fileSize)
 		{
 			File::delete($saveTo);
 
 			throw new \Exception('File is not validated: ' . $saveTo);
 		}
 
-		return $this->getModel()->updatePhoto($pid, array('state' => XGALLERY_FLICKR_PHOTO_STATE_DOWNLOADED));
+		return $this->getModel()->updatePhoto($pid, array(
+				'state'    => XGALLERY_FLICKR_PHOTO_STATE_DOWNLOADED,
+				'filesize' => $fileSize
+			)
+		);
 	}
 
 	/**
