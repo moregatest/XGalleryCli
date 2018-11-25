@@ -19,6 +19,11 @@ defined('_XEXEC') or die;
  */
 class Environment
 {
+	public static function isCli()
+	{
+		return php_sapi_name() === "cli";
+	}
+
 	/**
 	 * @param   string  $command Execute command
 	 * @param   boolean $isPhp   PHP execute

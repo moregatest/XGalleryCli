@@ -13,7 +13,6 @@ defined('_XEXEC') or die;
 
 use Joomla\Registry\Registry;
 use XGallery\Environment;
-use XGallery\Factory;
 use XGallery\Model;
 
 /**
@@ -42,7 +41,7 @@ class Flickr extends Cli
 	{
 		parent::__construct($config);
 
-		$this->service = Factory::getService('Flickr');
+		$this->service = \XGallery\Webservices\Services\Flickr::getInstance();
 	}
 
 	/**

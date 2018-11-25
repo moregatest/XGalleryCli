@@ -17,8 +17,6 @@ use Psr\Log\LogLevel;
 use Stash\Driver\Apc;
 use Stash\Driver\FileSystem;
 use Stash\Driver\Memcache;
-use XGallery\Service\Flickr;
-use XGallery\System\Configuration;
 
 defined('_XEXEC') or die;
 
@@ -70,10 +68,19 @@ class Factory
 
 		if (isset($instance))
 		{
-			return $instance;
+			if (Environment::isCli())
+			{
+				return $instance->cli;
+			}
+
 		}
 
 		$instance = new Input;
+
+		if (Environment::isCli())
+		{
+			return $instance->cli;
+		}
 
 		return $instance;
 	}
@@ -132,35 +139,6 @@ class Factory
 		$instances[$name]->pushHandler(
 			new StreamHandler(self::getConfiguration()->get('log_path') . '/' . date("Y-m-d", time()) . '/' . $name . '_' . $level . '.log')
 		);
-
-		return $instances[$name];
-	}
-
-	/**
-	 * @param   string $name Service name
-	 *
-	 * @return  boolean|Flickr
-	 *
-	 * @since   2.0.0
-	 */
-	public static function getService($name)
-	{
-		static $instances;
-
-		$name      = str_replace('.', '\\', $name);
-		$className = '\\' . XGALLERY_NAMESPACE . '\\Service\\' . $name;
-
-		if (isset($instances[$className]))
-		{
-			return $instances[$name];
-		}
-
-		if (!class_exists($className))
-		{
-			return false;
-		}
-
-		$instances[$name] = new $className;
 
 		return $instances[$name];
 	}

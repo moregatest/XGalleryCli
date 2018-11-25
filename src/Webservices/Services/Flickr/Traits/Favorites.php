@@ -7,22 +7,24 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace XGallery\Service\Flickr;
+namespace XGallery\Webservices\Services\Flickr\Traits;
 
-use XGallery\Oauth\Service\Flickr;
+use XGallery\Webservices\Oauth\Flickr;
 
 defined('_XEXEC') or die;
 
 /**
- * Class Photos
+ * Class Favorites
  * @package   XGallery\Service\Flickr
  *
  * @since     2.1.0
  */
-class Photos extends Flickr
+trait Favorites
 {
+	abstract public function execute($parameters, $url = Flickr::API_ENDPOINT, $method = 'GET', $options = []);
+
 	/**
-	 * @param   string $pid Pid
+	 * @param   string $nsid User id
 	 *
 	 * @return  boolean|mixed
 	 *
@@ -30,16 +32,12 @@ class Photos extends Flickr
 	 *
 	 * @throws  \Exception
 	 */
-	public function getPhotoSizes($pid)
+	public function getFavortiesList($nsid = null)
 	{
-		if (empty($pid))
-		{
-			return false;
-		}
-
 		return $this->execute(array(
-				'method'   => 'flickr.photos.getSizes',
-				'photo_id' => $pid
+				'method'   => 'flickr.favorites.getList',
+				'user_id'  => $nsid,
+				'per_page' => XGALLERY_FLICKR_FAVORITES_GETLIST_PERPAGE
 			)
 		);
 	}

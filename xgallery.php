@@ -11,7 +11,7 @@ use XGallery\Factory;
 
 require_once __DIR__ . '/bootstrap.php';
 
-$input = Factory::getInput()->cli;
+$input = Factory::getInput();
 
 $application = Factory::getApplication($input->getCmd('application', Factory::getConfiguration()->get('application')));
 $task        = $input->getCmd('task', 'execute');

@@ -18,7 +18,8 @@
     "ext-json": "^1.6",
     "ext-curl": "^7.2",
     "ext-xdebug": "^2.6",
-    "ext-SimpleXML": "^7.2"
+    "ext-SimpleXML": "^7.2",
+    "ext-memcached": "^3.0"
   },
   "autoload": {
     "psr-4": {

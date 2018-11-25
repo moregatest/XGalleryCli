@@ -11,6 +11,7 @@ namespace XGallery\Application\Flickr;
 
 defined('_XEXEC') or die;
 
+use Exception;
 use XGallery\Application;
 use XGallery\Environment\Filesystem\Directory;
 use XGallery\Environment\Filesystem\File;
@@ -79,16 +80,22 @@ class Download extends Application\Flickr
 
 			switch ($size->media)
 			{
-				default:
 				case 'photo':
 					$this->downloadPhoto($photo, $size, $pid);
+					break;
+				default:
+					$this->getModel()->updatePhoto($pid,
+						[
+							'state' => XGALLERY_FLICKR_PHOTO_STATE_WAITING,
+						]
+					);
 					break;
 			}
 
 			$db->transactionCommit();
 			$db->disconnect();
 		}
-		catch (\Exception $exception)
+		catch (Exception $exception)
 		{
 			$this->logger->error($exception->getMessage(), array('query' => (string) $db->getQuery(), 'url' => get_object_vars($urls)));
 			$db->transactionRollback();

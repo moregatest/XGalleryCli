@@ -103,8 +103,9 @@ abstract class AbstractApplication
 	 */
 	protected function cleanup()
 	{
-		$buffer = $this->config->toString();
-		File::write(Factory::getConfiguration()->get('log_path') . '/' . md5(get_class($this)) . '.json', $buffer);
+		$buffer  = $this->config->toString();
+		$logFile = Factory::getConfiguration()->get('log_path') . '/' . md5(get_class($this)) . '.json';
+		File::write($logFile, $buffer);
 
 		$this->input  = null;
 		$this->config = null;

@@ -11,7 +11,9 @@ namespace XGallery\Application\Flickr;
 
 defined('_XEXEC') or die;
 
+use Exception;
 use XGallery\Application;
+use XGallery\Environment;
 use XGallery\Factory;
 
 /**
@@ -26,11 +28,30 @@ class Photos extends Application\Flickr
 	 * @return boolean
 	 *
 	 * @since  2.1.0
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	protected function doExecute()
 	{
 		$nsid = $this->getNsid();
+
+		// Download unfinished photos of request nsid;
+		// Get photo sizes of current contact
+		$photos = $this->getModel()->getPhotos($nsid, $this->getLimit(), 0, XGALLERY_FLICKR_PHOTO_STATE_SIZED);
+
+		if (Environment::isCli())
+		{
+			echo $nsid . ':' . count($photos) . PHP_EOL;
+		}
+
+		$this->log('Download sized photos: ' . count($photos));
+
+		if (!empty($photos))
+		{
+			foreach ($photos as $photo)
+			{
+				$this->downloadPhoto($photo);
+			}
+		}
 
 		if ($this->insertPhotos($nsid))
 		{
@@ -44,7 +65,7 @@ class Photos extends Application\Flickr
 	 * @return  boolean|string
 	 *
 	 * @since   2.0.0
-	 * @throws  \Exception
+	 * @throws  Exception
 	 */
 	private function getNsid()
 	{
@@ -87,7 +108,7 @@ class Photos extends Application\Flickr
 	 * @return  boolean
 	 *
 	 * @since   2.0.0
-	 * @throws  \Exception
+	 * @throws  Exception
 	 */
 	protected function insertPhotos($nsid)
 	{
@@ -101,11 +122,10 @@ class Photos extends Application\Flickr
 			return false;
 		}
 
-		// Update contact to prevent another thread step over it
 		$model = $this->getModel();
 
 		// Fetch photos
-		$photos = $this->service->people->getPhotosList($nsid);
+		$photos = $this->service->getPhotosList($nsid);
 
 		$this->log('Photos: ' . count($photos));
 
@@ -118,7 +138,7 @@ class Photos extends Application\Flickr
 	 *
 	 * @return  boolean
 	 *
-	 * @throws  \Exception
+	 * @throws  Exception
 	 */
 	protected function downloadPhotos($nsid)
 	{
@@ -130,24 +150,7 @@ class Photos extends Application\Flickr
 		try
 		{
 			// Get Flickr download limit. By default use maxConnection
-			$limit = $this->get('flickr_download_limit');
-
-			if (!$limit)
-			{
-				$limit = (int) $model->getMaxConnection()->Value - 10;
-				$this->set('flickr_download_limit', $limit);
-			}
-
-			$this->log('Download limit: ' . $limit);
-
-			// Get photo sizes of current contact
-			$photos = $model->getPhotos($nsid, $limit, 0, XGALLERY_FLICKR_PHOTO_STATE_SIZED);
-			$this->log('Download sized photos: ' . count($photos));
-
-			foreach ($photos as $photo)
-			{
-				$this->downloadPhoto($photo);
-			}
+			$limit = $this->getLimit();
 
 			// Get photo sizes of current contact with pending status
 			$photos = $model->getPhotos($nsid, $limit, 0);
@@ -182,7 +185,7 @@ class Photos extends Application\Flickr
 
 			return true;
 		}
-		catch (\Exception $exception)
+		catch (Exception $exception)
 		{
 			$this->log($exception->getMessage(), null, 'error');
 
@@ -194,7 +197,7 @@ class Photos extends Application\Flickr
 	 * @param   object $photo Photo
 	 *
 	 * @return  void
-	 * @throws  \Exception
+	 * @throws  Exception
 	 */
 	protected function downloadPhoto($photo)
 	{
@@ -217,7 +220,7 @@ class Photos extends Application\Flickr
 	 * @return boolean
 	 *
 	 * @since  2.1.0
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	protected function doAfterExecute()
 	{
@@ -225,5 +228,22 @@ class Photos extends Application\Flickr
 
 		// Download photos from this nsid
 		return $this->downloadPhotos($this->input->get('nsid'));
+	}
+
+	/**
+	 * @return integer|mixed
+	 */
+	private function getLimit()
+	{
+		// Get Flickr download limit. By default use maxConnection
+		$limit = $this->get('flickr_download_limit');
+
+		if (!$limit)
+		{
+			$limit = (int) $this->getModel()->getMaxConnection()->Value - 10;
+			$this->set('flickr_download_limit', $limit);
+		}
+
+		return $limit;
 	}
 }

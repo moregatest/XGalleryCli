@@ -7,9 +7,9 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace XGallery\Service\Flickr;
+namespace XGallery\Webservices\Services\Flickr\Traits;
 
-use XGallery\Oauth\Service\Flickr;
+use XGallery\Webservices\Oauth\Flickr;
 
 defined('_XEXEC') or die;
 
@@ -19,8 +19,10 @@ defined('_XEXEC') or die;
  *
  * @since     2.1.0
  */
-class People extends Flickr
+trait People
 {
+	abstract public function execute($parameters, $url = Flickr::API_ENDPOINT, $method = 'GET', $options = []);
+
 	/**
 	 * @param   string $nsid   Nsid
 	 * @param   array  $photos Photo

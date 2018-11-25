@@ -1,25 +1,21 @@
 <?php
 /**
- * @package     XGallery.Cli
- * @subpackage  OAuth
- *
- * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
- * @license     GNU General Public License version 2 or later; see LICENSE
+ * Created by PhpStorm.
+ * User: soulevil
+ * Date: 11/25/18
+ * Time: 7:37 PM
  */
 
-namespace XGallery\Oauth;
+namespace XGallery\Webservices;
 
+use oauth_client_class;
 use XGallery\Factory;
 
-defined('_XEXEC') or die;
-
 /**
- * @package     XGallery.Cli
- * @subpackage  OAuth
- *
- * @since       2.0.0
+ * Class Oauth
+ * @package XGallery\Webservices
  */
-class Oauth extends \oauth_client_class
+class Oauth extends oauth_client_class
 {
 	/**
 	 * @var \Monolog\Logger
