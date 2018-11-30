@@ -25,7 +25,7 @@ use XGallery\Model;
 class Flickr extends Cli
 {
 	/**
-	 * @var  boolean|\XGallery\Service\Flickr
+	 * @var  boolean|\XGallery\Webservices\Services\Flickr
 	 */
 	protected $service;
 

@@ -127,6 +127,11 @@ class Photos extends Application\Flickr
 		// Fetch photos
 		$photos = $this->service->getPhotosList($nsid);
 
+		if (Environment::isCli())
+		{
+			echo $nsid . ':' . count($photos) . PHP_EOL;
+		}
+
 		$this->log('Photos: ' . count($photos));
 
 		// Insert photos into database
@@ -155,7 +160,12 @@ class Photos extends Application\Flickr
 			// Get photo sizes of current contact with pending status
 			$photos = $model->getPhotos($nsid, $limit, 0);
 
-			if (!empty($photos))
+			if (Environment::isCli())
+			{
+				echo $nsid . ':' . count($photos) . PHP_EOL;
+			}
+
+			if (empty($photos))
 			{
 				$this->log('There is no photos for getting sizes and download', null, 'notice');
 
@@ -165,7 +175,7 @@ class Photos extends Application\Flickr
 			// Process download photos
 			foreach ($photos as $photo)
 			{
-				$sized = $this->service->photos->getPhotoSizes($photo->id);
+				$sized = $this->service->getPhotoSizes($photo->id);
 
 				if (!$sized)
 				{
@@ -210,9 +220,9 @@ class Photos extends Application\Flickr
 
 		$this->execService(
 			'Download',
-			array(
+			[
 				'pid' => $photo->id
-			)
+			]
 		);
 	}
 

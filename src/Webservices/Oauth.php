@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: soulevil
- * Date: 11/25/18
- * Time: 7:37 PM
- */
 
 namespace XGallery\Webservices;
 

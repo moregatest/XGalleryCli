@@ -142,10 +142,12 @@ class Download extends Application\Flickr
 			throw new \Exception('File is not validated: ' . $saveTo);
 		}
 
-		return $this->getModel()->updatePhoto($pid, array(
+		return $this->getModel()->updatePhoto(
+			$pid,
+			[
 				'state'    => XGALLERY_FLICKR_PHOTO_STATE_DOWNLOADED,
 				'filesize' => $fileSize
-			)
+			]
 		);
 	}
 

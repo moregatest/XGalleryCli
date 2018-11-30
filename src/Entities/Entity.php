@@ -33,9 +33,10 @@ abstract class Entity implements EntityInterface
 	 */
 	public function __construct($id = null)
 	{
-		$this->id = (int) $id;
+		$this->id = $id;
 
 		$this->initObject([$this->primaryKey() => $id]);
+		$this->fetch();
 	}
 
 	/**
@@ -149,9 +150,15 @@ abstract class Entity implements EntityInterface
 		return $this->getProperty($property, $default);
 	}
 
-	public function set($propery, $value)
+	/**
+	 * @param   string $property Name of the property to get
+	 * @param   mixed  $value    Value
+	 *
+	 * @return  mixed
+	 */
+	public function set($property, $value)
 	{
-		return $this->setProperty($propery, $value);
+		return $this->setProperty($property, $value);
 	}
 
 	/**

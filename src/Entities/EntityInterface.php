@@ -1,12 +1,15 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: soulevil
- * Date: 11/25/18
- * Time: 6:19 PM
+ * @package     XGalleryCli.Entity
+ * @subpackage  Flickr Interface
+ *
+ * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
 namespace XGallery\Entities;
+
+defined('_XEXEC') or die;
 
 /**
  * Interface EntityInterface
@@ -41,6 +44,12 @@ interface EntityInterface
 	 */
 	public function get($property, $default = null);
 
+	/**
+	 * @param   string $property Name of the property to get
+	 * @param   mixed  $value    Value
+	 *
+	 * @return  mixed
+	 */
 	public function set($property, $value);
 
 	/**

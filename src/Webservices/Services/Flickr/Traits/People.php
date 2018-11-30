@@ -60,6 +60,21 @@ trait People
 	}
 
 	/**
+	 * @param $nsid
+	 *
+	 * @return mixed
+	 */
+	public function getInfo($nsid)
+	{
+		return $this->execute(
+			[
+				'method'  => 'flickr.people.getInfo',
+				'user_id' => $nsid
+			]
+		);
+	}
+
+	/**
 	 * @param   array $params Parameters
 	 *
 	 * @return  boolean|object
