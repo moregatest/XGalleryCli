@@ -10,6 +10,7 @@
 namespace XGallery\Application\Flickr;
 
 use XGallery\Application\Flickr;
+use XGallery\Entities\Flickr\EntityContact;
 
 defined('_XEXEC') or die;
 
@@ -29,14 +30,24 @@ class Cli extends Flickr
 	 */
 	protected function doExecute()
 	{
-		$data   = $this->input->getArray();
-		$method = $data['method'];
-		$method = explode('.', $method);
+		$data = $this->input->getArray();
 
 		unset($data['application']);
 		unset($data['method']);
 
-		print_r(call_user_func_array(array($this->service->{$method[0]}, $method[1]), $data));
+		$result = call_user_func_array(
+			[
+				$this->service, $this->input->getCmd('method')
+			], $data
+		);
+
+		switch ($this->input->getCmd('method'))
+		{
+			case 'lookupUser':
+				$entityContact = EntityContact::find($result->user->id);
+				print_r($entityContact);
+				break;
+		}
 
 		return parent::doExecute();
 	}

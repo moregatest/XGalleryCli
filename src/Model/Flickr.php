@@ -33,6 +33,11 @@ class Flickr extends Model
 	 */
 	public function insertContacts($contacts)
 	{
+		if (empty($contacts))
+		{
+			return false;
+		}
+
 		$db    = $this->getDbo();
 		$query = $db->getQuery(true);
 		$query->insert($db->quoteName('#__xgallery_flickr_contacts'));
@@ -67,6 +72,9 @@ class Flickr extends Model
 			'path_alias',
 			'location'
 		);
+
+		var_dump($contacts);
+		exit;
 
 		foreach ($contacts as $contact)
 		{

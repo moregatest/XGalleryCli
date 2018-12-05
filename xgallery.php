@@ -11,12 +11,9 @@ use XGallery\Factory;
 
 require_once __DIR__ . '/bootstrap.php';
 
-$input = Factory::getInput()->cli;
+$application = Factory::getApplication(Factory::getInput()->getCmd('application', Factory::getConfiguration()->get('application')));
 
-$application = Factory::getApplication($input->getCmd('application', Factory::getConfiguration()->get('application')));
-$task        = $input->getCmd('task', 'execute');
-
-if ($application && method_exists($application, $task))
+if ($application)
 {
-	call_user_func(array($application, $task));
+	$application->execute();
 }

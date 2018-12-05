@@ -7,10 +7,10 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace XGallery\Oauth\Service;
+namespace XGallery\Webservices\Oauth;
 
-use XGallery\Oauth\Oauth;
-use XGallery\System\Configuration;
+use XGallery\Configuration;
+use XGallery\Webservices\Oauth;
 
 defined('_XEXEC') or die;
 
@@ -26,12 +26,6 @@ defined('_XEXEC') or die;
  */
 class Flickr extends Oauth
 {
-	/**
-	 * @var   null|\oauth_client_class
-	 *
-	 * @since  2.0.0
-	 */
-	protected $client = null;
 
 	/**
 	 * @var    array
@@ -66,26 +60,6 @@ class Flickr extends Oauth
 		$this->scope = $config->get('flickr_scope', 'read');
 
 		parent::__construct();
-	}
-
-	/**
-	 * @return Flickr
-	 * @throws \Exception
-	 *
-	 * @since  2.0.0
-	 */
-	public static function getInstance()
-	{
-		static $instance;
-
-		if ($instance)
-		{
-			return $instance;
-		}
-
-		$instance = new static;
-
-		return $instance;
 	}
 
 	/**

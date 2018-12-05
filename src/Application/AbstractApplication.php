@@ -36,6 +36,8 @@ abstract class AbstractApplication
 	 */
 	protected $config = null;
 
+	protected $globalConfig;
+
 	/**
 	 * @var Logger
 	 */
@@ -50,18 +52,20 @@ abstract class AbstractApplication
 	 */
 	public function __construct(Registry $config = null)
 	{
-		$this->input = Factory::getInput();
+		$this->globalConfig = Factory::getConfiguration();
+		$this->input        = Factory::getInput();
 
 		// Application config file
-		$this->config = $config instanceof Registry ? $config : new Registry;
-		$filePath     = Factory::getConfiguration()->get('log_path') . '/' . md5(get_class($this)) . '.json';
+		$this->config       = $config instanceof Registry ? $config : new Registry;
+		$applicationLogFile = $this->globalConfig->get('log_path') . '/' . md5(get_class($this)) . '.json';
 
-		if (File::exists($filePath))
+		if ($applicationLogFile)
 		{
-			$this->config->loadFile($filePath);
+			$this->config->loadFile($applicationLogFile);
 		}
 
-		$this->logger = Factory::getLogger(get_class($this), Factory::getConfiguration()->get('logger_level', LogLevel::NOTICE));
+		$this->config->set('application_config_file', $applicationLogFile);
+		$this->logger = Factory::getLogger(get_class($this), $this->globalConfig->get('logger_level', LogLevel::NOTICE));
 	}
 
 	/**
@@ -104,7 +108,7 @@ abstract class AbstractApplication
 	protected function cleanup()
 	{
 		$buffer = $this->config->toString();
-		File::write(Factory::getConfiguration()->get('log_path') . '/' . md5(get_class($this)) . '.json', $buffer);
+		File::write($this->config->get('application_config_file'), $buffer);
 
 		$this->input  = null;
 		$this->config = null;

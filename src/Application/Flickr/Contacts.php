@@ -49,6 +49,26 @@ class Contacts extends Application\Flickr
 	{
 		$this->log(__CLASS__ . '.' . __FUNCTION__);
 
+		$contacts = $this->getContacts();
+
+		if ($contacts === false || empty($contacts))
+		{
+			return false;
+		}
+
+		return $this->getModel()->insertContacts($contacts);
+	}
+
+	/**
+	 * Get contacts array
+	 *
+	 * @return array|boolean
+	 * @throws \Exception
+	 */
+	private function getContacts()
+	{
+		$this->log(__CLASS__ . '.' . __FUNCTION__);
+
 		$lastExecutedTime = (int) $this->get(strtolower(get_class($this)) . '_executed');
 
 		// No need update contact if cache is not expired
@@ -60,30 +80,25 @@ class Contacts extends Application\Flickr
 		}
 
 		// Get Flickr contacts
-		$contacts = $this->service->contacts->getContactsList();
+		$contacts = $this->service->getContactsList();
 		$hashed   = md5(serialize($contacts));
 
 		if (empty($contacts) || ($hashed === $this->get('flickr_contacts_hashed')))
 		{
 			$this->log('There is no new contacts', null, 'notice');
 
-			return true;
+			return false;
 		}
 
 		$totalContacts = count($contacts);
 
 		$this->log('Contacts: ' . $totalContacts);
 
-		if (!$this->getModel()->insertContacts($contacts))
-		{
-			return false;
-		}
-
 		// Update total contacts count
 		$this->set('flickr_contacts_count', $totalContacts);
 		$this->set('flickr_contacts_hashed', $hashed);
 
-		return true;
+		return $contacts;
 	}
 
 	/**
