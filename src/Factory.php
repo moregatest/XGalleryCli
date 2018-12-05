@@ -31,7 +31,7 @@ class Factory
 	/**
 	 * @param   string $name Application name
 	 *
-	 * @return  boolean
+	 * @return  boolean|mixed
 	 *
 	 * @since   2.0.2
 	 */
