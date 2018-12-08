@@ -29,12 +29,9 @@ class Contacts extends Application\Flickr
 	 */
 	protected function doExecute()
 	{
-		if ($this->insertContacts())
-		{
-			return parent::doExecute();
-		}
+		$this->insertContacts();
 
-		return false;
+		return parent::doExecute();
 	}
 
 	/**
