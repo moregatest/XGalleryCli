@@ -13,6 +13,7 @@ defined('_XEXEC') or die;
 
 use Joomla\Registry\Registry;
 use XGallery\Environment;
+use XGallery\Factory;
 use XGallery\Model;
 
 /**
@@ -42,6 +43,14 @@ class Flickr extends Cli
 		parent::__construct($config);
 
 		$this->service = \XGallery\Webservices\Services\Flickr::getInstance();
+	}
+
+	/**
+	 * @return boolean|mixed
+	 */
+	protected function validate()
+	{
+		return Environment\Filesystem\File::exists(Factory::getConfiguration()->get('flickr_path', XPATH_ROOT . '/media/Flickr'));
 	}
 
 	/**

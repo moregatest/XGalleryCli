@@ -169,6 +169,11 @@ abstract class AbstractApplication
 			$this->set('execution_start', microtime(true));
 		}
 
+		if (!$this->validate())
+		{
+			return false;
+		}
+
 		// Primary execute
 		if (!$this->doExecute())
 		{
@@ -189,6 +194,13 @@ abstract class AbstractApplication
 
 		return $this->doAfterExecute();
 	}
+
+	/**
+	 * Validate requirements before execute process
+	 *
+	 * @return mixed
+	 */
+	abstract protected function validate();
 
 	/**
 	 *
