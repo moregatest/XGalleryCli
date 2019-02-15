@@ -1,225 +1,127 @@
 <?php
-/**
- * @package     XGalleryCli
- * @subpackage  Factory
- *
- * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
- * @license     GNU General Public License version 2 or later; see LICENSE
- */
 
 namespace XGallery;
 
-use Joomla\Database\DatabaseFactory;
-use Joomla\Input\Input;
+use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\DriverManager;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
-use Psr\Log\LogLevel;
-use Stash\Driver\Apc;
-use Stash\Driver\FileSystem;
-use Stash\Driver\Memcache;
-use XGallery\Service\Flickr;
-use XGallery\System\Configuration;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
-defined('_XEXEC') or die;
 
 /**
  * Class Factory
- * @package XGallery
  *
- * @since   2.0.2
+ * @package XGallery
  */
 class Factory
 {
-	/**
-	 * @param   string $name Application name
-	 *
-	 * @return  boolean
-	 *
-	 * @since   2.0.2
-	 */
-	public static function getApplication($name)
-	{
-		static $instances;
 
-		$name      = str_replace('.', '\\', $name);
-		$className = '\\' . XGALLERY_NAMESPACE . '\\Application\\' . $name;
+    const NAMESPACE = 'XGallery3';
 
-		if (isset($instances[$className]))
-		{
-			return $instances[$name];
-		}
+    /**
+     * @return \Doctrine\DBAL\Connection
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public static function getDbo()
+    {
+        $config = new Configuration;
 
-		if (!class_exists($className) && !is_subclass_of($name, '\\' . XGALLERY_NAMESPACE . '\\Application'))
-		{
-			return false;
-		}
+        return DriverManager::getConnection(
+            [
+                'dbname' => 'xgallery3',
+                'user' => 'root',
+                'password' => 'root',
+                'host' => 'localhost',
+                'driver' => 'pdo_mysql',
+                'charset' => 'utf8mb4'
+            ],
+            $config
+        );
 
-		$instances[$name] = new $className;
+    }
 
-		return $instances[$name];
-	}
+    /**
+     * @param $name
+     *
+     * @return Logger
+     * @throws \Exception
+     */
+    public static function getLogger($name)
+    {
+        static $logger;
 
-	/**
-	 * @return  Input
-	 *
-	 * @since   2.0.2
-	 */
-	public static function getInput()
-	{
-		static $instance;
+        if (isset($logger)) {
+            return $logger;
+        }
 
-		if (isset($instance))
-		{
-			return $instance;
-		}
+        $logger = new  Logger(self::NAMESPACE);
+        $logFile = str_replace('\\', DIRECTORY_SEPARATOR, strtolower($name));
+        $logger->pushHandler(
+            new StreamHandler(
+                __DIR__ . '/../logs/' . $logFile . '_' . date("Y-m-d") . '.log'
+            )
+        );
 
-		$instance = new Input;
+        return $logger;
+    }
 
-		return $instance;
-	}
+    /**
+     * @param string $namespace
+     * @param int $defaultLifetime
+     * @param string|null $directory
+     *
+     * @return FilesystemAdapter
+     */
+    public static function getCache($namespace = self::NAMESPACE, $defaultLifetime = 0, string $directory = null)
+    {
+        static $instances;
 
-	/**
-	 * @return  \Joomla\Database\DatabaseDriver
-	 *
-	 * @since   2.0.2
-	 */
-	public static function getDbo()
-	{
-		static $instance;
+        $id = md5(serialize(func_num_args()));
 
-		if (isset($instance))
-		{
-			return $instance;
-		}
+        if (isset($instances[$id])) {
+            return $instances[$id];
+        }
 
-		$config   = Configuration::getInstance();
-		$factory  = new DatabaseFactory;
-		$instance = $factory->getDriver('mysqli',
-			array(
-				'host'     => $config->get('host'),
-				'user'     => $config->get('user'),
-				'password' => $config->get('password'),
-				'database' => $config->get('database'),
-				'prefix'   => $config->get('prefix')
-			)
-		);
+        if ($directory === null) {
+            $directory = __DIR__ . '/../cache';
+        }
 
-		return $instance;
-	}
+        $instances[$id] = new FilesystemAdapter($namespace, $defaultLifetime, $directory);
 
-	/**
-	 * @param   string $name  Name
-	 * @param   string $level Log level
-	 *
-	 * @return  Logger
-	 *
-	 * @since   2.0.2
-	 *
-	 * @throws  \Exception
-	 */
-	public static function getLogger($name = 'core', $level = LogLevel::DEBUG)
-	{
-		static $instances;
+        return $instances[$id];
+    }
 
-		$name = str_replace('\\', '_', strtolower($name));
+    /**
+     * @param $service
+     * @return boolean|mixed
+     */
+    public static function getServices($service)
+    {
+        static $instances;
 
-		if (isset($instances[$name]))
-		{
-			return $instances[$name];
-		}
+        $id = md5(serialize(func_get_args()));
 
-		$instances[$name] = new Logger(XGALLERY_NAMESPACE);
-		$instances[$name]->pushHandler(
-			new StreamHandler(self::getConfiguration()->get('log_path') . '/' . date("Y-m-d", time()) . '/' . $name . '_' . $level . '.log')
-		);
+        if (isset($instances[$id])) {
+            return $instances[$id];
+        }
 
-		return $instances[$name];
-	}
+        $classString = '\\XGallery\\Webservices\\Services\\' . ucfirst($service);
+        $defineString = '\\XGallery\\Defines\\Defines' . ucfirst($service);
 
-	/**
-	 * @param   string $name Service name
-	 *
-	 * @return  boolean|Flickr
-	 *
-	 * @since   2.0.0
-	 */
-	public static function getService($name)
-	{
-		static $instances;
+        if (!class_exists($classString)) {
+            return false;
+        }
 
-		$name      = str_replace('.', '\\', $name);
-		$className = '\\' . XGALLERY_NAMESPACE . '\\Service\\' . $name;
+        $class = new $classString;
+        $credential = constant($defineString . '::CREDENTIAL');
+        $class->setCredential(
+            $credential['oauth_consumer_key'],
+            $credential['oauth_consumer_secret'],
+            $credential['oauth_token'],
+            $credential['oauth_token_secret']
+        );
 
-		if (isset($instances[$className]))
-		{
-			return $instances[$name];
-		}
-
-		if (!class_exists($className))
-		{
-			return false;
-		}
-
-		$instances[$name] = new $className;
-
-		return $instances[$name];
-	}
-
-	/**
-	 * @return Configuration
-	 */
-	public static function getConfiguration()
-	{
-		return Configuration::getInstance();
-	}
-
-	/**
-	 * @return boolean
-	 *
-	 * @since  2.2.0
-	 */
-	public static function isDebug()
-	{
-		return self::getConfiguration()->get('debug', false);
-	}
-
-	/**
-	 * @param   string $driver Driver
-	 *
-	 * @return  Cache
-	 */
-	public static function getCache($driver = null)
-	{
-		static $caches;
-
-		if (isset($caches[$driver]))
-		{
-			return $caches[$driver];
-		}
-
-		if ($driver === null)
-		{
-			$driver = self::getConfiguration()->get('cache_driver', 'FileSystem');
-		}
-
-		switch ($driver)
-		{
-			default:
-			case 'FileSystem':
-				$cacheDriver = new FileSystem(
-					array('path' => self::getConfiguration()->get('cache_path'))
-				);
-				break;
-			case 'APC':
-				$cacheDriver = new Apc(array('ttl' => 3600));
-				break;
-			case 'Memcache':
-				$cacheDriver = new Memcache(array('servers' => array('127.0.0.1', '11211')));
-				break;
-		}
-
-		$caches[$driver] = new Cache($cacheDriver);
-
-		return $caches[$driver];
-	}
+        return $class;
+    }
 }
