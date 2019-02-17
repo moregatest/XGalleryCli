@@ -8,7 +8,6 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
-
 /**
  * Class Factory
  *
@@ -17,7 +16,7 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 class Factory
 {
 
-    const NAMESPACE = 'XGallery3';
+    const APP_NAMESPACE = 'XGallery3';
 
     /**
      * @return \Doctrine\DBAL\Connection
@@ -34,7 +33,7 @@ class Factory
                 'password' => 'root',
                 'host' => 'localhost',
                 'driver' => 'pdo_mysql',
-                'charset' => 'utf8mb4'
+                'charset' => 'utf8mb4',
             ],
             $config
         );
@@ -55,11 +54,11 @@ class Factory
             return $logger;
         }
 
-        $logger = new  Logger(self::NAMESPACE);
+        $logger = new  Logger(self::APP_NAMESPACE);
         $logFile = str_replace('\\', DIRECTORY_SEPARATOR, strtolower($name));
         $logger->pushHandler(
             new StreamHandler(
-                __DIR__ . '/../logs/' . $logFile . '_' . date("Y-m-d") . '.log'
+                __DIR__.'/../logs/'.$logFile.'_'.date("Y-m-d").'.log'
             )
         );
 
@@ -73,7 +72,7 @@ class Factory
      *
      * @return FilesystemAdapter
      */
-    public static function getCache($namespace = self::NAMESPACE, $defaultLifetime = 0, string $directory = null)
+    public static function getCache($namespace = self::APP_NAMESPACE, $defaultLifetime = 0, string $directory = null)
     {
         static $instances;
 
@@ -84,7 +83,7 @@ class Factory
         }
 
         if ($directory === null) {
-            $directory = __DIR__ . '/../cache';
+            $directory = __DIR__.'/../cache';
         }
 
         $instances[$id] = new FilesystemAdapter($namespace, $defaultLifetime, $directory);
@@ -106,20 +105,20 @@ class Factory
             return $instances[$id];
         }
 
-        $classString = '\\XGallery\\Webservices\\Services\\' . ucfirst($service);
-        $defineString = '\\XGallery\\Defines\\Defines' . ucfirst($service);
+        $classString = '\\XGallery\\Webservices\\Services\\'.ucfirst($service);
+        $defineString = '\\XGallery\\Defines\\Defines'.ucfirst($service);
 
         if (!class_exists($classString)) {
             return false;
         }
 
         $class = new $classString;
-        $credential = constant($defineString . '::CREDENTIAL');
+        $credential = constant($defineString.'::CREDENTIAL');
         $class->setCredential(
             $credential['oauth_consumer_key'],
             $credential['oauth_consumer_secret'],
-            $credential['oauth_token'],
-            $credential['oauth_token_secret']
+            isset($credential['oauth_token']) ? $credential['oauth_token'] : null,
+            isset($credential['oauth_token_secret']) ? $credential['oauth_token_secret'] : null
         );
 
         return $class;

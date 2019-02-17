@@ -1,14 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: SoulEvil
- * Date: 2/2/2019
- * Time: 9:38 PM
- */
 
 namespace XGallery\Defines;
 
-
+/**
+ * Class DefinesCore
+ * @package XGallery\Defines
+ */
 class DefinesCore
 {
 

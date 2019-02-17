@@ -3,15 +3,13 @@
 namespace XGallery\Applications\Commands\Flickr;
 
 use Doctrine\DBAL\FetchMode;
-use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use XGallery\Applications\Commands\CommandFlickr;
 use XGallery\Exceptions\Exception;
 use XGallery\Factory;
-use XGallery\Webservices\Services\Flickr;
+use XGallery\Helper\MySql;
 
 /**
  * Class Photos
@@ -19,74 +17,89 @@ use XGallery\Webservices\Services\Flickr;
  */
 class Photos extends CommandFlickr
 {
-    use LockableTrait;
-
     /**
-     *
+     * @throws \ReflectionException
      */
     protected function configure()
     {
-        parent::configure();
+        $this->description = 'Fetch ALL photos from a contact or by requested NSID';
+        $this->options = [
+            'nsid' => [],
+        ];
 
-        $this->setName('flickr:photos');
-        $this->setDescription('Fetch photos from a contact');
-        $this->addOption('nsid', null, InputOption::VALUE_OPTIONAL);
+        parent::configure();
     }
 
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @return int|void|null
+     * @return bool|int|null
      * @throws \Doctrine\DBAL\ConnectionException
      * @throws \Doctrine\DBAL\DBALException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $progressBar = new ProgressBar($output, 3);
+        $progressBar = new ProgressBar($output, 4);
 
-        $people = $this->getPeople($input);
+        $output->writeln('Getting people from database/options...');
 
-        $progressBar->advance();
+        $people = $this->getPeople($input->getOption('nsid'));
 
         if (!$people) {
-            return;
+            $output->writeln('Can not get people');
+
+            return false;
         }
 
-        /**
-         * @var Flickr $flickr
-         */
-        $flickr = Factory::getServices('Flickr');
-        $photos = $flickr->flickrPeopleGetAllPhotos($people->nsid);
         $progressBar->advance();
-        $this->insertPhotos($photos);
+        $output->writeln("\nWork on people nsid: ".$people->nsid." ...");
+        $output->writeln('Fetching photos ...');
+
+        $photos = $this->flickr->flickrPeopleGetAllPhotos($people->nsid);
+        $progressBar->advance();
+
+        $output->writeln("\nFound ".count($photos)." photos");
+        $output->writeln("Inserting photos ...");
+
+        $progressBar->advance();
+        $this->insertRows('xgallery_flickr_photos', $photos);
+
+        $output->writeln("\nUpdate total photos into contact");
+        $progressBar->advance();
+
+        // Update total photos
+        $connection = Factory::getDbo();
+        $connection->executeUpdate(
+            'UPDATE `xgallery_flickr_contacts` SET total_photos = ? WHERE nsid = ?',
+            array(count($photos), $people->nsid)
+        );
+        $connection->close();
 
         $progressBar->finish();
+        $this->complete($output);
 
-        return;
+        return true;
     }
 
     /**
-     * @param $input
+     * @param $nsid
      * @return bool|mixed
      * @throws \Doctrine\DBAL\ConnectionException
      * @throws \Doctrine\DBAL\DBALException
      */
-    private function getPeople(InputInterface $input)
+    private function getPeople($nsid)
     {
-        $conn = Factory::getDbo();
-
         try {
-            $conn->beginTransaction();
-            $nsid = $input->getOption('nsid');
-            $query = 'SELECT * FROM `xgallery_flickr_contacts` ';
+            $connection = Factory::getDbo();
+            $connection->beginTransaction();
 
             if ($nsid) {
-                $query .= 'WHERE `nsid` = ?  ORDER BY `last_fetched` ASC LIMIT 1 FOR UPDATE';
+                $query = 'SELECT * FROM `xgallery_flickr_contacts` WHERE `nsid` = ?  ORDER BY `last_fetched` ASC LIMIT 1 FOR UPDATE';
             } else {
-                $query .= 'ORDER BY last_fetched ASC LIMIT 1 FOR UPDATE';
+                $query = 'SELECT * FROM `xgallery_flickr_contacts` ORDER BY last_fetched ASC LIMIT 1 FOR UPDATE';
             }
 
-            $stmt = $conn->executeQuery(
+            $stmt = $connection->executeQuery(
                 $query,
                 [$nsid]
             );
@@ -94,90 +107,23 @@ class Photos extends CommandFlickr
             $people = $stmt->fetch(FetchMode::STANDARD_OBJECT);
 
             if (!$people) {
-                $conn->rollBack();
+                $connection->rollBack();
+                $connection->close();
 
                 return false;
             }
 
-            $now = new \DateTime;
-
-            $conn->executeUpdate(
+            $connection->executeUpdate(
                 'UPDATE `xgallery_flickr_contacts` SET last_fetched = ? WHERE nsid = ?',
-                array($now->format('Y-m-d H:i:s'), $people->nsid)
+                array(MySql::getCurrentDateTime(), $people->nsid)
             );
-            $conn->commit();
+            $connection->commit();
+            $connection->close();
 
             return $people;
         } catch (Exception $exception) {
-            $conn->rollBack();
-
-            return false;
-        }
-    }
-
-    /**
-     * @param $photos
-     * @return bool
-     * @throws \Doctrine\DBAL\ConnectionException
-     * @throws \Doctrine\DBAL\DBALException
-     */
-    private function insertPhotos($photos)
-    {
-        if (!$photos || empty($photos)) {
-            return false;
-        }
-
-        $connection = Factory::getDbo();
-        $query = 'INSERT INTO `xgallery_flickr_photos`';
-
-        // Columns
-        $query .= '(';
-        $onDuplicateQuery = [];
-        $columnNames = array_keys(get_object_vars($photos[0]));
-
-        // Bind column names
-        foreach ($columnNames as $columnName) {
-            $query .= '`' . $columnName . '`,';
-            $onDuplicateQuery[] = '`' . $columnName . '`=' . ' VALUES(`' . $columnName . '`)';
-        }
-
-        $query = rtrim($query, ',') . ')';
-        $query .= ' VALUES';
-
-        $bindKeys = [];
-
-        foreach ($photos as $index => $photo) {
-
-            $query .= ' (';
-            foreach ($columnNames as $columnName) {
-                $columnId = 'value_' . uniqid();
-                $query .= ':' . $columnId . ',';
-                $bindKeys[$index][$columnId] = isset($photo->{$columnName}) ? $photo->{$columnName} : NULL;
-            }
-
-            $query = rtrim($query, ',') . '),';
-        }
-
-        $query = rtrim($query, ',');
-        $query .= ' ON DUPLICATE KEY UPDATE ' . implode(',', $onDuplicateQuery) . ';';
-
-        $connection->beginTransaction();
-        $prepare = $connection->prepare($query);
-
-        // Bind values
-        foreach ($bindKeys as $index => $columns) {
-            foreach ($columns as $columnId => $value) {
-                $prepare->bindValue(':' . $columnId, $value);
-            }
-        }
-
-        try {
-            $prepare->execute();
-            $connection->commit();
-
-            return true;
-        } catch (Exception $exception) {
             $connection->rollBack();
+            $connection->close();
 
             return false;
         }

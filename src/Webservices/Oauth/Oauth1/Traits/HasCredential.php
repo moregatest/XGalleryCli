@@ -30,8 +30,7 @@ trait HasCredential
         $consumerSecretKey,
         $token = '',
         $tokenSecret = ''
-    )
-    {
+    ) {
         $this->credential = new Credential(
             $consumerKey,
             $consumerSecretKey,

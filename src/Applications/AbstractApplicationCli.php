@@ -13,11 +13,15 @@ use XGallery\Defines\DefinesCore;
 class AbstractApplicationCli extends Application
 {
 
+    /**
+     * AbstractApplicationCli constructor.
+     * @param string $name
+     * @param string $version
+     */
     public function __construct(
         $name = DefinesCore::APPLICATION,
         $version = DefinesCore::VERSION
-    )
-    {
+    ) {
         parent::__construct($name, $version);
     }
 }

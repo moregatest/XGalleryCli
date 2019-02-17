@@ -28,7 +28,6 @@ trait HasPhotos
     public function flickrPhotosSearch($keyword = '', $parameters = [])
     {
         return $this->rest(
-
             array_merge(
                 [
                     'method' => 'flickr.photos.search',
@@ -36,6 +35,24 @@ trait HasPhotos
                     'safe_search' => 3,
                     'per_page' => 500,
                     'page' => 1,
+                ],
+                $parameters
+            )
+        );
+    }
+
+    /**
+     * @param $photoId
+     * @param array $parameters
+     * @return mixed
+     */
+    public function flickrPhotosSizes($photoId, $parameters = [])
+    {
+        return $this->rest(
+            array_merge(
+                [
+                    'method' => 'flickr.photos.getSizes',
+                    'photo_id' => $photoId,
                 ],
                 $parameters
             )

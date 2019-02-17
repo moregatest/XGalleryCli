@@ -2,13 +2,10 @@
 
 namespace XGallery\Applications\Commands\Flickr;
 
-use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use XGallery\Applications\Commands\CommandFlickr;
-use XGallery\Exceptions\Exception;
-use XGallery\Factory;
 
 /**
  * Class Contacts
@@ -17,17 +14,15 @@ use XGallery\Factory;
  */
 class Contacts extends CommandFlickr
 {
-    use LockableTrait;
 
     /**
-     *
+     * @throws \ReflectionException
      */
     protected function configure()
     {
-        parent::configure();
+        $this->description = 'Fetch contacts from Flickr';
 
-        $this->setName('flickr:contacts');
-        $this->setDescription('Fetch contacts from Flickr');
+        parent::configure();
     }
 
     /**
@@ -39,85 +34,33 @@ class Contacts extends CommandFlickr
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $progressBar = new ProgressBar($output, 2);
-        $contacts = $this->getContacts();
-        $progressBar->advance();
 
-        $output->writeln('Total contacts: ' . count($contacts));
+        $output->writeln('Fetching contacts ...');
+
+        if (!$contacts = $this->flickr->flickrContactsGetAll()) {
+            $output->writeln('Can not get contacts');
+
+            return true;
+        }
+
+        $progressBar->advance();
+        $output->writeln("\nTotal contacts: ".count($contacts));
 
         if (empty($contacts)) {
             return false;
         }
 
-        $contacts = array_slice($contacts, 0, 10);
+        $output->writeln('Insert contacts ...');
+        $rows = $this->insertRows('xgallery_flickr_contacts', $contacts);
 
-        $this->insertContacts($contacts, $progressBar);
-
-        $progressBar->finish();
-
-        return;
-    }
-
-    /**
-     * @param $contacts
-     * @return bool
-     * @throws \Doctrine\DBAL\ConnectionException
-     * @throws \Doctrine\DBAL\DBALException
-     */
-    private function insertContacts($contacts)
-    {
-        $connection = Factory::getDbo();
-        $query = 'INSERT INTO `xgallery_flickr_contacts`';
-
-        // Columns
-        $query .= '(';
-        $onDuplicateQuery = [];
-        $columnNames = array_keys(get_object_vars($contacts[0]));
-
-        // Bind column names
-        foreach ($columnNames as $columnName) {
-            $query .= '`' . $columnName . '`,';
-            $onDuplicateQuery[] = '`' . $columnName . '`=' . ' VALUES(`' . $columnName . '`)';
-        }
-
-        $query = rtrim($query, ',') . ')';
-        $query .= ' VALUES';
-
-        $bindKeys = [];
-
-        foreach ($contacts as $index => $contact) {
-            $query .= ' (';
-            foreach ($columnNames as $columnName) {
-                $columnId = 'value_' . uniqid();
-                $query .= ':' . $columnId . ',';
-                $bindKeys[$index][$columnId] = isset($contact->{$columnName}) ? $contact->{$columnName} : NULL;
-            }
-
-            $query = rtrim($query, ',') . '),';
-        }
-
-        $query = rtrim($query, ',');
-        $query .= ' ON DUPLICATE KEY UPDATE ' . implode(',', $onDuplicateQuery) . ';';
-
-        $connection->beginTransaction();
-        $prepare = $connection->prepare($query);
-
-        // Bind values
-        foreach ($bindKeys as $index => $columns) {
-            foreach ($columns as $columnId => $value) {
-                $prepare->bindValue(':' . $columnId, $value);
-            }
-        }
-
-        try {
-            $prepare->execute();
-            $connection->commit();
-
-            return true;
-        } catch (Exception $exception) {
-            $connection->rollBack();
-
+        if ($rows === false) {
             return false;
         }
-    }
 
+        $progressBar->finish();
+        $output->writeln("\nAffected rows: ".(int)$rows);
+        $this->complete($output);
+
+        return true;
+    }
 }

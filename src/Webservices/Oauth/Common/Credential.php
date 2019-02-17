@@ -43,8 +43,7 @@ class Credential
         $consumerSecretKey,
         $token = '',
         $tokenSecret = ''
-    )
-    {
+    ) {
         $this->consumerKey = $consumerKey;
         $this->consumerSecretKey = $consumerSecretKey;
         $this->token = $token;
@@ -105,5 +104,4 @@ class Credential
     {
         return $this->tokenSecret;
     }
-
 }

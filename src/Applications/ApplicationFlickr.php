@@ -13,9 +13,16 @@ use XGallery\Defines\DefinesCore;
 class ApplicationFlickr extends AbstractApplicationCli
 {
 
+    /**
+     * @var array
+     */
     protected $commands = [
+        'Authorize',
         'Contacts',
-        'Photos'
+        'Photos',
+        'PhotosSize',
+        'PhotoDownload',
+        'PhotosDownload',
     ];
 
     /**
@@ -26,12 +33,11 @@ class ApplicationFlickr extends AbstractApplicationCli
     public function __construct(
         string $name = DefinesCore::APPLICATION,
         string $version = DefinesCore::VERSION
-    )
-    {
+    ) {
         parent::__construct($name, $version);
 
         foreach ($this->commands as $command) {
-            $commandClass = '\\XGallery\\Applications\\Commands\\Flickr\\' . ucfirst($command);
+            $commandClass = '\\XGallery\\Applications\\Commands\\Flickr\\'.ucfirst($command);
             $this->add(new $commandClass);
         }
     }

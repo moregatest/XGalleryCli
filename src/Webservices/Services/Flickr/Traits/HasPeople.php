@@ -44,9 +44,10 @@ trait HasPeople
             array_merge(
                 [
                     'method' => 'flickr.people.getPhotos',
-                    'per_page' => 200
+                    'per_page' => 200,
                 ]
-                , ['user_id' => $nsid],
+                ,
+                ['user_id' => $nsid],
                 $params
             )
         );

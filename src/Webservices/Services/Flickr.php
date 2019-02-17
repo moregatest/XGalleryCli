@@ -66,7 +66,7 @@ class Flickr extends Client
      * @param       $parameters
      * @param array $options
      *
-     * @return bool|mixed
+     * @return boolean|mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Psr\Cache\InvalidArgumentException
      */
@@ -89,7 +89,10 @@ class Flickr extends Client
             if (isset($response->stat) && $response->stat == 'fail') {
                 $this->logger->notice(
                     $response->message,
-                    get_object_vars($response)
+                    [
+                        $parameters,
+                        get_object_vars($response),
+                    ]
                 );
 
                 return false;
@@ -135,12 +138,12 @@ class Flickr extends Client
     }
 
     /**
-     * @param       $imageFile
-     * @param       $photoId
+     * @param $imageFile
+     * @param $photoId
      * @param array $options
-     *
-     * @return boolean|\SimpleXMLElement
+     * @return bool|\SimpleXMLElement
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function replace($imageFile, $photoId, $options = [])
     {

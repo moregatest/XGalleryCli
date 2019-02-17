@@ -1,14 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: vietvu
- * Date: 2/12/2019
- * Time: 1:30 PM
- */
 
 namespace XGallery\Webservices\Oauth\Common;
 
-
+/**
+ * Class OauthHelper
+ * @package XGallery\Webservices\Oauth\Common
+ */
 class OauthHelper
 {
 
@@ -39,5 +36,4 @@ class OauthHelper
             );
         }
     }
-
 }

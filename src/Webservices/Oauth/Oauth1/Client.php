@@ -51,7 +51,7 @@ class Client extends Restful
         );
 
         if ($method == 'GET') {
-            $uri .= '?' . http_build_query($parameters);
+            $uri .= '?'.http_build_query($parameters);
         } else {
             $options['headers']['Authorization'] = $this->getOauthHeader();
         }
@@ -62,7 +62,7 @@ class Client extends Restful
             return false;
         }
 
-        return $response->getBody()->getContents();
+        return $response;
     }
 
     /**
@@ -98,9 +98,14 @@ class Client extends Restful
         } catch (Exception $exception) {
             return false;
         }
+        var_dump(
+            static::OAUTH_AUTHORIZE_ENDPOINT.'?oauth_token='
+            .$query['oauth_token']
+        );
+        exit;
 
-        return static::OAUTH_AUTHORIZE_ENDPOINT . '?oauth_token='
-            . $query['oauth_token'];
+        return static::OAUTH_AUTHORIZE_ENDPOINT.'?oauth_token='
+            .$query['oauth_token'];
     }
 
     /**

@@ -45,12 +45,12 @@ trait HasAuthorize
              */
             $parametersString[] = OauthHelper::encode(
                     $key
-                ) . '=' . OauthHelper::encode($value);
+                ).'='.OauthHelper::encode($value);
         }
 
         $baseSignature = OauthHelper::encode(strtoupper($method))
-            . '&' . OauthHelper::encode($uri)
-            . '&' . OauthHelper::encode(
+            .'&'.OauthHelper::encode($uri)
+            .'&'.OauthHelper::encode(
                 implode('&', $parametersString)
             );
 
@@ -85,7 +85,7 @@ trait HasAuthorize
         $header = 'OAuth ';
 
         foreach ($this->oauthParameters as $key => $value) {
-            $header .= $key . '="' . $value . '",';
+            $header .= $key.'="'.$value.'",';
         }
 
         return rtrim($header, ',');
@@ -112,6 +112,6 @@ trait HasAuthorize
     private function getKey()
     {
         return OauthHelper::encode($this->credential->getConsumerSecretKey())
-            . '&' . OauthHelper::encode($this->credential->getTokenSecret());
+            .'&'.OauthHelper::encode($this->credential->getTokenSecret());
     }
 }

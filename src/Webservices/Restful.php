@@ -46,12 +46,13 @@ class Restful extends Client
     {
         try {
             $cache = Factory::getCache();
-            $id = md5(serialize(func_num_args()));
-            $cache->clear();
+            $id = md5(serialize(func_get_args()));
 
             $item = $cache->getItem($id);
 
             if ($item->isHit()) {
+                $this->logger->info('Item have cached', func_get_args());
+
                 return $item->get();
             }
 
@@ -66,7 +67,7 @@ class Restful extends Client
 
             $response = $this->request($method, $uri, $options);
 
-            $item->set($response);
+            $item->set($response->getBody()->getContents());
             $item->expiresAfter(3600);
             $cache->save($item);
 
