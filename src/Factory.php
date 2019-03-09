@@ -7,6 +7,10 @@ use Doctrine\DBAL\DriverManager;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\Templating\Loader\FilesystemLoader;
+use Symfony\Component\Templating\PhpEngine;
+use Symfony\Component\Templating\TemplateNameParser;
 
 /**
  * Class Factory
@@ -28,10 +32,10 @@ class Factory
 
         return DriverManager::getConnection(
             [
-                'dbname' => 'xgallery3',
-                'user' => 'root',
-                'password' => 'root',
-                'host' => 'localhost',
+                'dbname' => getenv('mysql_database'),
+                'user' => getenv('mysql_user'),
+                'password' => getenv('mysql_password'),
+                'host' => getenv('mysql_host'),
                 'driver' => 'pdo_mysql',
                 'charset' => 'utf8mb4',
             ],
@@ -42,27 +46,27 @@ class Factory
 
     /**
      * @param $name
-     *
      * @return Logger
      * @throws \Exception
      */
     public static function getLogger($name)
     {
-        static $logger;
+        static $loggers;
 
-        if (isset($logger)) {
-            return $logger;
+        if (isset($loggers[$name])) {
+            return $loggers[$name];
         }
 
-        $logger = new  Logger(self::APP_NAMESPACE);
+        $loggers[$name] = new Logger(self::APP_NAMESPACE);
         $logFile = str_replace('\\', DIRECTORY_SEPARATOR, strtolower($name));
-        $logger->pushHandler(
+
+        $loggers[$name]->pushHandler(
             new StreamHandler(
-                __DIR__.'/../logs/'.$logFile.'_'.date("Y-m-d").'.log'
+                __DIR__.'/../data/logs/'.$logFile.'_'.date("Y-m-d").'.log'
             )
         );
 
-        return $logger;
+        return $loggers[$name];
     }
 
     /**
@@ -83,7 +87,7 @@ class Factory
         }
 
         if ($directory === null) {
-            $directory = __DIR__.'/../cache';
+            $directory = __DIR__.'/../data/cache';
         }
 
         $instances[$id] = new FilesystemAdapter($namespace, $defaultLifetime, $directory);
@@ -106,21 +110,46 @@ class Factory
         }
 
         $classString = '\\XGallery\\Webservices\\Services\\'.ucfirst($service);
-        $defineString = '\\XGallery\\Defines\\Defines'.ucfirst($service);
 
         if (!class_exists($classString)) {
             return false;
         }
 
         $class = new $classString;
-        $credential = constant($defineString.'::CREDENTIAL');
         $class->setCredential(
-            $credential['oauth_consumer_key'],
-            $credential['oauth_consumer_secret'],
-            isset($credential['oauth_token']) ? $credential['oauth_token'] : null,
-            isset($credential['oauth_token_secret']) ? $credential['oauth_token_secret'] : null
+            getenv($service.'_oauth_consumer_key'),
+            getenv($service.'_oauth_consumer_secret'),
+            getenv($service.'_oauth_token'),
+            getenv($service.'_oauth_token_secret')
         );
 
         return $class;
+    }
+
+    /**
+     * @return EventDispatcher
+     */
+    public static function getDispatcher()
+    {
+        static $dispatcher;
+
+        if (isset($dispatcher)) {
+            return $dispatcher;
+        }
+
+        $dispatcher = new EventDispatcher;
+
+        return $dispatcher;
+    }
+
+    /**
+     * @param string $dirPattern
+     * @return PhpEngine
+     */
+    public static function getTemplate($dirPattern = XGALLERY_ROOT.'/templates/%name%')
+    {
+        $filesystemLoader = new FilesystemLoader($dirPattern);
+
+        return new PhpEngine(new TemplateNameParser(), $filesystemLoader);
     }
 }

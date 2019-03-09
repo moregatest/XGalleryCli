@@ -1,8 +1,8 @@
 <?php
 
-require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__.'/bootstrap.php';
 
-$dispatcher = new \Symfony\Component\EventDispatcher\EventDispatcher;
-$cli = new \XGallery\Applications\ApplicationFlickr;
-$cli->setDispatcher($dispatcher);
+use XGallery\Applications\Cli\ApplicationCliFlickr;
+
+$cli = new ApplicationCliFlickr;
 $cli->run();

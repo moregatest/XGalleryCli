@@ -8,12 +8,16 @@ namespace XGallery\Defines;
  */
 class DefinesFlickr
 {
-
-    const CREDENTIAL = [
-        'oauth_consumer_key' => '28d029af6d9d970926946df4906f2a91',
-        'oauth_consumer_secret' => '38077b3e69789aa8',
-    ];
-
-    const REST_LIMIT_PHOTOS_SIZE = 5;
+    /**
+     * Limit number of requests to get photo sizes
+     */
+    const REST_LIMIT_PHOTOS_SIZE = 250;
+    const DOWNLOAD_LIMIT = 100;
     const PHOTO_STATUS_DOWNLOADED = 1;
+    const PHOTO_STATUS_ALREADY_DOWNLOADED = 2;
+    const PHOTO_STATUS_SKIP_DOWNLOAD = 4;
+    const PHOTO_STATUS_FORCE_REDOWNLOAD = 3;
+    const PHOTO_STATUS_ERROR_NOT_FOUND = -1;
+    const PHOTO_STATUS_ERROR_NOT_PHOTO = -2;
+    const PHOTO_STATUS_ERROR_DOWNLOAD_FAILED = -3;
 }

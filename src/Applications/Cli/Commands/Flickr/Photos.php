@@ -1,12 +1,10 @@
 <?php
 
-namespace XGallery\Applications\Commands\Flickr;
+namespace XGallery\Applications\Cli\Commands\Flickr;
 
 use Doctrine\DBAL\FetchMode;
-use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use XGallery\Applications\Commands\CommandFlickr;
+use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
+use XGallery\Database\DatabaseHelper;
 use XGallery\Exceptions\Exception;
 use XGallery\Factory;
 use XGallery\Helper\MySql;
@@ -15,68 +13,65 @@ use XGallery\Helper\MySql;
  * Class Photos
  * @package XGallery\Applications\Commands\Flickr
  */
-class Photos extends CommandFlickr
+class Photos extends AbstractCommandFlickr
 {
     /**
      * @throws \ReflectionException
      */
     protected function configure()
     {
-        $this->description = 'Fetch ALL photos from a contact or by requested NSID';
+        $this->setDescription('Fetch ALL photos from a contact or by requested NSID');
         $this->options = [
-            'nsid' => [],
+            'nsid' => [
+                'description',
+                'Only fetch photos from this NSID',
+            ],
         ];
 
         parent::configure();
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return bool|int|null
+     * @return boolean
      * @throws \Doctrine\DBAL\ConnectionException
      * @throws \Doctrine\DBAL\DBALException
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function process()
     {
-        $progressBar = new ProgressBar($output, 4);
+        $this->info('Getting people from database/options...');
 
-        $output->writeln('Getting people from database/options...');
-
-        $people = $this->getPeople($input->getOption('nsid'));
-
-        if (!$people) {
-            $output->writeln('Can not get people');
+        if (!$people = $this->getPeople($this->input->getOption('nsid'))) {
+            $this->logNotice('Can not get people from database');
 
             return false;
         }
 
-        $progressBar->advance();
-        $output->writeln("\nWork on people nsid: ".$people->nsid." ...");
-        $output->writeln('Fetching photos ...');
+        $this->info('Work on nsid: '.$people->nsid);
+        $this->info('Fetching photos ...');
 
         $photos = $this->flickr->flickrPeopleGetAllPhotos($people->nsid);
-        $progressBar->advance();
 
-        $output->writeln("\nFound ".count($photos)." photos");
-        $output->writeln("Inserting photos ...");
+        $totalPhotos = count($photos);
+        $this->info('Found '.$totalPhotos.' photos');
+        $this->info("Inserting photos ...");
 
-        $progressBar->advance();
-        $this->insertRows('xgallery_flickr_photos', $photos);
+        $rows = DatabaseHelper::insertRows('xgallery_flickr_photos', $photos);
 
-        $output->writeln("\nUpdate total photos into contact");
-        $progressBar->advance();
+        if (!$rows) {
+            $this->logError('Can not insert photos');
+
+            return false;
+        }
+
+        $this->info("Updated ".$rows." photos into contact");
 
         // Update total photos
         $connection = Factory::getDbo();
         $connection->executeUpdate(
             'UPDATE `xgallery_flickr_contacts` SET total_photos = ? WHERE nsid = ?',
-            array(count($photos), $people->nsid)
+            array($totalPhotos, $people->nsid)
         );
         $connection->close();
-
-        $progressBar->finish();
-        $this->complete($output);
 
         return true;
     }
@@ -94,9 +89,9 @@ class Photos extends CommandFlickr
             $connection->beginTransaction();
 
             if ($nsid) {
-                $query = 'SELECT * FROM `xgallery_flickr_contacts` WHERE `nsid` = ?  ORDER BY `last_fetched` ASC LIMIT 1 FOR UPDATE';
+                $query = 'SELECT * FROM `xgallery_flickr_contacts` WHERE `nsid` = ?  ORDER BY `modified` ASC LIMIT 1 FOR UPDATE';
             } else {
-                $query = 'SELECT * FROM `xgallery_flickr_contacts` ORDER BY last_fetched ASC LIMIT 1 FOR UPDATE';
+                $query = 'SELECT * FROM `xgallery_flickr_contacts` ORDER BY `modified` ASC LIMIT 1 FOR UPDATE';
             }
 
             $stmt = $connection->executeQuery(
@@ -114,7 +109,7 @@ class Photos extends CommandFlickr
             }
 
             $connection->executeUpdate(
-                'UPDATE `xgallery_flickr_contacts` SET last_fetched = ? WHERE nsid = ?',
+                'UPDATE `xgallery_flickr_contacts` SET `modified` = ? WHERE nsid = ?',
                 array(MySql::getCurrentDateTime(), $people->nsid)
             );
             $connection->commit();
@@ -124,6 +119,8 @@ class Photos extends CommandFlickr
         } catch (Exception $exception) {
             $connection->rollBack();
             $connection->close();
+
+            $this->logError($exception->getMessage());
 
             return false;
         }

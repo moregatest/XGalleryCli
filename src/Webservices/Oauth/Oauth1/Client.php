@@ -98,11 +98,6 @@ class Client extends Restful
         } catch (Exception $exception) {
             return false;
         }
-        var_dump(
-            static::OAUTH_AUTHORIZE_ENDPOINT.'?oauth_token='
-            .$query['oauth_token']
-        );
-        exit;
 
         return static::OAUTH_AUTHORIZE_ENDPOINT.'?oauth_token='
             .$query['oauth_token'];

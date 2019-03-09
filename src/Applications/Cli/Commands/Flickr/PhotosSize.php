@@ -1,12 +1,9 @@
 <?php
 
-namespace XGallery\Applications\Commands\Flickr;
+namespace XGallery\Applications\Cli\Commands\Flickr;
 
 use Doctrine\DBAL\FetchMode;
-use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use XGallery\Applications\Commands\CommandFlickr;
+use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Defines\DefinesFlickr;
 use XGallery\Exceptions\Exception;
 use XGallery\Factory;
@@ -15,60 +12,59 @@ use XGallery\Factory;
  * Class PhotosSize
  * @package XGallery\Applications\Commands\Flickr
  */
-class PhotosSize extends CommandFlickr
+class PhotosSize extends AbstractCommandFlickr
 {
     /**
      * @throws \ReflectionException
      */
     protected function configure()
     {
-        $this->description = 'Fetch photos size';
+        $this->setDescription('Fetch photos size');
         $this->options = [
-            'nsid' => [],
+            'nsid' => [
+                'description',
+                'Only fetch photos from this NSID',
+            ],
         ];
 
         parent::configure();
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int|void|null
+     * @return bool
      * @throws \Doctrine\DBAL\ConnectionException
      * @throws \Doctrine\DBAL\DBALException
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function process()
     {
-        $progressBar = new ProgressBar($output, 2);
-        $nsid = $input->getOption('nsid');
+        $this->info('Fetching sizes ...');
 
-        if ($nsid) {
-            $output->writeln('Getting '.DefinesFlickr::REST_LIMIT_PHOTOS_SIZE.' photos from NSID: '.$nsid.' ...');
+        if ($nsid = $this->input->getOption('nsid')) {
+            $this->info('Getting '.DefinesFlickr::REST_LIMIT_PHOTOS_SIZE.' photos from NSID: '.$nsid.' ...');
         } else {
-            $output->writeln('Getting '.DefinesFlickr::REST_LIMIT_PHOTOS_SIZE.' photos ...');
+            $this->info('Getting '.DefinesFlickr::REST_LIMIT_PHOTOS_SIZE.' photos ...');
         }
 
         $photos = $this->getPhotos($nsid);
 
         if (!$photos || empty($photos)) {
-            $output->writeln('There are no photos');
+            $this->logWarning('There are no photos');
 
             return false;
         }
 
-        $progressBar->advance();
-
-        $output->writeln("\nFound ".count($photos)." photos");
-        $output->writeln("Fetching size ...");
+        $this->info('Found '.count($photos).' photos');
+        $this->info("Fetching size ...");
 
         $connection = Factory::getDbo();
 
         foreach ($photos as $photoId) {
-            $output->writeln('Fetching: '.$photoId);
             $photoSize = $this->flickr->flickrPhotosSizes($photoId);
+            $this->info('Fetched '.$photoId);
 
             if (!$photoSize) {
-                $output->writeln('Something wrong on photo_id: '.$photoId);
+                $this->logNotice('Something wrong on photo_id: '.$photoId);
+
                 continue;
             }
 
@@ -87,8 +83,7 @@ class PhotosSize extends CommandFlickr
             }
         }
 
-        $progressBar->finish();
-        $this->complete($output);
+        return true;
     }
 
     /**
@@ -103,7 +98,7 @@ class PhotosSize extends CommandFlickr
             $connection = Factory::getDbo();
             $connection->beginTransaction();
 
-            $query = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE `status` = 0 AND `params` IS NULL';
+            $query = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE (`status` = 0 OR `status` IS NULL) AND `params` IS NULL ';
 
             if ($nsid) {
                 $query .= ' AND owner = ?';

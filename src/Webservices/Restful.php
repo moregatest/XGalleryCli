@@ -68,7 +68,7 @@ class Restful extends Client
             $response = $this->request($method, $uri, $options);
 
             $item->set($response->getBody()->getContents());
-            $item->expiresAfter(3600);
+            $item->expiresAfter((int)getenv('cache_interval'));
             $cache->save($item);
 
             return $item->get();
