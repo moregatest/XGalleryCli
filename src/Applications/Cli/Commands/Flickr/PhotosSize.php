@@ -2,7 +2,10 @@
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
+use Doctrine\DBAL\ConnectionException;
+use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\FetchMode;
+use ReflectionException;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Defines\DefinesFlickr;
 use XGallery\Exceptions\Exception;
@@ -15,7 +18,7 @@ use XGallery\Factory;
 class PhotosSize extends AbstractCommandFlickr
 {
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function configure()
     {
@@ -32,23 +35,25 @@ class PhotosSize extends AbstractCommandFlickr
 
     /**
      * @return bool
-     * @throws \Doctrine\DBAL\ConnectionException
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws ConnectionException
+     * @throws DBALException
      */
     protected function process()
     {
-        $this->info('Fetching sizes ...');
+        $this->info('Fetching sizes ...', [], true);
+        $this->progressBar->start(2);
 
         if ($nsid = $this->input->getOption('nsid')) {
             $this->info('Getting '.DefinesFlickr::REST_LIMIT_PHOTOS_SIZE.' photos from NSID: '.$nsid.' ...');
-        } else {
-            $this->info('Getting '.DefinesFlickr::REST_LIMIT_PHOTOS_SIZE.' photos ...');
         }
 
         $photos = $this->getPhotos($nsid);
 
+        $this->progressBar->advance();
+
         if (!$photos || empty($photos)) {
             $this->logWarning('There are no photos');
+            $this->progressBar->finish();
 
             return false;
         }
@@ -76,12 +81,15 @@ class PhotosSize extends AbstractCommandFlickr
                 );
                 $connection->commit();
                 $connection->close();
-
             } catch (Exception $exception) {
                 $connection->rollBack();
                 $connection->close();
+                $this->progressBar->finish();
             }
         }
+
+        $this->output->write("\n");
+        $this->progressBar->finish();
 
         return true;
     }
@@ -89,8 +97,8 @@ class PhotosSize extends AbstractCommandFlickr
     /**
      * @param $nsid
      * @return bool|mixed[]
-     * @throws \Doctrine\DBAL\ConnectionException
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws ConnectionException
+     * @throws DBALException
      */
     private function getPhotos($nsid = '')
     {

@@ -2,13 +2,16 @@
 
 namespace XGallery\Applications\Cli;
 
-
+use Doctrine\DBAL\Connection;
+use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use XGallery\Factory;
 use XGallery\Traits\HasLogger;
 use XGallery\Traits\HasObject;
 
@@ -43,7 +46,17 @@ abstract class AbstractCommand extends Command
     protected $output;
 
     /**
-     * @throws \Exception
+     * @var Connection
+     */
+    protected $connection;
+
+    /**
+     * @var ProgressBar
+     */
+    protected $progressBar;
+
+    /**
+     * @throws Exception
      */
     protected function configure()
     {
@@ -77,7 +90,7 @@ abstract class AbstractCommand extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return integer|null null or 0 if everything went fine, or an error code. 1 for normal escape
-     * @throws \Exception
+     * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -88,6 +101,10 @@ abstract class AbstractCommand extends Command
         if (!$this->prepare()) {
             return 1;
         }
+
+        $this->connection = Factory::getDbo();
+        $this->progressBar = new ProgressBar($this->output, 0);
+        $this->progressBar->setFormat('debug');
 
         return $this->executeComplete($this->process());
     }
@@ -122,10 +139,15 @@ abstract class AbstractCommand extends Command
     /**
      * @param $message
      * @param array $context
+     * @param boolean $newLine
      */
-    protected function info($message, $context = [])
+    protected function info($message, $context = [], $newLine = false)
     {
         $this->output->write("\n".$message);
         $this->logInfo($message, $context);
+
+        if ($newLine) {
+            $this->output->writeln('');
+        }
     }
 }

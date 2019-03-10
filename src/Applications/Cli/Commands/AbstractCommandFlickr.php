@@ -2,6 +2,8 @@
 
 namespace XGallery\Applications\Cli\Commands;
 
+use Doctrine\DBAL\DBALException;
+use ReflectionException;
 use XGallery\Applications\Cli\AbstractCommand;
 use XGallery\Factory;
 use XGallery\Webservices\Services\Flickr;
@@ -18,12 +20,7 @@ abstract class AbstractCommandFlickr extends AbstractCommand
     protected $flickr;
 
     /**
-     * @var \Doctrine\DBAL\Connection
-     */
-    protected $connection;
-
-    /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function configure()
     {
@@ -34,12 +31,11 @@ abstract class AbstractCommandFlickr extends AbstractCommand
 
     /**
      * @return bool
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     protected function prepare()
     {
         $this->flickr = Factory::getServices('flickr');
-        $this->connection = Factory::getDbo();
 
         return true;
     }

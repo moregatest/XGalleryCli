@@ -2,12 +2,14 @@
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
+use Doctrine\DBAL\ConnectionException;
+use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\FetchMode;
+use ReflectionException;
 use Symfony\Component\Process\Process;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Defines\DefinesFlickr;
 use XGallery\Exceptions\Exception;
-use XGallery\Factory;
 
 /**
  * Class PhotosDownload
@@ -17,7 +19,7 @@ class PhotosDownload extends AbstractCommandFlickr
 {
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function configure()
     {
@@ -35,44 +37,47 @@ class PhotosDownload extends AbstractCommandFlickr
 
     /**
      * @return boolean
-     * @throws \Doctrine\DBAL\ConnectionException
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws ConnectionException
+     * @throws DBALException
      */
     protected function process()
     {
         try {
-            $connection = Factory::getDbo();
-            $connection->beginTransaction();
+
+            $this->connection->beginTransaction();
 
             $query = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE `status` = 0 AND `params` IS NOT NULL LIMIT '
                 .(int)$this->input->getOption('limit');
-            $photos = $connection->executeQuery($query, [])->fetchAll(
+            $photos = $this->connection->executeQuery($query, [])->fetchAll(
                 FetchMode::COLUMN
             );
 
             if (!$photos) {
-                $connection->rollBack();
-                $connection->close();
+                $this->connection->rollBack();
+                $this->connection->close();
 
                 return false;
             }
 
-            $connection->commit();
-            $connection->close();
+            $this->connection->commit();
+            $this->connection->close();
 
-            $this->info('Total photos being download: '.count($photos));
-            $this->output->writeln('');
+            $this->info('Total photos being download: '.count($photos), [], true);
+
+            $this->progressBar->setMaxSteps(count($photos));
 
             foreach ($photos as $photoId) {
-                $this->output->writeln('Request download: '.$photoId);
+                $this->progressBar->advance();
                 $process = new Process(['php', 'cli.php', 'flickr:photodownload', '--photo_id='.$photoId]);
                 $process->start();
             }
 
+            $this->progressBar->finish();
+
             return true;
         } catch (Exception $exception) {
-            $connection->rollBack();
-            $connection->close();
+            $this->connection->rollBack();
+            $this->connection->close();
 
             return false;
         }

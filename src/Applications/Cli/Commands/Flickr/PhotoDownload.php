@@ -2,7 +2,11 @@
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
+use Doctrine\DBAL\ConnectionException;
+use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\FetchMode;
+use GuzzleHttp\Exception\GuzzleException;
+use ReflectionException;
 use Symfony\Component\Filesystem\Filesystem;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Defines\DefinesFlickr;
@@ -17,7 +21,7 @@ class PhotoDownload extends AbstractCommandFlickr
 {
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function configure()
     {
@@ -41,19 +45,22 @@ class PhotoDownload extends AbstractCommandFlickr
 
     /**
      * @return boolean
-     * @throws \Doctrine\DBAL\ConnectionException
-     * @throws \Doctrine\DBAL\DBALException
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws ConnectionException
+     * @throws DBALException
+     * @throws GuzzleException
      */
     protected function process()
     {
+        $this->info('Getting photo ...', [], true);
+        $this->progressBar->start(2);
+
         if ($photoId = $this->input->getOption('photo_id')) {
             $this->info('Getting photo ID: '.$photoId.' ...');
         }
 
         $this->connection->beginTransaction();
-
         $photo = $this->getPhoto($photoId);
+        $this->progressBar->advance();
 
         // There are no photos
         if (!$photo) {
@@ -75,12 +82,7 @@ class PhotoDownload extends AbstractCommandFlickr
             return false;
         }
 
-        // At the moment we only download photos
-        if ($lastSize->media !== 'photo') {
-            $this->logWarning('It\'s not media \'photo\': '.$lastSize->media);
-
-            $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_NOT_PHOTO);
-
+        if (!$this->verifyMediaType($lastSize->media, $photo->id)) {
             return false;
         }
 
@@ -90,12 +92,12 @@ class PhotoDownload extends AbstractCommandFlickr
         (new Filesystem())->mkdir($targetDir);
 
         $fileName = basename($lastSize->source);
-        $fileExists = (new Filesystem())->exists($targetDir.'/'.$fileName);
         $saveTo = $targetDir.'/'.$fileName;
+        $fileExists = (new Filesystem())->exists($saveTo);
 
         if ($fileExists && $this->input->getOption('force') == 0) {
-            $this->logWarning('Photo already exists: '.$targetDir.'/'.$fileName);
-            $this->output->write("\n".'Photo already exists: '.$targetDir.'/'.$fileName);
+            $this->logWarning('Photo already exists: '.$saveTo);
+            $this->output->write("\n".'Photo already exists: '.$saveTo);
 
             // Verify load and redownload if file is corrupted
             $originalFilesize = filesize($saveTo);
@@ -111,10 +113,12 @@ class PhotoDownload extends AbstractCommandFlickr
                 if (!DownloadHelper::download($lastSize->source, $saveTo)) {
 
                     $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_REDOWNLOAD_FAILED);
+                    $this->progressBar->finish();
 
                     return false;
                 }
 
+                $this->progressBar->finish();
                 $this->info('Redownloaded success: '.filesize($saveTo));
                 $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_DOWNLOADED);
 
@@ -123,6 +127,7 @@ class PhotoDownload extends AbstractCommandFlickr
 
             // File exists without force redownload and local file is fine
             $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_ALREADY_DOWNLOADED);
+            $this->progressBar->finish();
 
             return true;
         }
@@ -141,18 +146,21 @@ class PhotoDownload extends AbstractCommandFlickr
                 }
 
                 $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_DOWNLOADED);
+                $this->progressBar->finish();
                 $this->info('Download completed: '.$targetDir.'/'.$fileName);
 
                 return true;
 
             } catch (Exception $exception) {
                 $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_DOWNLOAD_FAILED);
+                $this->progressBar->finish();
 
                 return false;
             }
         }
 
         $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_SKIP_DOWNLOAD);
+        $this->progressBar->finish();
 
         return true;
     }
@@ -160,7 +168,7 @@ class PhotoDownload extends AbstractCommandFlickr
     /**
      * @param $photoId
      * @return boolean|mixed
-     * @throws \Doctrine\DBAL\ConnectionException
+     * @throws ConnectionException
      */
     private function getPhoto($photoId)
     {
@@ -171,9 +179,7 @@ class PhotoDownload extends AbstractCommandFlickr
                 $query = 'SELECT * FROM `xgallery_flickr_photos` WHERE (`status` = 0 OR `status` IS NULL) AND `params` IS NOT NULL LIMIT 1 FOR UPDATE';
             }
 
-            $stmt = $this->connection->executeQuery($query, [$photoId]);
-
-            return $stmt->fetch(FetchMode::STANDARD_OBJECT);
+            return $this->connection->executeQuery($query, [$photoId])->fetch(FetchMode::STANDARD_OBJECT);
         } catch (\Exception $exception) {
             $this->connection->rollBack();
             $this->connection->close();
@@ -183,11 +189,32 @@ class PhotoDownload extends AbstractCommandFlickr
     }
 
     /**
+     * @param $media
+     * @param $photoId
+     * @return boolean
+     * @throws ConnectionException
+     * @throws DBALException
+     */
+    protected function verifyMediaType($media, $photoId)
+    {
+        // At the moment we only download photos
+        if ($media !== 'photo') {
+            $this->logWarning('It\'s not media \'photo\': '.$media);
+            $this->updatePhotoStatus($photoId, DefinesFlickr::PHOTO_STATUS_ERROR_NOT_PHOTO);
+            $this->progressBar->finish();
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * @param $photoId
      * @param $status
      * @return bool
-     * @throws \Doctrine\DBAL\ConnectionException
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws ConnectionException
+     * @throws DBALException
      */
     private function updatePhotoStatus($photoId, $status)
     {

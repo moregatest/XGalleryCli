@@ -2,8 +2,12 @@
 
 namespace XGallery\Webservices;
 
+use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use Monolog\Logger;
+use Psr\Cache\InvalidArgumentException;
 use XGallery\Factory;
 
 /**
@@ -15,7 +19,7 @@ class Restful extends Client
 {
 
     /**
-     * @var \Monolog\Logger
+     * @var Logger
      */
     protected $logger;
 
@@ -24,7 +28,7 @@ class Restful extends Client
      *
      * @param array $config
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct(array $config = [])
     {
@@ -39,39 +43,20 @@ class Restful extends Client
      * @param array $options
      *
      * @return boolean|mixed
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function fetch($method, $uri, array $options = [])
     {
         try {
-            $cache = Factory::getCache();
-            $id = md5(serialize(func_get_args()));
-
-            $item = $cache->getItem($id);
-
-            if ($item->isHit()) {
-                $this->logger->info('Item have cached', func_get_args());
-
-                return $item->get();
-            }
-
             $this->logger->info(
                 __FUNCTION__,
-                [
-                    $uri,
-                    $method,
-                    $options,
-                ]
+                [$uri, $method, $options]
             );
 
             $response = $this->request($method, $uri, $options);
 
-            $item->set($response->getBody()->getContents());
-            $item->expiresAfter((int)getenv('cache_interval'));
-            $cache->save($item);
-
-            return $item->get();
+            return $response->getBody()->getContents();
         } catch (RequestException $exception) {
             $this->logger->error(
                 $exception->getResponse()->getStatusCode(),

@@ -3,7 +3,10 @@
 namespace XGallery;
 
 use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\DriverManager;
+use Exception;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
@@ -23,8 +26,8 @@ class Factory
     const APP_NAMESPACE = 'XGallery3';
 
     /**
-     * @return \Doctrine\DBAL\Connection
-     * @throws \Doctrine\DBAL\DBALException
+     * @return Connection
+     * @throws DBALException
      */
     public static function getDbo()
     {
@@ -47,7 +50,7 @@ class Factory
     /**
      * @param $name
      * @return Logger
-     * @throws \Exception
+     * @throws Exception
      */
     public static function getLogger($name)
     {
@@ -62,7 +65,7 @@ class Factory
 
         $loggers[$name]->pushHandler(
             new StreamHandler(
-                __DIR__.'/../data/logs/'.$logFile.'_'.date("Y-m-d").'.log'
+                __DIR__.'/../data/logs/'.$logFile.'_'.date("Y-m-d").'_'.time().'.log'
             )
         );
 

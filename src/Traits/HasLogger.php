@@ -4,47 +4,65 @@ namespace XGallery\Traits;
 
 use XGallery\Factory;
 
+/**
+ * Trait HasLogger
+ * @package XGallery\Traits
+ */
 trait HasLogger
 {
 
+    private function getLogger()
+    {
+        static $loggers;
+
+        $id = md5(get_called_class());
+
+        if (isset($loggers[$id])) {
+            return $loggers[$id];
+        }
+
+        $loggers[$id] = Factory::getLogger(get_called_class());
+
+        return $loggers[$id];
+    }
+
     protected function logDebug($message, $context = [])
     {
-        Factory::getLogger(get_class($this))->debug($message, $context);
+        $this->getLogger()->debug($message, $context);
     }
 
     protected function logInfo($message, $context = [])
     {
-        Factory::getLogger(get_class($this))->info($message, $context);
+        $this->getLogger()->info($message, $context);
     }
-
 
     protected function logNotice($message, $context = [])
     {
-        Factory::getLogger(get_class($this))->notice($message, $context);
+        $this->getLogger()->notice($message, $context);
     }
 
     protected function logWarning($message, $context = [])
     {
-        Factory::getLogger(get_class($this))->warning($message, $context);
+        $this->getLogger()->warning($message, $context);
     }
 
     protected function logError($message, $context = [])
     {
-        Factory::getLogger(get_class($this))->error($message, $context);
+        $this->getLogger()->error($message, $context);
     }
 
     protected function logCritical($message, $context = [])
     {
-        Factory::getLogger(get_class($this))->critical($message, $context);
+        $this->getLogger()->critical($message, $context);
     }
 
     protected function logAlert($message, $context = [])
     {
-        Factory::getLogger(get_class($this))->alert($message, $context);
+        $this->getLogger()->alert($message, $context);
     }
 
     protected function logEmergency($message, $context = [])
     {
-        Factory::getLogger(get_class($this))->emergency($message, $context);
+        $this->getLogger()->emergency($message, $context);
     }
 }

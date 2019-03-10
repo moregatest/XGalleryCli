@@ -2,6 +2,9 @@
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
+use Doctrine\DBAL\ConnectionException;
+use Doctrine\DBAL\DBALException;
+use ReflectionException;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Database\DatabaseHelper;
 
@@ -14,7 +17,7 @@ class Contacts extends AbstractCommandFlickr
 {
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function configure()
     {
@@ -25,20 +28,24 @@ class Contacts extends AbstractCommandFlickr
 
     /**
      * @return boolean
-     * @throws \Doctrine\DBAL\ConnectionException
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws ConnectionException
+     * @throws DBALException
      */
     protected function process()
     {
-        $this->info('Fetching contacts ...');
+        $this->info('Fetching contacts ...', [], true);
+        $this->progressBar->start(2);
 
         $contacts = $this->flickr->flickrContactsGetAll();
 
         if (!$contacts || empty($contacts)) {
             $this->logNotice('Can not get contacts or empty');
+            $this->progressBar->finish();
 
             return false;
         }
+
+        $this->progressBar->advance();
 
         $this->info("Total contacts: ".count($contacts));
         $this->info('Insert contacts ...');
@@ -51,6 +58,7 @@ class Contacts extends AbstractCommandFlickr
             return false;
         }
 
+        $this->progressBar->finish();
         $this->info("Affected rows: ".(int)$rows);
 
         return true;
