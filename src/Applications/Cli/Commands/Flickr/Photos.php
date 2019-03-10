@@ -6,8 +6,8 @@ use Doctrine\DBAL\FetchMode;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Database\DatabaseHelper;
 use XGallery\Exceptions\Exception;
-use XGallery\Factory;
 use XGallery\Helper\MySql;
+use XGallery\Utilities\DateTimeHelper;
 
 /**
  * Class Photos
@@ -66,12 +66,12 @@ class Photos extends AbstractCommandFlickr
         $this->info("Updated ".$rows." photos into contact");
 
         // Update total photos
-        $connection = Factory::getDbo();
-        $connection->executeUpdate(
+
+        $this->connection->executeUpdate(
             'UPDATE `xgallery_flickr_contacts` SET total_photos = ? WHERE nsid = ?',
             array($totalPhotos, $people->nsid)
         );
-        $connection->close();
+        $this->connection->close();
 
         return true;
     }
@@ -85,8 +85,7 @@ class Photos extends AbstractCommandFlickr
     private function getPeople($nsid)
     {
         try {
-            $connection = Factory::getDbo();
-            $connection->beginTransaction();
+            $this->connection->beginTransaction();
 
             if ($nsid) {
                 $query = 'SELECT * FROM `xgallery_flickr_contacts` WHERE `nsid` = ?  ORDER BY `modified` ASC LIMIT 1 FOR UPDATE';
@@ -94,31 +93,26 @@ class Photos extends AbstractCommandFlickr
                 $query = 'SELECT * FROM `xgallery_flickr_contacts` ORDER BY `modified` ASC LIMIT 1 FOR UPDATE';
             }
 
-            $stmt = $connection->executeQuery(
-                $query,
-                [$nsid]
-            );
-
-            $people = $stmt->fetch(FetchMode::STANDARD_OBJECT);
+            $people = $this->connection->executeQuery($query, [$nsid])->fetch(FetchMode::STANDARD_OBJECT);
 
             if (!$people) {
-                $connection->rollBack();
-                $connection->close();
+                $this->connection->rollBack();
+                $this->connection->close();
 
                 return false;
             }
 
-            $connection->executeUpdate(
+            $this->connection->executeUpdate(
                 'UPDATE `xgallery_flickr_contacts` SET `modified` = ? WHERE nsid = ?',
-                array(MySql::getCurrentDateTime(), $people->nsid)
+                array(DateTimeHelper::toMySql(), $people->nsid)
             );
-            $connection->commit();
-            $connection->close();
+            $this->connection->commit();
+            $this->connection->close();
 
             return $people;
         } catch (Exception $exception) {
-            $connection->rollBack();
-            $connection->close();
+            $this->connection->rollBack();
+            $this->connection->close();
 
             $this->logError($exception->getMessage());
 

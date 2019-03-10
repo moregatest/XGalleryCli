@@ -18,6 +18,11 @@ abstract class AbstractCommandFlickr extends AbstractCommand
     protected $flickr;
 
     /**
+     * @var \Doctrine\DBAL\Connection
+     */
+    protected $connection;
+
+    /**
      * @throws \ReflectionException
      */
     protected function configure()
@@ -28,12 +33,25 @@ abstract class AbstractCommandFlickr extends AbstractCommand
     }
 
     /**
-     * @return boolean
+     * @return bool
+     * @throws \Doctrine\DBAL\DBALException
      */
     protected function prepare()
     {
         $this->flickr = Factory::getServices('flickr');
+        $this->connection = Factory::getDbo();
 
         return true;
+    }
+
+    /**
+     * @param $status
+     * @return mixed|void
+     */
+    protected function executeComplete($status)
+    {
+        $this->connection->close();
+
+        parent::executeComplete($status);
     }
 }

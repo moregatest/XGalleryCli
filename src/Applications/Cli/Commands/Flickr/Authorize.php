@@ -27,6 +27,11 @@ class Authorize extends AbstractCommandFlickr
         parent::configure();
     }
 
+    /**
+     * @return boolean
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     protected function process()
     {
         switch ($this->input->getOption('step')) {
@@ -34,9 +39,7 @@ class Authorize extends AbstractCommandFlickr
                 $this->output->writeln($this->flickr->getRequestToken('http://localhost'));
                 break;
             case 2:
-                $this->output->writeln(
-                    $this->flickr->getAccessToken('', '')
-                );
+                $this->output->writeln($this->flickr->getAccessToken('', ''));
                 break;
         }
 

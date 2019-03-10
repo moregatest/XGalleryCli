@@ -3,12 +3,11 @@
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
 use Doctrine\DBAL\FetchMode;
-use GuzzleHttp\Client;
 use Symfony\Component\Filesystem\Filesystem;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Defines\DefinesFlickr;
 use XGallery\Exceptions\Exception;
-use XGallery\Factory;
+use XGallery\Utilities\DownloadHelper;
 
 /**
  * Class PhotosSize
@@ -16,11 +15,6 @@ use XGallery\Factory;
  */
 class PhotoDownload extends AbstractCommandFlickr
 {
-
-    /**
-     * @var \Doctrine\DBAL\Connection
-     */
-    private $connection;
 
     /**
      * @throws \ReflectionException
@@ -38,7 +32,7 @@ class PhotoDownload extends AbstractCommandFlickr
                 'description' => 'Force redownload even if file already exists',
             ],
             'no_download' => [
-                'default' => 1,
+                'default' => 0,
             ],
         ];
 
@@ -55,12 +49,8 @@ class PhotoDownload extends AbstractCommandFlickr
     {
         if ($photoId = $this->input->getOption('photo_id')) {
             $this->info('Getting photo ID: '.$photoId.' ...');
-        } else {
-            $this->info('Getting photo ...');
         }
 
-
-        $this->connection = Factory::getDbo();
         $this->connection->beginTransaction();
 
         $photo = $this->getPhoto($photoId);
@@ -97,48 +87,72 @@ class PhotoDownload extends AbstractCommandFlickr
         $this->info('Photo URL: '.$lastSize->source);
 
         $targetDir = getenv('flickr_storage').'/'.$photo->owner;
-        $fileName = basename($lastSize->source);
+        (new Filesystem())->mkdir($targetDir);
 
+        $fileName = basename($lastSize->source);
         $fileExists = (new Filesystem())->exists($targetDir.'/'.$fileName);
+        $saveTo = $targetDir.'/'.$fileName;
 
         if ($fileExists && $this->input->getOption('force') == 0) {
             $this->logWarning('Photo already exists: '.$targetDir.'/'.$fileName);
-            $this->info('Photo already exists: '.$targetDir.'/'.$fileName);
+            $this->output->write("\n".'Photo already exists: '.$targetDir.'/'.$fileName);
 
-            $status = DefinesFlickr::PHOTO_STATUS_ALREADY_DOWNLOADED;
-        } else {
-            // Skip download
-            if ($this->input->getOption('no_download') == 0) {
+            // Verify load and redownload if file is corrupted
+            $originalFilesize = filesize($saveTo);
+            $remoteFilesize = DownloadHelper::getFilesize($lastSize->source);
+
+            $this->info('Local filesize: '.$originalFilesize.' vs remote filesize: '.$remoteFilesize);
+
+            if ($originalFilesize < $remoteFilesize) {
+                $this->logWarning('Local file is corrupted: '.$saveTo);
+                $this->output->write("\n".'Local file is corrupted');
+
+                // Redownload. Local file is broken
+                if (!DownloadHelper::download($lastSize->source, $saveTo)) {
+
+                    $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_REDOWNLOAD_FAILED);
+
+                    return false;
+                }
+
+                $this->info('Redownloaded success: '.filesize($saveTo));
+                $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_DOWNLOADED);
+
+                return true;
+            }
+
+            // File exists without force redownload and local file is fine
+            $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_ALREADY_DOWNLOADED);
+
+            return true;
+        }
+
+        // Skip download
+        if ($this->input->getOption('no_download') == 0) {
+            try {
+
                 $this->info('Downloading photo ...');
 
-                try {
+                if (!DownloadHelper::download($lastSize->source, $saveTo)) {
 
-                    $saveTo = $targetDir.'/'.$fileName;
+                    $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_REDOWNLOAD_FAILED);
 
-                    if (!$this->download($lastSize->source, $saveTo)) {
-
-                        $this->updatePhotoStatus(
-                            $photo->id,
-                            DefinesFlickr::PHOTO_STATUS_ERROR_DOWNLOAD_FAILED
-                        );
-
-
-                        return false;
-                    }
-
-                    $status = DefinesFlickr::PHOTO_STATUS_DOWNLOADED;
-
-                    $this->info('Download completed: '.$targetDir.'/'.$fileName);
-
-                } catch (Exception $exception) {
-                    $status = DefinesFlickr::PHOTO_STATUS_ERROR_DOWNLOAD_FAILED;
+                    return false;
                 }
-            } else {
-                $status = DefinesFlickr::PHOTO_STATUS_SKIP_DOWNLOAD;
+
+                $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_DOWNLOADED);
+                $this->info('Download completed: '.$targetDir.'/'.$fileName);
+
+                return true;
+
+            } catch (Exception $exception) {
+                $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_DOWNLOAD_FAILED);
+
+                return false;
             }
         }
 
-        $this->updatePhotoStatus($photo->id, $status);
+        $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_SKIP_DOWNLOAD);
 
         return true;
     }
@@ -166,32 +180,6 @@ class PhotoDownload extends AbstractCommandFlickr
 
             return false;
         }
-    }
-
-    /**
-     * @param $url
-     * @param $saveTo
-     * @return boolean
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    private function download($url, $saveTo)
-    {
-        $client = new Client();
-        $response = $client->request('GET', $url, ['sink' => $saveTo]);
-        $orgFileSize = $response->getHeader('Content-Length')[0];
-        $downloadedFileSize = filesize($saveTo);
-
-        if ($orgFileSize != $downloadedFileSize) {
-            $this->logWarning('Filesize does not match');
-
-            return false;
-        }
-
-        if ($response->getStatusCode() !== 200) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
