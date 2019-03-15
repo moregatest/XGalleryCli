@@ -1,4 +1,10 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
@@ -8,8 +14,6 @@ use Doctrine\DBAL\FetchMode;
 use ReflectionException;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Defines\DefinesFlickr;
-use XGallery\Exceptions\Exception;
-use XGallery\Factory;
 
 /**
  * Class PhotosSize
@@ -25,8 +29,11 @@ class PhotosSize extends AbstractCommandFlickr
         $this->setDescription('Fetch photos size');
         $this->options = [
             'nsid' => [
-                'description',
-                'Only fetch photos from this NSID',
+                'description' => 'Only fetch photos from this NSID',
+            ],
+            'limit' => [
+                'default' => DefinesFlickr::REST_LIMIT_PHOTOS_SIZE,
+                'description' => 'Number of photos will be used for get sizes',
             ],
         ];
 
@@ -44,7 +51,7 @@ class PhotosSize extends AbstractCommandFlickr
         $this->progressBar->start(2);
 
         if ($nsid = $this->input->getOption('nsid')) {
-            $this->info('Getting '.DefinesFlickr::REST_LIMIT_PHOTOS_SIZE.' photos from NSID: '.$nsid.' ...');
+            $this->info('Getting '.$this->input->getOption('limit').' photos from NSID: '.$nsid.' ...');
         }
 
         $photos = $this->getPhotos($nsid);
@@ -61,8 +68,6 @@ class PhotosSize extends AbstractCommandFlickr
         $this->info('Found '.count($photos).' photos');
         $this->info("Fetching size ...");
 
-        $connection = Factory::getDbo();
-
         foreach ($photos as $photoId) {
             $photoSize = $this->flickr->flickrPhotosSizes($photoId);
             $this->info('Fetched '.$photoId);
@@ -74,17 +79,16 @@ class PhotosSize extends AbstractCommandFlickr
             }
 
             try {
-                $connection->beginTransaction();
-                $connection->executeUpdate(
+                $this->connection->beginTransaction();
+                $this->connection->executeUpdate(
                     'UPDATE `xgallery_flickr_photos` SET `params` = ? WHERE `id` = ?',
                     [json_encode($photoSize->sizes->size), $photoId]
                 );
-                $connection->commit();
-                $connection->close();
-            } catch (Exception $exception) {
-                $connection->rollBack();
-                $connection->close();
-                $this->progressBar->finish();
+                $this->connection->commit();
+                $this->connection->close();
+            } catch (DBALException $exception) {
+                $this->connection->rollBack();
+                $this->connection->close();
             }
         }
 
@@ -96,15 +100,15 @@ class PhotosSize extends AbstractCommandFlickr
 
     /**
      * @param $nsid
-     * @return bool|mixed[]
+     * @return boolean|mixed[]
      * @throws ConnectionException
      * @throws DBALException
      */
     private function getPhotos($nsid = '')
     {
         try {
-            $connection = Factory::getDbo();
-            $connection->beginTransaction();
+
+            $this->connection->beginTransaction();
 
             $query = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE (`status` = 0 OR `status` IS NULL) AND `params` IS NULL ';
 
@@ -112,24 +116,24 @@ class PhotosSize extends AbstractCommandFlickr
                 $query .= ' AND owner = ?';
             }
 
-            $query .= 'LIMIT '.DefinesFlickr::REST_LIMIT_PHOTOS_SIZE.' FOR UPDATE';
+            $query .= 'LIMIT '.(int)$this->input->getOption('limit').' FOR UPDATE';
 
-            $photos = $connection->executeQuery($query, [$nsid])->fetchAll(FetchMode::COLUMN);
+            $photos = $this->connection->executeQuery($query, [$nsid])->fetchAll(FetchMode::COLUMN);
 
             if (!$photos) {
-                $connection->rollBack();
-                $connection->close();
+                $this->connection->rollBack();
+                $this->connection->close();
 
                 return false;
             }
 
-            $connection->commit();
-            $connection->close();
+            $this->connection->commit();
+            $this->connection->close();
 
             return $photos;
-        } catch (Exception $exception) {
-            $connection->rollBack();
-            $connection->close();
+        } catch (DBALException $exception) {
+            $this->connection->rollBack();
+            $this->connection->close();
 
             return false;
         }

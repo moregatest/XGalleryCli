@@ -1,7 +1,15 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Webservices\Oauth\Oauth1;
 
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use XGallery\Exceptions\Exception;
 use XGallery\Webservices\Oauth\Oauth1\Traits\HasAuthorize;
 use XGallery\Webservices\Restful;
@@ -39,8 +47,8 @@ class Client extends Restful
      * @param array $options
      *
      * @return boolean
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function api($method, $uri, $parameters, $options = [])
     {
@@ -69,12 +77,12 @@ class Client extends Restful
      * @param $callback
      *
      * @return boolean
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getRequestToken($callback)
     {
-        $this->credential->token = '';
+        $this->credential->token       = '';
         $this->credential->tokenSecret = '';
 
         return $this->api(
@@ -88,8 +96,8 @@ class Client extends Restful
      * @param $callback
      *
      * @return boolean|string
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getRequestTokenUrl($callback)
     {
@@ -108,8 +116,8 @@ class Client extends Restful
      * @param $oauthVerifier
      *
      * @return boolean
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getAccessToken($oauthToken, $oauthVerifier)
     {

@@ -1,7 +1,15 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Database;
 
+use Doctrine\DBAL\ConnectionException;
+use Doctrine\DBAL\DBALException;
 use XGallery\Exceptions\Exception;
 use XGallery\Factory;
 
@@ -16,22 +24,22 @@ class DatabaseHelper
      * @param $table
      * @param $rows
      * @return bool
-     * @throws \Doctrine\DBAL\ConnectionException
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws ConnectionException
+     * @throws DBALException
      */
     public static function insertRows($table, $rows)
     {
         $connection = Factory::getDbo();
-        $query = 'INSERT INTO `'.$table.'`';
+        $query      = 'INSERT INTO `'.$table.'`';
 
         // Columns
-        $query .= '(';
+        $query            .= '(';
         $onDuplicateQuery = [];
-        $columnNames = array_keys(get_object_vars($rows[0]));
+        $columnNames      = array_keys(get_object_vars($rows[0]));
 
         // Bind column names
         foreach ($columnNames as $columnName) {
-            $query .= '`'.$columnName.'`,';
+            $query              .= '`'.$columnName.'`,';
             $onDuplicateQuery[] = '`'.$columnName.'`='.' VALUES(`'.$columnName.'`)';
             $onDuplicateQuery[] = '`'.$columnName.'`='.' VALUES(`'.$columnName.'`)';
         }
@@ -44,8 +52,8 @@ class DatabaseHelper
         foreach ($rows as $index => $row) {
             $query .= ' (';
             foreach ($columnNames as $columnName) {
-                $columnId = 'value_'.uniqid();
-                $query .= ':'.$columnId.',';
+                $columnId                    = 'value_'.uniqid();
+                $query                       .= ':'.$columnId.',';
                 $bindKeys[$index][$columnId] = isset($row->{$columnName}) ? $row->{$columnName} : null;
             }
 

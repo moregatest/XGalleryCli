@@ -1,8 +1,15 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Utilities;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use XGallery\Factory;
 
 /**
@@ -15,13 +22,13 @@ class DownloadHelper
      * @param $url
      * @param $saveTo
      * @return boolean
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public static function download($url, $saveTo)
     {
-        $client = new Client();
-        $response = $client->request('GET', $url, ['sink' => $saveTo]);
-        $orgFileSize = $response->getHeader('Content-Length')[0];
+        $client             = new Client();
+        $response           = $client->request('GET', $url, ['sink' => $saveTo]);
+        $orgFileSize        = $response->getHeader('Content-Length')[0];
         $downloadedFileSize = filesize($saveTo);
 
         if ($orgFileSize != $downloadedFileSize) {

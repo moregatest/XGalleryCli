@@ -8,38 +8,40 @@
 
 namespace XGallery\Applications\Cli\Commands;
 
+use Exception;
 use ReflectionException;
 use XGallery\Applications\Cli\AbstractCommand;
-use XGallery\Factory;
 use XGallery\Webservices\Services\Flickr;
+use XGallery\Webservices\Services\Now;
 
 /**
  * Class CommandFlickr
  * @package XGallery\Applications\Commands
  */
-abstract class AbstractCommandFlickr extends AbstractCommand
+abstract class AbstractCommandNow extends AbstractCommand
 {
     /**
      * @var Flickr
      */
-    protected $flickr;
+    protected $now;
 
     /**
      * @throws ReflectionException
      */
     protected function configure()
     {
-        $this->setName('flickr:'.strtolower($this->getClassName()));
+        $this->setName('now:'.strtolower($this->getClassName()));
 
         parent::configure();
     }
 
     /**
-     * @return boolean
+     * @return bool
+     * @throws Exception
      */
     protected function prepare()
     {
-        $this->flickr = Factory::getServices('flickr');
+        $this->now = new Now;
 
         return true;
     }

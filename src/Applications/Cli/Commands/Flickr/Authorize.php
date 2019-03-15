@@ -1,7 +1,16 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
+use ReflectionException;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Applications\Cli\Commands\CommandFlickr;
 
@@ -12,7 +21,7 @@ use XGallery\Applications\Cli\Commands\CommandFlickr;
 class Authorize extends AbstractCommandFlickr
 {
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function configure()
     {
@@ -29,8 +38,8 @@ class Authorize extends AbstractCommandFlickr
 
     /**
      * @return boolean
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     protected function process()
     {

@@ -20,9 +20,12 @@
     "guzzlehttp/guzzle": "^6.3",
     "monolog/monolog": "^1.24",
     "ext-json": "^1.6",
-    "ext-simplexml": "^0.0.0"
+    "ext-simplexml": "^0.0.0",
+    "symfony/orm-pack": "^1.0",
+    "nahid/jsonq": "^5.2"
   },
   "require-dev": {
-    "symfony/dotenv": "^4.2"
+    "symfony/dotenv": "^4.2",
+    "symfony/maker-bundle": "^1.11"
   }
 }

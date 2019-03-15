@@ -1,4 +1,10 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
@@ -37,6 +43,7 @@ class PhotoDownload extends AbstractCommandFlickr
             ],
             'no_download' => [
                 'default' => 0,
+                'description' => 'Skip download',
             ],
         ];
 
@@ -54,12 +61,8 @@ class PhotoDownload extends AbstractCommandFlickr
         $this->info('Getting photo ...', [], true);
         $this->progressBar->start(2);
 
-        if ($photoId = $this->input->getOption('photo_id')) {
-            $this->info('Getting photo ID: '.$photoId.' ...');
-        }
-
         $this->connection->beginTransaction();
-        $photo = $this->getPhoto($photoId);
+        $photo = $this->getPhoto();
         $this->progressBar->advance();
 
         // There are no photos
@@ -71,7 +74,7 @@ class PhotoDownload extends AbstractCommandFlickr
 
         $this->info('Work on photo: '.$photo->id);
 
-        $size = json_decode($photo->params);
+        $size     = json_decode($photo->params);
         $lastSize = end($size);
 
         if (!$lastSize) {
@@ -91,8 +94,8 @@ class PhotoDownload extends AbstractCommandFlickr
         $targetDir = getenv('flickr_storage').'/'.$photo->owner;
         (new Filesystem())->mkdir($targetDir);
 
-        $fileName = basename($lastSize->source);
-        $saveTo = $targetDir.'/'.$fileName;
+        $fileName   = basename($lastSize->source);
+        $saveTo     = $targetDir.'/'.$fileName;
         $fileExists = (new Filesystem())->exists($saveTo);
 
         if ($fileExists && $this->input->getOption('force') == 0) {
@@ -101,13 +104,13 @@ class PhotoDownload extends AbstractCommandFlickr
 
             // Verify load and redownload if file is corrupted
             $originalFilesize = filesize($saveTo);
-            $remoteFilesize = DownloadHelper::getFilesize($lastSize->source);
+            $remoteFilesize   = DownloadHelper::getFilesize($lastSize->source);
 
             $this->info('Local filesize: '.$originalFilesize.' vs remote filesize: '.$remoteFilesize);
 
             if ($originalFilesize < $remoteFilesize) {
                 $this->logWarning('Local file is corrupted: '.$saveTo);
-                $this->output->write("\n".'Local file is corrupted');
+                $this->output->write("\n".'Local file is corrupted'."\n");
 
                 // Redownload. Local file is broken
                 if (!DownloadHelper::download($lastSize->source, $saveTo)) {
@@ -160,19 +163,21 @@ class PhotoDownload extends AbstractCommandFlickr
         }
 
         $this->updatePhotoStatus($photo->id, DefinesFlickr::PHOTO_STATUS_SKIP_DOWNLOAD);
+        $this->output->write("\n");
         $this->progressBar->finish();
 
         return true;
     }
 
     /**
-     * @param $photoId
      * @return boolean|mixed
      * @throws ConnectionException
      */
-    private function getPhoto($photoId)
+    private function getPhoto()
     {
         try {
+            $photoId = $this->input->getOption('photo_id');
+
             if ($photoId) {
                 $query = 'SELECT * FROM `xgallery_flickr_photos` WHERE `params` IS NOT NULL AND id = ? LIMIT 1 FOR UPDATE';
             } else {

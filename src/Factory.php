@@ -1,4 +1,10 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery;
 
@@ -61,12 +67,10 @@ class Factory
         }
 
         $loggers[$name] = new Logger(self::APP_NAMESPACE);
-        $logFile = str_replace('\\', DIRECTORY_SEPARATOR, strtolower($name));
+        $logFile        = str_replace('\\', DIRECTORY_SEPARATOR, strtolower($name));
 
         $loggers[$name]->pushHandler(
-            new StreamHandler(
-                __DIR__.'/../data/logs/'.$logFile.'_'.date("Y-m-d").'_'.time().'.log'
-            )
+            new StreamHandler(getenv('log_path').'/'.$logFile.'_'.date("Y-m-d").'_'.time().'.log')
         );
 
         return $loggers[$name];
@@ -90,7 +94,7 @@ class Factory
         }
 
         if ($directory === null) {
-            $directory = __DIR__.'/../data/cache';
+            $directory = getenv('cache_path');
         }
 
         $instances[$id] = new FilesystemAdapter($namespace, $defaultLifetime, $directory);

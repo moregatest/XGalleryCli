@@ -1,4 +1,10 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
@@ -46,7 +52,7 @@ class PhotosDownload extends AbstractCommandFlickr
 
             $this->connection->beginTransaction();
 
-            $query = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE `status` = 0 AND `params` IS NOT NULL LIMIT '
+            $query  = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE `status` = 0 AND `params` IS NOT NULL LIMIT '
                 .(int)$this->input->getOption('limit');
             $photos = $this->connection->executeQuery($query, [])->fetchAll(
                 FetchMode::COLUMN

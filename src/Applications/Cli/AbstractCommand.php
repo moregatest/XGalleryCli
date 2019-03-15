@@ -1,4 +1,10 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Applications\Cli;
 
@@ -94,7 +100,7 @@ abstract class AbstractCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->input = $input;
+        $this->input  = $input;
         $this->output = $output;
 
         // Can not prepare then exit execute
@@ -102,7 +108,7 @@ abstract class AbstractCommand extends Command
             return 1;
         }
 
-        $this->connection = Factory::getDbo();
+        $this->connection  = Factory::getDbo();
         $this->progressBar = new ProgressBar($this->output, 0);
         $this->progressBar->setFormat('debug');
 

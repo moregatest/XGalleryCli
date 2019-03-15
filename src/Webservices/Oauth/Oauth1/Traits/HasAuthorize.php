@@ -1,4 +1,10 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Webservices\Oauth\Oauth1\Traits;
 
@@ -57,7 +63,7 @@ trait HasAuthorize
         $parameters['oauth_signature'] = $this->getSignature($baseSignature);
 
         // For header we'll use encode for signature
-        $this->oauthParameters = $parameters;
+        $this->oauthParameters                    = $parameters;
         $this->oauthParameters['oauth_signature'] = OauthHelper::encode(
             $parameters['oauth_signature']
         );

@@ -1,7 +1,14 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Applications;
 
+use Exception;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,7 +28,7 @@ abstract class AbstractApplicationCli extends Application
      * ApplicationCli constructor.
      * @param string $name
      * @param string $version
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct($name = DefinesCore::APPLICATION, $version = DefinesCore::VERSION)
     {
@@ -36,7 +43,7 @@ abstract class AbstractApplicationCli extends Application
      * @param InputInterface|null $input
      * @param OutputInterface|null $output
      * @return integer
-     * @throws \Exception
+     * @throws Exception
      */
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {

@@ -1,4 +1,10 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
@@ -35,7 +41,16 @@ class Contacts extends AbstractCommandFlickr
     {
         $this->info('Fetching contacts ...', [], true);
         $this->progressBar->start(2);
+        $contacts = $this->getContacts();
 
+        return $this->insertContacts($contacts);
+    }
+
+    /**
+     * @return array|boolean
+     */
+    private function getContacts()
+    {
         $contacts = $this->flickr->flickrContactsGetAll();
 
         if (!$contacts || empty($contacts)) {
@@ -46,9 +61,24 @@ class Contacts extends AbstractCommandFlickr
         }
 
         $this->progressBar->advance();
-
         $this->info("Total contacts: ".count($contacts));
-        $this->info('Insert contacts ...');
+
+        return $contacts;
+    }
+
+    /**
+     * @param array $contacts
+     * @return boolean
+     * @throws ConnectionException
+     * @throws DBALException
+     */
+    private function insertContacts($contacts)
+    {
+        $this->info('Insert contacts ...', [], true);
+
+        if (!$contacts || empty($contacts)) {
+            return false;
+        }
 
         $rows = DatabaseHelper::insertRows('xgallery_flickr_contacts', $contacts);
 
@@ -58,7 +88,7 @@ class Contacts extends AbstractCommandFlickr
             return false;
         }
 
-        $this->progressBar->finish();
+        $this->progressBar->advance();
         $this->info("Affected rows: ".(int)$rows);
 
         return true;

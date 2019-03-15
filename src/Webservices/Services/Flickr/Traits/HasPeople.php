@@ -1,4 +1,10 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Webservices\Services\Flickr\Traits;
 
@@ -64,7 +70,7 @@ trait HasPeople
         }
 
         $photos = $response->photos->photo;
-        $pages = $response->photos->pages;
+        $pages  = $response->photos->pages;
 
         if ($pages === 1) {
             return $photos;

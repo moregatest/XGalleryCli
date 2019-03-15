@@ -2,7 +2,7 @@
 
 require_once __DIR__.'/bootstrap.php';
 
-use XGallery\Applications\Cli\ApplicationCliFlickr;
+use XGallery\Applications\Cli\ApplicationCli;
 
-$cli = new ApplicationCliFlickr;
+$cli = new ApplicationCli;
 $cli->run();

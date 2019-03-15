@@ -1,4 +1,10 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
@@ -8,7 +14,6 @@ use Doctrine\DBAL\FetchMode;
 use ReflectionException;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Database\DatabaseHelper;
-use XGallery\Exceptions\Exception;
 use XGallery\Utilities\DateTimeHelper;
 
 /**
@@ -25,8 +30,7 @@ class Photos extends AbstractCommandFlickr
         $this->setDescription('Fetch ALL photos from a contact or by requested NSID');
         $this->options = [
             'nsid' => [
-                'description',
-                'Only fetch photos from this NSID',
+                'description' => 'Only fetch photos from this NSID',
             ],
         ];
 
@@ -43,7 +47,7 @@ class Photos extends AbstractCommandFlickr
         $this->info('Getting people from database/options...', [], true);
         $this->progressBar->start(4);
 
-        if (!$people = $this->getPeople($this->input->getOption('nsid'))) {
+        if (!$people = $this->getPeople()) {
             $this->logNotice('Can not get people from database');
 
             return false;
@@ -51,23 +55,18 @@ class Photos extends AbstractCommandFlickr
 
         $this->progressBar->advance();
 
-        $this->info('Work on nsid: '.$people->nsid);
-        $this->info('Fetching photos ...');
-
-        $photos = $this->flickr->flickrPeopleGetAllPhotos($people->nsid);
-
+        $photos = $this->getPhotos($people->nsid);
         $this->progressBar->advance();
-
         $totalPhotos = count($photos);
 
         $this->info('Found '.$totalPhotos.' photos');
-        $this->info("Inserting photos ...", [], true);
+        $this->info("Inserting photos ...");
 
         $rows = DatabaseHelper::insertRows('xgallery_flickr_photos', $photos);
         $this->progressBar->advance();
 
-        if (!$rows) {
-            $this->logError('Can not insert photos');
+        if ($rows === false) {
+            $this->logError('Can not insert photos', error_get_last());
             $this->progressBar->finish();
 
             return false;
@@ -89,14 +88,13 @@ class Photos extends AbstractCommandFlickr
     }
 
     /**
-     * @param $nsid
-     * @return bool|mixed
+     * @return boolean|mixed
      * @throws ConnectionException
-     * @throws DBALException
      */
-    private function getPeople($nsid)
+    private function getPeople()
     {
         try {
+            $nsid = $this->input->getOption('nsid');
             $this->connection->beginTransaction();
 
             if ($nsid) {
@@ -122,7 +120,7 @@ class Photos extends AbstractCommandFlickr
             $this->connection->close();
 
             return $people;
-        } catch (Exception $exception) {
+        } catch (DBALException $exception) {
             $this->connection->rollBack();
             $this->connection->close();
 
@@ -130,5 +128,21 @@ class Photos extends AbstractCommandFlickr
 
             return false;
         }
+    }
+
+    /**
+     * @param integer $nsid
+     * @return array|boolean
+     */
+    private function getPhotos($nsid)
+    {
+        if (!$nsid) {
+            return false;
+        }
+
+        $this->info('Work on nsid: '.$nsid);
+        $this->info('Fetching photos ...');
+
+        return $this->flickr->flickrPeopleGetAllPhotos($nsid);
     }
 }

@@ -1,6 +1,14 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Utilities;
+
+use DateTime;
 
 /**
  * Class DateTimeHelper
@@ -10,6 +18,6 @@ class DateTimeHelper
 {
     public static function toMySql()
     {
-        return (new \DateTime)->format('Y-m-d H:i:s');
+        return (new DateTime)->format('Y-m-d H:i:s');
     }
 }

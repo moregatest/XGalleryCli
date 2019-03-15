@@ -1,7 +1,16 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Webservices\Services;
 
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
+use SimpleXMLElement;
 use XGallery\Webservices\Oauth\Oauth1\Client;
 use XGallery\Webservices\Services\Flickr\Traits\HasActivity;
 use XGallery\Webservices\Services\Flickr\Traits\HasContacts;
@@ -67,8 +76,8 @@ class Flickr extends Client
      * @param array $options
      *
      * @return boolean|mixed
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function rest($parameters, $options = [])
     {
@@ -106,9 +115,9 @@ class Flickr extends Client
      * @param       $imageFile
      * @param array $options
      *
-     * @return bool|\SimpleXMLElement
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @return bool|SimpleXMLElement
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function upload($imageFile, $options = [])
     {
@@ -141,9 +150,9 @@ class Flickr extends Client
      * @param $imageFile
      * @param $photoId
      * @param array $options
-     * @return bool|\SimpleXMLElement
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @return bool|SimpleXMLElement
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function replace($imageFile, $photoId, $options = [])
     {

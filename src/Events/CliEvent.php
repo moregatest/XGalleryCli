@@ -1,4 +1,10 @@
 <?php
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
 namespace XGallery\Events;
 
@@ -18,7 +24,7 @@ class CliEvent extends Event
 
     public function __construct(Input $input, Output $output)
     {
-        $this->input = $input;
+        $this->input  = $input;
         $this->output = $output;
     }
 }

@@ -6,16 +6,18 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace XGallery\Defines;
+namespace XGallery\Model;
 
-/**
- * Class DefinesCore
- * @package XGallery\Defines
- */
-class DefinesCore
+
+class AbstractModel
 {
+    public function getData()
+    {
 
-    const APPLICATION = 'XGallery';
+    }
 
-    const VERSION = '3.0.0';
+    protected function buildQuery()
+    {
+
+    }
 }
