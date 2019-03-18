@@ -92,6 +92,30 @@ class PhotosSize extends AbstractCommandFlickr
                 $this->photos = explode(',', $this->input->getOption('photo_ids'));
                 $this->info('Working on '.count($this->photos).' photos', [], true);
 
+                // Fetch photos for inserting
+                foreach ($this->photos as $photoId) {
+                    $photo = $this->flickr->flickrPhotosGetInfo($photoId);
+
+                    $query = ' INSERT IGNORE INTO xgallery_flickr_photos '
+                        .'(`id`, `owner`, `secret`, `server`, `farm`, `title`, `ispublic`, `isfriend`, `isfamily` ) '
+                        .' VALUES (?,?,?,?,?,?,?,?,?)';
+
+                    $this->connection->executeQuery(
+                        $query,
+                        [
+                            $photoId,
+                            $photo->photo->owner->nsid,
+                            $photo->photo->secret,
+                            $photo->photo->server,
+                            $photo->photo->farm,
+                            $photo->photo->title->_content,
+                            $photo->photo->visibility->ispublic,
+                            $photo->photo->visibility->isfriend,
+                            $photo->photo->visibility->isfamily,
+                        ]
+                    );
+                }
+
                 return true;
             }
 
@@ -117,6 +141,7 @@ class PhotosSize extends AbstractCommandFlickr
 
             if (!$this->photos || empty($this->photos)) {
                 $this->logNotice('Can not get photos from database or no photos found');
+                $this->output->writeln('');
 
                 return false;
             }
@@ -163,7 +188,7 @@ class PhotosSize extends AbstractCommandFlickr
                 continue;
             }
 
-            $this->output->write(': Succeeded');
+            $this->output->write(': Succeed');
 
             try {
 
