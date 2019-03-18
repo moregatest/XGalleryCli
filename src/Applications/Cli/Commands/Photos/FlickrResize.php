@@ -83,8 +83,8 @@ class FlickrResize extends AbstractCommandPhotos
     }
 
     /**
+     * @param array $steps
      * @return boolean
-     * @throws ImageResizeException
      */
     protected function process($steps = [])
     {
@@ -215,7 +215,7 @@ class FlickrResize extends AbstractCommandPhotos
         $imager = new ImageResize($this->localFile);
         $imager
             ->crop($resizeWidth, $resizeHeight, false, $this->input->getOption('position'))
-            ->save($saveTo);
+            ->save($saveTo, null, 100);
         $this->info('Resized: '.$saveTo.' with dimension: '.$imager->getDestWidth().' x '.$imager->getDestHeight());
 
         return true;
