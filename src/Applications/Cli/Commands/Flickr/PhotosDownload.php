@@ -13,6 +13,7 @@ use Doctrine\DBAL\FetchMode;
 use ReflectionException;
 use Symfony\Component\Process\Process;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
+use XGallery\Defines\DefinesCore;
 use XGallery\Defines\DefinesFlickr;
 use XGallery\Exceptions\Exception;
 
@@ -40,16 +41,22 @@ class PhotosDownload extends AbstractCommandFlickr
     {
         $this->setDescription('Mass download all photos');
         $this->options = [
-            'limit' =>
-                [
-                    'description' => 'Limit number of download',
-                    'default' => DefinesFlickr::DOWNLOAD_LIMIT,
-                ],
             'nsid' =>
                 [
                     'description' => 'Download specific NSID',
                     'default' => null,
                 ],
+            'advanced' =>
+                [
+                    'description' => 'Execute advanced query to get right photos',
+                    'default' => null,
+                ],
+            'limit' =>
+                [
+                    'description' => 'Limit number of download',
+                    'default' => DefinesFlickr::DOWNLOAD_LIMIT,
+                ],
+
         ];
 
         parent::configure();
@@ -72,6 +79,7 @@ class PhotosDownload extends AbstractCommandFlickr
 
 
     /**
+     * @param array $steps
      * @return boolean
      */
     protected function process($steps = [])
@@ -89,15 +97,21 @@ class PhotosDownload extends AbstractCommandFlickr
     protected function loadPhotos()
     {
         $this->info(__FUNCTION__);
+        $nsid = $this->input->getOption('nsid');
 
         try {
-            $query = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE `status` = 0 AND `params` IS NOT NULL ';
-
-            $nsid = $this->input->getOption('nsid');
-
-            if ($nsid) {
-                $this->info('Specific on NSID: '.$nsid);
-                $query .= ' AND `owner` = ?';
+            if ($this->input->getOption('advanced')) {
+                $query = 'SELECT * FROM xgallery_flickr_photos WHERE `status` = 0 '
+                    .'AND `owner` IN '
+                    .'( SELECT `contacts`.`nsid` FROM `xgallery_flickr_contacts` AS `contacts` '
+                    .'INNER JOIN( SELECT `owner`, COUNT(`id`) AS `total` FROM `xgallery_flickr_photos` WHERE `status` <> 0 GROUP BY `owner` ) AS `photos` ON `photos`.`owner` = `contacts`.`nsid` '
+                    .'WHERE `photos`.`total` < `contacts`.`total_photos` )';
+            } else {
+                $query = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE `status` = 0';
+                if ($nsid) {
+                    $this->info('Specific on NSID: '.$nsid);
+                    $query .= ' AND `owner` = ?';
+                }
             }
 
             $query .= ' LIMIT '.(int)$this->input->getOption('limit');
@@ -136,7 +150,13 @@ class PhotosDownload extends AbstractCommandFlickr
         foreach ($this->photos as $photoId) {
             $this->info('Sending request: '.$photoId, [], true);
             try {
-                $processes[$photoId] = new Process(['php', 'cli.php', 'flickr:photodownload', '--photo_id='.$photoId]);
+                $processes[$photoId] = new Process(
+                    ['php', 'cli.php', 'flickr:photodownload', '--photo_id='.$photoId],
+                    null,
+                    null,
+                    null,
+                    DefinesCore::MAX_EXECUTE_TIME
+                );
                 $processes[$photoId]->start();
                 $this->progressBar->advance();
             } catch (Exception $exception) {
