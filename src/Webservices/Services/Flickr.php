@@ -50,15 +50,10 @@ class Flickr extends Client
 
     const UPLOAD_METHOD = 'POST';
 
-    private $responseFormat = 'json';
-
     /**
-     * @param $format
+     * @var string
      */
-    private function setResponseFormat($format)
-    {
-        $this->responseFormat = $format;
-    }
+    private $responseFormat = 'json';
 
     /**
      * @return array

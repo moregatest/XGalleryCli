@@ -8,7 +8,6 @@
 
 namespace XGallery\Database;
 
-use Doctrine\DBAL\ConnectionException;
 use Doctrine\DBAL\DBALException;
 use XGallery\Exceptions\Exception;
 use XGallery\Factory;
@@ -23,13 +22,12 @@ class DatabaseHelper
     /**
      * @param $table
      * @param $rows
-     * @return bool
-     * @throws ConnectionException
+     * @return boolean
      * @throws DBALException
      */
     public static function insertRows($table, $rows)
     {
-        $connection = Factory::getDbo();
+        $connection = Factory::getConnection();
         $query      = 'INSERT INTO `'.$table.'`';
 
         // Columns
@@ -64,10 +62,8 @@ class DatabaseHelper
         $query .= ' ON DUPLICATE KEY UPDATE '.implode(',', $onDuplicateQuery).';';
 
         $logger = Factory::getLogger(get_called_class());
-        $logger->debug($query);
 
         try {
-            $connection->beginTransaction();
             $prepare = $connection->prepare($query);
 
             // Bind values
@@ -78,13 +74,10 @@ class DatabaseHelper
             }
 
             $prepare->execute();
-            $connection->commit();
             $connection->close();
 
             return $prepare->rowCount();
         } catch (Exception $exception) {
-
-            $connection->rollBack();
             $connection->close();
             $logger->error($exception->getMessage());
 

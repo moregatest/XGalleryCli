@@ -34,12 +34,14 @@ class OauthHelper
             foreach ($value as $key => $aValue) {
                 $value[$key] = self::encode($aValue);
             }
-        } else {
-            return str_replace(
-                '%7E',
-                '~',
-                str_replace('+', ' ', rawurlencode($value))
-            );
+
+            return $value;
         }
+
+        return str_replace(
+            '%7E',
+            '~',
+            str_replace('+', ' ', rawurlencode($value))
+        );
     }
 }

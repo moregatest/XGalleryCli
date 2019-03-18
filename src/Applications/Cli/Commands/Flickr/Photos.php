@@ -8,10 +8,10 @@
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
-use Doctrine\DBAL\ConnectionException;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\FetchMode;
 use ReflectionException;
+use stdClass;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Database\DatabaseHelper;
 use XGallery\Utilities\DateTimeHelper;
@@ -22,6 +22,21 @@ use XGallery\Utilities\DateTimeHelper;
  */
 class Photos extends AbstractCommandFlickr
 {
+    /**
+     * @var stdClass
+     */
+    private $people;
+
+    /**
+     * @var array
+     */
+    private $photos = [];
+
+    /**
+     * @var integer
+     */
+    private $totalPhotos = 0;
+
     /**
      * @throws ReflectionException
      */
@@ -39,63 +54,26 @@ class Photos extends AbstractCommandFlickr
 
     /**
      * @return boolean
-     * @throws ConnectionException
      * @throws DBALException
      */
-    protected function process()
+    protected function prepare()
     {
-        $this->info('Getting people from database/options...', [], true);
-        $this->progressBar->start(4);
+        parent::prepare();
 
-        if (!$people = $this->getPeople()) {
-            $this->logNotice('Can not get people from database');
-
+        if (!$this->loadPeople()) {
             return false;
         }
-
-        $this->progressBar->advance();
-
-        $photos = $this->getPhotos($people->nsid);
-        $this->progressBar->advance();
-        $totalPhotos = count($photos);
-
-        $this->info('Found '.$totalPhotos.' photos');
-        $this->info("Inserting photos ...");
-
-        $rows = DatabaseHelper::insertRows('xgallery_flickr_photos', $photos);
-        $this->progressBar->advance();
-
-        if ($rows === false) {
-            $this->logError('Can not insert photos', error_get_last());
-            $this->progressBar->finish();
-
-            return false;
-        }
-
-        $this->info("Updated ".$rows." photos into contact", [], true);
-
-        // Update total photos
-        $this->connection->executeUpdate(
-            'UPDATE `xgallery_flickr_contacts` SET total_photos = ? WHERE nsid = ?',
-            array($totalPhotos, $people->nsid)
-        );
-        $this->connection->close();
-
-        $this->progressBar->finish();
-        $this->info('Updated total photos of contact: '.$totalPhotos);
 
         return true;
     }
 
     /**
-     * @return boolean|mixed
-     * @throws ConnectionException
+     * @return boolean
      */
-    private function getPeople()
+    protected function loadPeople()
     {
         try {
             $nsid = $this->input->getOption('nsid');
-            $this->connection->beginTransaction();
 
             if ($nsid) {
                 $query = 'SELECT * FROM `xgallery_flickr_contacts` WHERE `nsid` = ?  ORDER BY `modified` ASC LIMIT 1 FOR UPDATE';
@@ -103,46 +81,110 @@ class Photos extends AbstractCommandFlickr
                 $query = 'SELECT * FROM `xgallery_flickr_contacts` ORDER BY `modified` ASC LIMIT 1 FOR UPDATE';
             }
 
-            $people = $this->connection->executeQuery($query, [$nsid])->fetch(FetchMode::STANDARD_OBJECT);
+            $this->people = $this->connection->executeQuery($query, [$nsid])->fetch(FetchMode::STANDARD_OBJECT);
 
-            if (!$people) {
-                $this->connection->rollBack();
-                $this->connection->close();
+            /**
+             * @TODO If NSID not found in database then insert new one
+             */
+            if (!$this->people) {
+                $this->logNotice('Can not get people from database');
 
                 return false;
             }
 
+            $this->info('Found people: '.$this->people->nsid, [], true);
+
             $this->connection->executeUpdate(
                 'UPDATE `xgallery_flickr_contacts` SET `modified` = ? WHERE nsid = ?',
-                array(DateTimeHelper::toMySql(), $people->nsid)
+                array(DateTimeHelper::toMySql(), $this->people->nsid)
             );
-            $this->connection->commit();
-            $this->connection->close();
 
-            return $people;
+            return true;
         } catch (DBALException $exception) {
-            $this->connection->rollBack();
-            $this->connection->close();
-
             $this->logError($exception->getMessage());
-
-            return false;
         }
+
+        return false;
     }
 
     /**
-     * @param integer $nsid
+     * @param array $steps
+     * @return boolean
+     */
+    protected function process($steps = [])
+    {
+        return parent::process(
+            [
+                'fetchPhotos',
+                'insertPhotos',
+                'updateTotal',
+            ]
+        );
+    }
+
+    /**
      * @return array|boolean
      */
-    private function getPhotos($nsid)
+    protected function fetchPhotos()
     {
-        if (!$nsid) {
+        if ($this->people === null || !$this->people->nsid) {
             return false;
         }
 
-        $this->info('Work on nsid: '.$nsid);
-        $this->info('Fetching photos ...');
+        $this->info('Working on: '.$this->people->nsid);
+        $this->photos = $this->flickr->flickrPeopleGetAllPhotos($this->people->nsid);
 
-        return $this->flickr->flickrPeopleGetAllPhotos($nsid);
+        if (!$this->photos || empty($this->photos)) {
+            $this->logNotice('There are not photos');
+
+            return false;
+        }
+
+        $this->totalPhotos = count($this->photos);
+        $this->info('Found: '.$this->totalPhotos.' photos');
+
+        return true;
+    }
+
+    /**
+     * @return boolean
+     * @throws DBALException
+     */
+    protected function insertPhotos()
+    {
+        $rows = DatabaseHelper::insertRows('xgallery_flickr_photos', $this->photos);
+
+        if ($rows === false) {
+            $this->logError('Can not insert photos', error_get_last());
+
+            return false;
+        }
+
+        $this->info("Updated ".$rows." photos into contact");
+
+        return true;
+    }
+
+    /**
+     * @return boolean
+     */
+    protected function updateTotal()
+    {
+        try {
+            // Update total photos
+            $this->connection->executeUpdate(
+                'UPDATE `xgallery_flickr_contacts` SET total_photos = ? WHERE nsid = ?',
+                array($this->totalPhotos, $this->people->nsid)
+            );
+
+            $this->info('Updated total photos of contact: '.$this->totalPhotos);
+
+            return true;
+        } catch (DBALException $exception) {
+            $this->logError($exception->getMessage());
+
+        }
+
+        return false;
     }
 }

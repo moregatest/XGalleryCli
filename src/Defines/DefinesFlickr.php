@@ -19,6 +19,7 @@ class DefinesFlickr
      */
     const REST_LIMIT_PHOTOS_SIZE = 200;
     const DOWNLOAD_LIMIT = 100;
+    const RESIZE_LIMIT = 100;
     const PHOTO_STATUS_DOWNLOADED = 1;
     const PHOTO_STATUS_ALREADY_DOWNLOADED = 2;
     const PHOTO_STATUS_FORCE_REDOWNLOAD = 3;

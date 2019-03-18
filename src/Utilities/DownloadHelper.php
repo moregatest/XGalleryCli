@@ -8,6 +8,7 @@
 
 namespace XGallery\Utilities;
 
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use XGallery\Factory;
@@ -22,26 +23,37 @@ class DownloadHelper
      * @param $url
      * @param $saveTo
      * @return boolean
-     * @throws GuzzleException
+     * @throws Exception
      */
     public static function download($url, $saveTo)
     {
-        $client             = new Client();
-        $response           = $client->request('GET', $url, ['sink' => $saveTo]);
-        $orgFileSize        = $response->getHeader('Content-Length')[0];
-        $downloadedFileSize = filesize($saveTo);
+        $client = new Client();
+        $logger = Factory::getLogger(get_called_class());
+        chmod($saveTo, 644);
 
-        if ($orgFileSize != $downloadedFileSize) {
-            Factory::getLogger(get_called_class())->notice('Download file error: Filesize does not match');
+        try {
+            $response           = $client->request('GET', $url, ['sink' => $saveTo]);
+            $orgFileSize        = $response->getHeader('Content-Length')[0];
+            $downloadedFileSize = filesize($saveTo);
 
-            return false;
+            if ($orgFileSize != $downloadedFileSize) {
+                $logger->notice('Download file error: Filesize does not match');
+
+                return false;
+            }
+
+            if ($response->getStatusCode() !== 200) {
+                $logger->notice($response->getReasonPhrase());
+
+                return false;
+            }
+
+            return true;
+        } catch (GuzzleException $exception) {
+            $logger->error($exception->getMessage());
         }
 
-        if ($response->getStatusCode() !== 200) {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     /**

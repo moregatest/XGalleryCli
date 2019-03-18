@@ -36,7 +36,6 @@ class ApplicationCli extends AbstractApplicationCli
         }
     }
 
-
     /**
      * @param $status
      * @return integer

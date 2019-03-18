@@ -8,6 +8,7 @@
 
 namespace XGallery\Applications\Cli\Commands;
 
+use Doctrine\DBAL\DBALException;
 use ReflectionException;
 use XGallery\Applications\Cli\AbstractCommand;
 use XGallery\Factory;
@@ -36,22 +37,14 @@ abstract class AbstractCommandFlickr extends AbstractCommand
 
     /**
      * @return boolean
+     * @throws DBALException
      */
     protected function prepare()
     {
+        parent::prepare();
+
         $this->flickr = Factory::getServices('flickr');
 
         return true;
-    }
-
-    /**
-     * @param $status
-     * @return mixed|void
-     */
-    protected function executeComplete($status)
-    {
-        $this->connection->close();
-
-        parent::executeComplete($status);
     }
 }

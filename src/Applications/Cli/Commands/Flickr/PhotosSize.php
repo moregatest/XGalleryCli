@@ -8,7 +8,6 @@
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
-use Doctrine\DBAL\ConnectionException;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\FetchMode;
 use ReflectionException;
@@ -21,6 +20,12 @@ use XGallery\Defines\DefinesFlickr;
  */
 class PhotosSize extends AbstractCommandFlickr
 {
+
+    /**
+     * @var array
+     */
+    private $photos;
+
     /**
      * @throws ReflectionException
      */
@@ -31,9 +36,17 @@ class PhotosSize extends AbstractCommandFlickr
             'nsid' => [
                 'description' => 'Only fetch photos from this NSID',
             ],
+            'photo_ids' => [
+                'description' => 'Request specific photo by ids',
+                'default' => null,
+            ],
             'limit' => [
-                'default' => DefinesFlickr::REST_LIMIT_PHOTOS_SIZE,
                 'description' => 'Number of photos will be used for get sizes',
+                'default' => DefinesFlickr::REST_LIMIT_PHOTOS_SIZE,
+            ],
+            'all' => [
+                'description' => 'Fetch all photos from an NSID',
+                'default' => false,
             ],
         ];
 
@@ -41,101 +54,131 @@ class PhotosSize extends AbstractCommandFlickr
     }
 
     /**
-     * @return bool
-     * @throws ConnectionException
+     * @return boolean
      * @throws DBALException
      */
-    protected function process()
+    protected function prepare()
     {
-        $this->info('Fetching sizes ...', [], true);
-        $this->progressBar->start(2);
+        parent::prepare();
 
-        if ($nsid = $this->input->getOption('nsid')) {
-            $this->info('Getting '.$this->input->getOption('limit').' photos from NSID: '.$nsid.' ...');
-        }
-
-        $photos = $this->getPhotos($nsid);
-
-        $this->progressBar->advance();
-
-        if (!$photos || empty($photos)) {
-            $this->logWarning('There are no photos');
-            $this->progressBar->finish();
-
+        if (!$this->loadPhotos()) {
             return false;
         }
-
-        $this->info('Found '.count($photos).' photos');
-        $this->info("Fetching size ...");
-
-        foreach ($photos as $photoId) {
-            $photoSize = $this->flickr->flickrPhotosSizes($photoId);
-            $this->info('Fetched '.$photoId);
-
-            if (!$photoSize) {
-                $this->logNotice('Something wrong on photo_id: '.$photoId);
-
-                continue;
-            }
-
-            try {
-                $this->connection->beginTransaction();
-                $this->connection->executeUpdate(
-                    'UPDATE `xgallery_flickr_photos` SET `params` = ? WHERE `id` = ?',
-                    [json_encode($photoSize->sizes->size), $photoId]
-                );
-                $this->connection->commit();
-                $this->connection->close();
-            } catch (DBALException $exception) {
-                $this->connection->rollBack();
-                $this->connection->close();
-            }
-        }
-
-        $this->output->write("\n");
-        $this->progressBar->finish();
 
         return true;
     }
 
     /**
-     * @param $nsid
-     * @return boolean|mixed[]
-     * @throws ConnectionException
-     * @throws DBALException
+     * @param array $steps
+     * @return boolean
      */
-    private function getPhotos($nsid = '')
+    protected function process($steps = [])
+    {
+        return parent::process(
+            [
+                'fetchSizes',
+            ]
+        );
+    }
+
+    /**
+     * @return boolean|mixed[]
+     */
+    protected function loadPhotos()
     {
         try {
 
-            $this->connection->beginTransaction();
+            if ($this->input->getOption('photo_ids')) {
+                $this->photos = explode(',', $this->input->getOption('photo_ids'));
+                $this->info('Working on '.count($this->photos).' photos', [], true);
+
+                return true;
+            }
+
+            $this->info('Getting '.$this->input->getOption('limit').' photos ...');
 
             $query = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE (`status` = 0 OR `status` IS NULL) AND `params` IS NULL ';
 
-            if ($nsid) {
+            $nsid = $this->input->getOption('nsid');
+
+            // Specific NSID
+            if ($nsid !== null) {
+                $this->info('Work on NSID: '.$nsid);
                 $query .= ' AND owner = ?';
             }
 
-            $query .= 'LIMIT '.(int)$this->input->getOption('limit').' FOR UPDATE';
+            if ($nsid === null || ($nsid && !$this->input->getOption('all'))) {
+                $query .= 'LIMIT '.(int)$this->input->getOption('limit').' FOR UPDATE';
+            } else {
+                $this->info('Getting ALL');
+            }
 
-            $photos = $this->connection->executeQuery($query, [$nsid])->fetchAll(FetchMode::COLUMN);
+            $this->photos = $this->connection->executeQuery($query, [$nsid])->fetchAll(FetchMode::COLUMN);
 
-            if (!$photos) {
-                $this->connection->rollBack();
-                $this->connection->close();
+            if (!$this->photos || empty($this->photos)) {
+                $this->logNotice('Can not get photos from database or no photos found');
 
                 return false;
             }
 
-            $this->connection->commit();
-            $this->connection->close();
+            if (count($this->photos) > 1000) {
+                $this->logNotice('Over API. Reduced to 1000');
+                $this->photos = array_slice($this->photos, 0, 1000);
+            }
 
-            return $photos;
+            $this->info('Found '.count($this->photos).' photos', [], true);
+
+            return true;
         } catch (DBALException $exception) {
-            $this->connection->rollBack();
-            $this->connection->close();
 
+            $this->logError($exception->getMessage());
+        }
+
+        return false;
+    }
+
+    /**
+     * @return boolean
+     */
+    protected function fetchSizes()
+    {
+        if (!$this->photos || empty($this->photos)) {
             return false;
         }
+
+        $failed = 0;
+
+        foreach ($this->photos as $photoId) {
+            $photoSize = $this->flickr->flickrPhotosSizes($photoId);
+            $this->info('Fetching '.$photoId);
+
+            if (!$photoSize) {
+                /**
+                 * @TODO Update photo status to prevent fetch it again in future
+                 */
+                $this->logNotice('Something wrong on photo_id: '.$photoId);
+                $this->output->write(': Failed');
+                $failed++;
+
+                continue;
+            }
+
+            $this->output->write(': Succeeded');
+
+            try {
+
+                $this->connection->executeUpdate(
+                    'UPDATE `xgallery_flickr_photos` SET `params` = ? WHERE `id` = ?',
+                    [json_encode($photoSize->sizes->size), $photoId]
+                );
+
+            } catch (DBALException $exception) {
+                $this->logError($exception->getMessage());
+            }
+        }
+
+        $this->info('Failed count: '.$failed);
+
+        return true;
     }
 }

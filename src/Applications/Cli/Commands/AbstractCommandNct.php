@@ -11,36 +11,36 @@ namespace XGallery\Applications\Cli\Commands;
 use Exception;
 use ReflectionException;
 use XGallery\Applications\Cli\AbstractCommand;
-use XGallery\Webservices\Services\Now;
+use XGallery\Webservices\Services\Nct;
 
 /**
  * Class CommandFlickr
  * @package XGallery\Applications\Commands
  */
-abstract class AbstractCommandNow extends AbstractCommand
+abstract class AbstractCommandNct extends AbstractCommand
 {
     /**
-     * @var Now
+     * @var Nct
      */
-    protected $now;
+    protected $nct;
 
     /**
      * @throws ReflectionException
      */
     protected function configure()
     {
-        $this->setName('now:'.strtolower($this->getClassName()));
+        $this->setName('nct:'.strtolower($this->getClassName()));
 
         parent::configure();
     }
 
     /**
-     * @return bool
+     * @return boolean
      * @throws Exception
      */
     protected function prepare()
     {
-        $this->now = new Now;
+        $this->nct = new Nct;
 
         return true;
     }

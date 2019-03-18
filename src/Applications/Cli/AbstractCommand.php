@@ -9,9 +9,9 @@
 namespace XGallery\Applications\Cli;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
 use Exception;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -27,7 +27,6 @@ use XGallery\Traits\HasObject;
  */
 abstract class AbstractCommand extends Command
 {
-    use LockableTrait;
     use HasObject;
     use HasLogger;
 
@@ -104,13 +103,17 @@ abstract class AbstractCommand extends Command
         $this->output = $output;
 
         // Can not prepare then exit execute
-        if (!$this->prepare()) {
+        if ($this->prepare() === false) {
+            $this->output->writeln('Prepare failed');
+            $this->progressBar->finish();
+            $this->output->writeln('');
+
             return 1;
         }
 
-        $this->connection  = Factory::getDbo();
-        $this->progressBar = new ProgressBar($this->output, 0);
-        $this->progressBar->setFormat('debug');
+        // Finish prepare step
+        $this->progressBar->advance();
+        $this->info('Prepare successed');
 
         return $this->executeComplete($this->process());
     }
@@ -118,14 +121,41 @@ abstract class AbstractCommand extends Command
     /**
      * Prepare data before execute command
      *
-     * @return boolean
+     * @throws DBALException
      */
-    abstract protected function prepare();
+    protected function prepare()
+    {
+        $this->info(__FUNCTION__, [], true);
+
+        $this->connection  = Factory::getConnection();
+        $this->progressBar = new ProgressBar($this->output, 0);
+        $this->progressBar->setFormat('debug');
+        $this->progressBar->start(1);
+    }
 
     /**
+     * @param array $steps
      * @return boolean
      */
-    abstract protected function process();
+    protected function process($steps = [])
+    {
+        if (!empty($steps)) {
+            $this->progressBar->setMaxSteps(count($steps) + 1);
+            $this->info('Process steps: '.implode(',', $steps));
+            foreach ($steps as $step) {
+                $this->info($step.' ...');
+                $result = call_user_func([$this, $step]);
+                $this->output->writeln('');
+                $this->progressBar->advance();
+
+                if (!$result) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 
     /**
      * @param $status
@@ -134,6 +164,8 @@ abstract class AbstractCommand extends Command
     protected function executeComplete($status)
     {
         $this->info('Completed '.$this->getName().': '.(int)$status."\n");
+
+        $this->connection->close();
 
         if ($status === true) {
             return 0;

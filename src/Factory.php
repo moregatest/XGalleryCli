@@ -35,7 +35,7 @@ class Factory
      * @return Connection
      * @throws DBALException
      */
-    public static function getDbo()
+    public static function getConnection()
     {
         $config = new Configuration;
 
@@ -58,9 +58,13 @@ class Factory
      * @return Logger
      * @throws Exception
      */
-    public static function getLogger($name)
+    public static function getLogger($name = null)
     {
         static $loggers;
+
+        if ($name === null) {
+            $name = get_called_class();
+        }
 
         if (isset($loggers[$name])) {
             return $loggers[$name];
@@ -70,7 +74,7 @@ class Factory
         $logFile        = str_replace('\\', DIRECTORY_SEPARATOR, strtolower($name));
 
         $loggers[$name]->pushHandler(
-            new StreamHandler(getenv('log_path').'/'.$logFile.'_'.date("Y-m-d").'_'.time().'.log')
+            new StreamHandler(getenv('log_path').'/'.$logFile.'_'.date("Y-m-d").'_'.time().uniqid().'.log')
         );
 
         return $loggers[$name];

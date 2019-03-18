@@ -40,7 +40,7 @@ class Restful extends Client
     {
         parent::__construct($config);
 
-        $this->logger = Factory::getLogger(get_class($this));
+        $this->logger = Factory::getLogger(get_called_class());
     }
 
     /**

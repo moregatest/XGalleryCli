@@ -8,7 +8,6 @@
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
-use Doctrine\DBAL\ConnectionException;
 use Doctrine\DBAL\DBALException;
 use ReflectionException;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
@@ -21,6 +20,10 @@ use XGallery\Database\DatabaseHelper;
  */
 class Contacts extends AbstractCommandFlickr
 {
+    /**
+     * @var array
+     */
+    private $contacts;
 
     /**
      * @throws ReflectionException
@@ -34,53 +37,58 @@ class Contacts extends AbstractCommandFlickr
 
     /**
      * @return boolean
-     * @throws ConnectionException
      * @throws DBALException
      */
-    protected function process()
+    protected function prepare()
     {
-        $this->info('Fetching contacts ...', [], true);
-        $this->progressBar->start(2);
-        $contacts = $this->getContacts();
+        parent::prepare();
 
-        return $this->insertContacts($contacts);
-    }
-
-    /**
-     * @return array|boolean
-     */
-    private function getContacts()
-    {
-        $contacts = $this->flickr->flickrContactsGetAll();
-
-        if (!$contacts || empty($contacts)) {
-            $this->logNotice('Can not get contacts or empty');
-            $this->progressBar->finish();
-
+        if (!$this->fetchContacts()) {
             return false;
         }
 
-        $this->progressBar->advance();
-        $this->info("Total contacts: ".count($contacts));
-
-        return $contacts;
+        return true;
     }
 
     /**
-     * @param array $contacts
      * @return boolean
-     * @throws ConnectionException
-     * @throws DBALException
      */
-    private function insertContacts($contacts)
+    protected function fetchContacts()
     {
-        $this->info('Insert contacts ...', [], true);
+        $this->info(__FUNCTION__.' ...');
+        $this->contacts = $this->flickr->flickrContactsGetAll();
 
-        if (!$contacts || empty($contacts)) {
+        if (!$this->contacts || empty($this->contacts)) {
+            $this->logNotice('Can not get contacts or empty');
+
             return false;
         }
 
-        $rows = DatabaseHelper::insertRows('xgallery_flickr_contacts', $contacts);
+        $this->info("Total contacts: ".count($this->contacts), [], true);
+
+        return true;
+    }
+
+    /**
+     * @param array $steps
+     * @return boolean
+     */
+    protected function process($steps = [])
+    {
+        return parent::process(['insertContacts']);
+    }
+
+    /**
+     * @return boolean
+     * @throws DBALException
+     */
+    protected function insertContacts()
+    {
+        if (!$this->contacts || empty($this->contacts)) {
+            return false;
+        }
+
+        $rows = DatabaseHelper::insertRows('xgallery_flickr_contacts', $this->contacts);
 
         if ($rows === false) {
             $this->logError('Can not insert contacts');
@@ -88,7 +96,6 @@ class Contacts extends AbstractCommandFlickr
             return false;
         }
 
-        $this->progressBar->advance();
         $this->info("Affected rows: ".(int)$rows);
 
         return true;

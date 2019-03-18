@@ -8,7 +8,6 @@
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
-use Doctrine\DBAL\ConnectionException;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\FetchMode;
 use ReflectionException;
@@ -25,6 +24,16 @@ class PhotosDownload extends AbstractCommandFlickr
 {
 
     /**
+     * @var array
+     */
+    private $photos;
+
+    /**
+     * @var int
+     */
+    private $totalPhotos = 0;
+
+    /**
      * @throws ReflectionException
      */
     protected function configure()
@@ -36,6 +45,11 @@ class PhotosDownload extends AbstractCommandFlickr
                     'description' => 'Limit number of download',
                     'default' => DefinesFlickr::DOWNLOAD_LIMIT,
                 ],
+            'nsid' =>
+                [
+                    'description' => 'Download specific NSID',
+                    'default' => null,
+                ],
         ];
 
         parent::configure();
@@ -43,49 +57,99 @@ class PhotosDownload extends AbstractCommandFlickr
 
     /**
      * @return boolean
-     * @throws ConnectionException
      * @throws DBALException
      */
-    protected function process()
+    protected function prepare()
     {
+        parent::prepare();
+
+        if (!$this->loadPhotos()) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    /**
+     * @return boolean
+     */
+    protected function process($steps = [])
+    {
+        return parent::process(
+            [
+                'downloadPhotos',
+            ]
+        );
+    }
+
+    /**
+     * @return boolean
+     */
+    protected function loadPhotos()
+    {
+        $this->info(__FUNCTION__);
+
         try {
+            $query = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE `status` = 0 AND `params` IS NOT NULL ';
 
-            $this->connection->beginTransaction();
+            $nsid = $this->input->getOption('nsid');
 
-            $query  = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE `status` = 0 AND `params` IS NOT NULL LIMIT '
-                .(int)$this->input->getOption('limit');
-            $photos = $this->connection->executeQuery($query, [])->fetchAll(
-                FetchMode::COLUMN
-            );
+            if ($nsid) {
+                $this->info('Specific on NSID: '.$nsid);
+                $query .= ' AND `owner` = ?';
+            }
 
-            if (!$photos) {
-                $this->connection->rollBack();
-                $this->connection->close();
+            $query .= ' LIMIT '.(int)$this->input->getOption('limit');
+
+            if ($nsid) {
+                $this->photos = $this->connection->executeQuery($query, [$nsid])->fetchAll(FetchMode::COLUMN);
+            } else {
+                $this->photos = $this->connection->executeQuery($query, [])->fetchAll(FetchMode::COLUMN);
+            }
+
+
+            if (!$this->photos || empty($this->photos)) {
+                $this->logNotice('There are no photos');
 
                 return false;
             }
 
-            $this->connection->commit();
-            $this->connection->close();
-
-            $this->info('Total photos being download: '.count($photos), [], true);
-
-            $this->progressBar->setMaxSteps(count($photos));
-
-            foreach ($photos as $photoId) {
-                $this->progressBar->advance();
-                $process = new Process(['php', 'cli.php', 'flickr:photodownload', '--photo_id='.$photoId]);
-                $process->start();
-            }
-
-            $this->progressBar->finish();
+            $this->totalPhotos = count($this->photos);
+            $this->info('Total photos being download: '.$this->totalPhotos, [], true);
 
             return true;
-        } catch (Exception $exception) {
-            $this->connection->rollBack();
-            $this->connection->close();
-
-            return false;
+        } catch (DBALException $exception) {
+            $this->logError($exception->getMessage());
         }
+
+        return false;
+    }
+
+    /**
+     * @return boolean
+     */
+    protected function downloadPhotos()
+    {
+        $processes = [];
+
+        foreach ($this->photos as $photoId) {
+            $this->info('Sending request: '.$photoId, [], true);
+            try {
+                $processes[$photoId] = new Process(['php', 'cli.php', 'flickr:photodownload', '--photo_id='.$photoId]);
+                $processes[$photoId]->start();
+                $this->progressBar->advance();
+            } catch (Exception $exception) {
+                $this->logError($exception->getMessage());
+            }
+        }
+
+        foreach ($processes as $id => $process) {
+            $this->info('Downloading '.$id.' ...');
+            $process->wait();
+            $this->logInfo('Process complete: '.$id);
+        }
+
+        return true;
     }
 }

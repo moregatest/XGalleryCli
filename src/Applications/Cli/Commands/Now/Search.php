@@ -25,6 +25,11 @@ class Search extends AbstractCommandNow
 {
 
     /**
+     * @var array
+     */
+    protected $deliveries;
+
+    /**
      * @throws ReflectionException
      */
     protected function configure()
@@ -49,14 +54,25 @@ class Search extends AbstractCommandNow
     }
 
     /**
-     * @return bool|void
-     * @throws ConditionNotAllowedException
-     * @throws FileNotFoundException
-     * @throws InvalidJsonException
+     * @param array $steps
+     * @return boolean
      */
-    protected function process()
+    protected function process($steps = [])
     {
-        $deliveries = $this->now->searchDetailDeliveries(
+        return parent::process(
+            [
+                'searchDeliveries',
+                'search',
+            ]
+        );
+    }
+
+    /**
+     * @return boolean
+     */
+    protected function searchDeliveries()
+    {
+        $this->deliveries = $this->now->searchDetailDeliveries(
             [
                 'district_ids' => [
                     DefinesNow::DISTRICT_1,
@@ -71,8 +87,19 @@ class Search extends AbstractCommandNow
             ]
         );
 
+        return true;
+    }
+
+    /**
+     * @return bool
+     * @throws ConditionNotAllowedException
+     * @throws FileNotFoundException
+     * @throws InvalidJsonException
+     */
+    protected function search()
+    {
         $json = new Jsonq;
-        $json->json(json_encode($deliveries));
+        $json->json(json_encode($this->deliveries));
         $json->select('name');
 
         $discountAmount    = explode(',', trim($this->input->getOption('discount')));
@@ -91,5 +118,7 @@ class Search extends AbstractCommandNow
         }
 
         (new Filesystem())->dumpFile(XGALLERY_ROOT.'/deliveries.json', $json->toJson());
+
+        return true;
     }
 }

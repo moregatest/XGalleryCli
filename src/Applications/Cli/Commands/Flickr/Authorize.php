@@ -12,7 +12,6 @@ use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
 use ReflectionException;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
-use XGallery\Applications\Cli\Commands\CommandFlickr;
 
 /**
  * Class Authorize
@@ -37,11 +36,12 @@ class Authorize extends AbstractCommandFlickr
     }
 
     /**
+     * @param array $steps
      * @return boolean
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
-    protected function process()
+    protected function process($steps = [])
     {
         switch ($this->input->getOption('step')) {
             case 1:

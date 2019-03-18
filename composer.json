@@ -19,10 +19,13 @@
     "symfony/templating": "^4.2",
     "guzzlehttp/guzzle": "^6.3",
     "monolog/monolog": "^1.24",
-    "ext-json": "^1.6",
-    "ext-simplexml": "^0.0.0",
     "symfony/orm-pack": "^1.0",
-    "nahid/jsonq": "^5.2"
+    "nahid/jsonq": "^5.2",
+    "symfony/dom-crawler": "^4.2",
+    "symfony/css-selector": "^4.2",
+    "gumlet/php-image-resize": "^1.9",
+    "ext-json": "^1.6",
+    "ext-SimpleXML": "^7.2"
   },
   "require-dev": {
     "symfony/dotenv": "^4.2",

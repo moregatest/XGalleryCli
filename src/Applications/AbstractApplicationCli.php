@@ -37,6 +37,9 @@ abstract class AbstractApplicationCli extends Application
         $this->registerCommands();
     }
 
+    /**
+     * @return mixed
+     */
     abstract protected function registerCommands();
 
     /**
