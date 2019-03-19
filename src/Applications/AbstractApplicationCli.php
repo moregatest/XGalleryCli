@@ -43,7 +43,7 @@ abstract class AbstractApplicationCli extends Application
     abstract protected function registerCommands();
 
     /**
-     * @param InputInterface|null $input
+     * @param InputInterface|null  $input
      * @param OutputInterface|null $output
      * @return integer
      * @throws Exception
