@@ -81,8 +81,8 @@ class Factory
     }
 
     /**
-     * @param string $namespace
-     * @param int $defaultLifetime
+     * @param string      $namespace
+     * @param int         $defaultLifetime
      * @param string|null $directory
      *
      * @return FilesystemAdapter
