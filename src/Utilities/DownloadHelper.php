@@ -11,6 +11,7 @@ namespace XGallery\Utilities;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Symfony\Component\Filesystem\Filesystem;
 use XGallery\Factory;
 
 /**
@@ -29,7 +30,10 @@ class DownloadHelper
     {
         $client = new Client();
         $logger = Factory::getLogger(get_called_class());
-        chmod($saveTo, 644);
+
+        if ((new Filesystem())->exists($saveTo)) {
+            chmod($saveTo, 644);
+        }
 
         try {
             $response           = $client->request('GET', $url, ['sink' => $saveTo]);
