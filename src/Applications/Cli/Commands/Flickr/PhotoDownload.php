@@ -15,6 +15,7 @@ use stdClass;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
+use XGallery\Defines\DefinesCore;
 use XGallery\Defines\DefinesFlickr;
 use XGallery\Exceptions\Exception;
 use XGallery\Utilities\DownloadHelper;
@@ -98,7 +99,7 @@ class PhotoDownload extends AbstractCommandFlickr
         $this->info('Getting photo for downloading from database/options...');
 
         try {
-            $photoId = $this->input->getOption('photo_id');
+            $photoId = $this->getOption('photo_id');
 
             if ($photoId) {
                 $this->info('Working on photo: '.$photoId);
@@ -129,7 +130,13 @@ class PhotoDownload extends AbstractCommandFlickr
                 /**
                  * @TODO Fetch Flickr with photo ID to get data if possible then insert database
                  */
-                $process = new Process(['php', 'cli.php', 'flickr:photossize', '--photo_ids='.$this->photo->id]);
+                $process = new Process(
+                    ['php', 'cli.php', 'flickr:photossize', '--photo_ids='.$this->photo->id],
+                    null,
+                    null,
+                    null,
+                    DefinesCore::MAX_EXECUTE_TIME
+                );
                 $process->start();
                 $process->wait();
 
@@ -203,7 +210,7 @@ class PhotoDownload extends AbstractCommandFlickr
         $fileSystem->mkdir($targetDir);
 
         // File exists but no redownlaod required
-        if ($fileSystem->exists($saveTo) && $this->input->getOption('force') == 0) {
+        if ($fileSystem->exists($saveTo) && $this->getOption('force') == 0) {
             $this->logWarning('Photo already exists: '.$saveTo);
             $this->output->write("\n".'Photo already exists: '.$saveTo);
 
@@ -236,7 +243,7 @@ class PhotoDownload extends AbstractCommandFlickr
             return true;
         }
 
-        if ($this->input->getOption('no_download') == 1) {
+        if ($this->getOption('no_download') == 1) {
             $this->logNotice('Skip download');
             $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_SKIP_DOWNLOAD);
 
