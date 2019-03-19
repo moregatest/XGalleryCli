@@ -41,21 +41,23 @@ class PhotosDownload extends AbstractCommandFlickr
     {
         $this->setDescription('Mass download all photos');
         $this->options = [
-            'nsid' =>
-                [
-                    'description' => 'Download specific NSID',
-                    'default' => null,
-                ],
-            'advanced' =>
-                [
-                    'description' => 'Execute advanced query to get right photos',
-                    'default' => null,
-                ],
-            'limit' =>
-                [
-                    'description' => 'Limit number of download',
-                    'default' => DefinesFlickr::DOWNLOAD_LIMIT,
-                ],
+            'nsid' => [
+                'description' => 'Fetch photos from specific NSID',
+            ],
+            'album' => [
+                'description' => 'Fetch photos from specific album. NSID is required to use Album',
+            ],
+            'photo_ids' => [
+                'description' => 'Fetch photo from specific ids',
+            ],
+            'advanced' => [
+                'description' => 'Execute advanced query to get right photos',
+                'default' => null,
+            ],
+            'limit' => [
+                'description' => 'Limit number of download',
+                'default' => DefinesFlickr::DOWNLOAD_LIMIT,
+            ],
 
         ];
 
@@ -70,13 +72,22 @@ class PhotosDownload extends AbstractCommandFlickr
     {
         parent::prepare();
 
+        if ($this->getOption('photo_ids')) {
+            $this->photos = explode(',', $this->getOption('photo_ids'));
+
+            return true;
+        }
+
+        if ($this->loadPhotosFromAlbum()) {
+            return true;
+        }
+
         if (!$this->loadPhotos()) {
             return false;
         }
 
         return true;
     }
-
 
     /**
      * @param array $steps
@@ -97,11 +108,11 @@ class PhotosDownload extends AbstractCommandFlickr
     protected function loadPhotos()
     {
         $this->info(__FUNCTION__);
-        $nsid = $this->input->getOption('nsid');
+        $nsid = $this->getNsid();
 
         try {
-            if ($this->input->getOption('advanced')) {
-                $query = 'SELECT * FROM xgallery_flickr_photos WHERE `status` = 0 '
+            if ($this->getOption('advanced')) {
+                $query = 'SELECT `id` FROM xgallery_flickr_photos WHERE `status` = 0 '
                     .'AND `owner` IN '
                     .'( SELECT `contacts`.`nsid` FROM `xgallery_flickr_contacts` AS `contacts` '
                     .'INNER JOIN( SELECT `owner`, COUNT(`id`) AS `total` FROM `xgallery_flickr_photos` WHERE `status` <> 0 GROUP BY `owner` ) AS `photos` ON `photos`.`owner` = `contacts`.`nsid` '
@@ -114,14 +125,13 @@ class PhotosDownload extends AbstractCommandFlickr
                 }
             }
 
-            $query .= ' LIMIT '.(int)$this->input->getOption('limit');
+            $query .= ' LIMIT '.(int)$this->getOption('limit');
 
             if ($nsid) {
                 $this->photos = $this->connection->executeQuery($query, [$nsid])->fetchAll(FetchMode::COLUMN);
             } else {
                 $this->photos = $this->connection->executeQuery($query, [])->fetchAll(FetchMode::COLUMN);
             }
-
 
             if (!$this->photos || empty($this->photos)) {
                 $this->logNotice('There are no photos');
@@ -138,6 +148,39 @@ class PhotosDownload extends AbstractCommandFlickr
         }
 
         return false;
+    }
+
+    /**
+     * @return boolean
+     */
+    protected function loadPhotosFromAlbum()
+    {
+        $album = $this->getOption('album');
+
+        if (!$album) {
+            return false;
+        }
+
+        if (!$this->getOption('nsid')) {
+            $this->logNotice('Missing NSID for album');
+            $this->output->write("\n".'Missing NSID for album');
+
+            return false;
+        }
+
+        $this->info(__FUNCTION__);
+        $photos = $this->flickr->flickrPhotoSetsGetPhotos($album, $this->getNsid());
+
+        if (!$photos) {
+            return false;
+        }
+
+        foreach ($photos->photoset->photo as $photo) {
+
+            $this->photos[] = $photo->id;
+        }
+
+        return true;
     }
 
     /**
