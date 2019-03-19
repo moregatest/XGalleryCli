@@ -43,7 +43,7 @@ class Authorize extends AbstractCommandFlickr
      */
     protected function process($steps = [])
     {
-        switch ($this->input->getOption('step')) {
+        switch ($this->getOption('step')) {
             case 1:
                 $this->output->writeln($this->flickr->getRequestToken('http://localhost'));
                 break;
