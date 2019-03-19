@@ -16,6 +16,7 @@ use XGallery\Webservices\Services\Flickr\Traits\HasActivity;
 use XGallery\Webservices\Services\Flickr\Traits\HasContacts;
 use XGallery\Webservices\Services\Flickr\Traits\HasPeople;
 use XGallery\Webservices\Services\Flickr\Traits\HasPhotos;
+use XGallery\Webservices\Services\Flickr\Traits\HasPhotoSets;
 use XGallery\Webservices\Services\Flickr\Traits\HasProfile;
 use XGallery\Webservices\Services\Flickr\Traits\HasUrls;
 
@@ -32,6 +33,7 @@ class Flickr extends Client
     use HasProfile;
     use HasPeople;
     use HasPhotos;
+    use HasPhotoSets;
     use HasContacts;
 
     const OAUTH_REQUEST_TOKEN_ENDPOINT = 'https://www.flickr.com/services/oauth/request_token';
@@ -142,8 +144,8 @@ class Flickr extends Client
     }
 
     /**
-     * @param $imageFile
-     * @param $photoId
+     * @param       $imageFile
+     * @param       $photoId
      * @param array $options
      * @return bool|SimpleXMLElement
      * @throws GuzzleException

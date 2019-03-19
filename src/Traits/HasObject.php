@@ -18,6 +18,7 @@ use ReflectionException;
 trait HasObject
 {
     /**
+     * @param boolean $shortname
      * @return string
      * @throws ReflectionException
      */

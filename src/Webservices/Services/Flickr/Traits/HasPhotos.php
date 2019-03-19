@@ -26,7 +26,7 @@ trait HasPhotos
 
     /**
      * @param string $keyword
-     * @param array $parameters
+     * @param array  $parameters
      *
      * @return mixed
      * @uses  https://www.flickr.com/services/api/flickr.photos.search.html
@@ -48,7 +48,7 @@ trait HasPhotos
     }
 
     /**
-     * @param $photoId
+     * @param       $photoId
      * @param array $parameters
      * @return mixed
      */
@@ -58,6 +58,24 @@ trait HasPhotos
             array_merge(
                 [
                     'method' => 'flickr.photos.getSizes',
+                    'photo_id' => $photoId,
+                ],
+                $parameters
+            )
+        );
+    }
+
+    /**
+     * @param       $photoId
+     * @param array $parameters
+     * @return mixed
+     */
+    public function flickrPhotosGetInfo($photoId, $parameters = [])
+    {
+        return $this->rest(
+            array_merge(
+                [
+                    'method' => 'flickr.photos.getInfo',
                     'photo_id' => $photoId,
                 ],
                 $parameters

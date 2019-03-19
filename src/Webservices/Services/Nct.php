@@ -57,7 +57,6 @@ class Nct extends Restful
      * @param string $html
      * @return array
      * @throws GuzzleException
-     * @throws InvalidArgumentException
      */
     public function getSongsFromSearchView($url = '', $html = '')
     {
@@ -85,6 +84,11 @@ class Nct extends Restful
         return $songs;
     }
 
+    /**
+     * @param $url
+     * @return array|boolean
+     * @throws GuzzleException
+     */
     public function getSong($url)
     {
         $response = $this->fetch('GET', $url);

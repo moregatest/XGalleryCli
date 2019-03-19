@@ -29,8 +29,8 @@ class Now extends Restful
     use HasReservation;
 
     /**
-     * @param $method
-     * @param $uri
+     * @param       $method
+     * @param       $uri
      * @param array $options
      * @return bool|mixed
      * @throws GuzzleException

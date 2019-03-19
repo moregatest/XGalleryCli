@@ -30,7 +30,7 @@ trait HasDelivery
 
     /**
      * @param $conditions
-     * @return bool
+     * @return boolean|array
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
@@ -96,6 +96,12 @@ trait HasDelivery
         return $respond->delivery_detail;
     }
 
+    /**
+     * @param $conditions
+     * @return array
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
     public function searchDeliveries($conditions)
     {
         $ids        = $this->searchDeliveryIds($conditions);
@@ -114,6 +120,12 @@ trait HasDelivery
         return $deliveries;
     }
 
+    /**
+     * @param $conditions
+     * @return array
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
     public function searchDetailDeliveries($conditions)
     {
         $ids        = $this->searchDeliveryIds($conditions);

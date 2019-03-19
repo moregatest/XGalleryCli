@@ -40,7 +40,7 @@ trait HasPeople
     }
 
     /**
-     * @param $nsid
+     * @param       $nsid
      * @param array $params
      * @return mixed
      */

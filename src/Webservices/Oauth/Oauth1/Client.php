@@ -45,10 +45,8 @@ class Client extends Restful
      * @param       $uri
      * @param       $parameters
      * @param array $options
-     *
-     * @return boolean
+     * @return boolean|string
      * @throws GuzzleException
-     * @throws InvalidArgumentException
      */
     public function api($method, $uri, $parameters, $options = [])
     {
