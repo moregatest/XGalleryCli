@@ -47,4 +47,20 @@ abstract class AbstractCommandFlickr extends AbstractCommand
 
         return true;
     }
+
+    /**
+     * @return bool|string|string[]|null
+     */
+    protected function getNsid()
+    {
+        $nsid = $this->getOption('nsid');
+
+        if (filter_var($nsid, FILTER_VALIDATE_URL)) {
+            $this->info('Fetching NSID from URL');
+
+            return $this->flickr->flickrUrlsLookupUser($nsid)->user->id;
+        }
+
+        return $nsid;
+    }
 }
