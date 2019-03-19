@@ -30,7 +30,7 @@ class Contacts extends AbstractCommandFlickr
      */
     protected function configure()
     {
-        $this->setDescription('Fetch contacts from Flickr');
+        $this->setDescription('Fetch contacts from Flickr. There are no options required');
 
         parent::configure();
     }
