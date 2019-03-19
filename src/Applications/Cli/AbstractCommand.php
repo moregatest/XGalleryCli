@@ -12,6 +12,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Exception;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -61,7 +62,23 @@ abstract class AbstractCommand extends Command
     protected $progressBar;
 
     /**
-     * @throws Exception
+     * @param      $name
+     * @param null $default
+     * @return boolean|string|string[]|null
+     */
+    protected function getOption($name, $default = null)
+    {
+        $value = $this->input->getOption($name);
+
+        if (!$value) {
+            return $default;
+        }
+
+        return $value;
+    }
+
+    /**
+     * @throws InvalidArgumentException
      */
     protected function configure()
     {
@@ -92,7 +109,7 @@ abstract class AbstractCommand extends Command
     /**
      * Wrapped execute
      *
-     * @param InputInterface $input
+     * @param InputInterface  $input
      * @param OutputInterface $output
      * @return integer|null null or 0 if everything went fine, or an error code. 1 for normal escape
      * @throws Exception
@@ -125,7 +142,7 @@ abstract class AbstractCommand extends Command
      */
     protected function prepare()
     {
-        $this->info(__FUNCTION__, [], true);
+        $this->output->writeln(__FUNCTION__);
 
         $this->connection  = Factory::getConnection();
         $this->progressBar = new ProgressBar($this->output, 0);
@@ -142,6 +159,7 @@ abstract class AbstractCommand extends Command
         if (!empty($steps)) {
             $this->progressBar->setMaxSteps(count($steps) + 1);
             $this->info('Process steps: '.implode(',', $steps));
+
             foreach ($steps as $step) {
                 $this->info($step.' ...');
                 $result = call_user_func([$this, $step]);
@@ -175,8 +193,8 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * @param $message
-     * @param array $context
+     * @param         $message
+     * @param array   $context
      * @param boolean $newLine
      */
     protected function info($message, $context = [], $newLine = false)
