@@ -17,6 +17,7 @@ use stdClass;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use XGallery\Applications\Cli\Commands\AbstractCommandPhotos;
+use XGallery\Defines\DefinesCore;
 use XGallery\Exceptions\Exception;
 
 /**
@@ -113,14 +114,28 @@ class FlickrResize extends AbstractCommandPhotos
 
         $this->info('Work on photo id: '.$this->photoId);
 
-        $query = ' SELECT `id`, `owner`, `params`'.'  FROM `xgallery_flickr_photos`'
-            .' WHERE `id` = ?'.' LIMIT 1';
-
         try {
+            if (!$retry) {
+                $this->info('Try to download photo');
+                $retry = true;
 
-            $this->photo = $this->connection->executeQuery($query, [$this->photoId])->fetch(
-                FetchMode::STANDARD_OBJECT
-            );
+                $process = new Process(
+                    ['php', 'cli.php', 'flickr:photodownload', '--photo_id='.$this->photoId],
+                    null,
+                    null,
+                    null,
+                    DefinesCore::MAX_EXECUTE_TIME
+                );
+                $process->start();
+                $process->wait();
+
+                return $this->getPhoto();
+            }
+
+            $this->photo = $this->connection->executeQuery(
+                'SELECT `id`, `owner`, `params` FROM `xgallery_flickr_photos` WHERE `id` = ? LIMIT 1',
+                [$this->photoId]
+            )->fetch(FetchMode::STANDARD_OBJECT);
 
             if (!$this->photo) {
                 $this->logNotice('Can not get photo from database');
@@ -129,21 +144,10 @@ class FlickrResize extends AbstractCommandPhotos
             }
 
             if ($this->photo->params === null && $retry === true) {
-                $this->info('Photo have no params.');
-                $this->logNotice('Retried but not succeed');
+                $this->info('Photo have no params');
+                $this->logNotice('Photo have no params');
 
                 return false;
-            }
-
-            if ($this->photo->params === null) {
-                $this->info('Trying get photo size');
-                $retry = true;
-
-                $process = new Process(['php', 'cli.php', 'flickr:photodownload', '--photo_id='.$this->photo->id]);
-                $process->start();
-                $process->wait();
-
-                return $this->getPhoto();
             }
 
             $this->photo->params = json_decode($this->photo->params);
@@ -162,12 +166,6 @@ class FlickrResize extends AbstractCommandPhotos
      */
     private function getMediaFile()
     {
-        if (!$this->photo->params) {
-            $this->logNotice('Can not get photo sizes');
-
-            return false;
-        }
-
         $lastSize = end($this->photo->params);
 
         if (!$lastSize) {
