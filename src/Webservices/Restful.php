@@ -13,7 +13,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use Monolog\Logger;
-use Psr\Cache\InvalidArgumentException;
 use XGallery\Factory;
 
 /**
@@ -47,23 +46,20 @@ class Restful extends Client
      * @param       $method
      * @param       $uri
      * @param array $options
-     *
-     * @return boolean|mixed
+     * @return boolean|string
      * @throws GuzzleException
-     * @throws InvalidArgumentException
      */
     public function fetch($method, $uri, array $options = [])
     {
         try {
-            $this->logger->info(
-                __FUNCTION__,
-                [$uri, $method, $options]
-            );
-
             $response = $this->request($method, $uri, $options);
 
             return $response->getBody()->getContents();
         } catch (RequestException $exception) {
+            $this->logger->info(
+                __FUNCTION__,
+                [$uri, $method, $options]
+            );
             $this->logger->error(
                 $exception->getResponse()->getStatusCode(),
                 [
