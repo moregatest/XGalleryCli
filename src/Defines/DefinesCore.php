@@ -18,4 +18,6 @@ class DefinesCore
     const APPLICATION = 'XGallery';
 
     const VERSION = '3.0.0';
+
+    const MAX_EXECUTE_TIME = 300;
 }
