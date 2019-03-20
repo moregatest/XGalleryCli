@@ -140,7 +140,7 @@ abstract class AbstractCommand extends Command
     {
         $this->log(__FUNCTION__);
         $this->connection  = Factory::getConnection();
-        $this->progressBar = new ProgressBar($this->output, 0);
+        $this->progressBar = new ProgressBar($this->output);
         $this->progressBar->setFormat('debug');
 
         $classes = get_class_methods($this);
@@ -167,7 +167,6 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * @param array $steps
      * @return boolean
      */
     protected function process()
@@ -195,8 +194,9 @@ abstract class AbstractCommand extends Command
 
                     return false;
                 }
-                $this->log('Succeed', 'info', [], true);
+                $this->output->write("\n");
                 $this->progressBar->advance();
+                $this->log('Succeed', 'info');
             }
         }
 

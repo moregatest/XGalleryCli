@@ -79,6 +79,7 @@ class PhotoDownload extends AbstractCommandFlickr
             }
 
             $this->photo = $this->connection->executeQuery($query, [$photoId])->fetch(FetchMode::STANDARD_OBJECT);
+
         } catch (\Exception $exception) {
             $this->log($exception->getMessage(), 'error');
 
@@ -101,7 +102,7 @@ class PhotoDownload extends AbstractCommandFlickr
             $this->log('Trying get photo size');
             $retry   = true;
             $process = new Process(
-                ['php', 'cli.php', 'flickr:photossize', '--photo_ids='.$this->photo->id],
+                ['php', XGALLERY_ROOT.'/cli.php', 'flickr:photossize', '--photo_ids='.$this->photo->id],
                 null,
                 null,
                 null,
@@ -174,6 +175,8 @@ class PhotoDownload extends AbstractCommandFlickr
         // Prepare
         $targetDir = getenv('flickr_storage').'/'.$this->photo->owner;
         $fileName  = basename($this->lastSize->source);
+        $fileName  = explode('?', $fileName);
+        $fileName  = $fileName[0];
         $saveTo    = $targetDir.'/'.$fileName;
 
         $fileSystem = new Filesystem;

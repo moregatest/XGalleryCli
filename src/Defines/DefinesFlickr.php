@@ -21,7 +21,7 @@ class DefinesFlickr
     /**
      * Default limit downloads / execute
      */
-    const DOWNLOAD_LIMIT = 100;
+    const DOWNLOAD_LIMIT = 200;
     /**
      * Number photos to process resize
      */

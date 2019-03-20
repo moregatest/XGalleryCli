@@ -113,7 +113,7 @@ class PhotosSize extends AbstractCommandFlickr
         }
 
         $process = new Process(
-            ['php', 'cli.php', 'flickr:photos', '--photo_ids='.$photoIds],
+            ['php', XGALLERY_ROOT.'/cli.php', 'flickr:photos', '--photo_ids='.$photoIds],
             null,
             null,
             null,

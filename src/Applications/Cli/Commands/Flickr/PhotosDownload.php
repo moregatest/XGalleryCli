@@ -59,7 +59,10 @@ class PhotosDownload extends AbstractCommandFlickr
                 'description' => 'Limit number of download',
                 'default' => DefinesFlickr::DOWNLOAD_LIMIT,
             ],
-
+            'all' => [
+                'description' => 'Download all photos from NSID',
+                'default' => false,
+            ],
         ];
 
         parent::configure();
@@ -116,7 +119,7 @@ class PhotosDownload extends AbstractCommandFlickr
         }
 
         $process = new Process(
-            ['php', 'cli.php', 'flickr:photos', '--photo_ids='.$photoIds],
+            ['php', XGALLERY_ROOT.'/cli.php', 'flickr:photos', '--photo_ids='.$photoIds],
             null,
             null,
             null,
@@ -151,7 +154,9 @@ class PhotosDownload extends AbstractCommandFlickr
             }
         }
 
-        $query .= ' LIMIT '.(int)$this->getOption('limit');
+        if (!$this->nsid || ($this->nsid && !$this->getOption('all'))) {
+            $query .= ' LIMIT '.(int)$this->getOption('limit');
+        }
 
         try {
             if ($this->nsid) {
@@ -186,7 +191,7 @@ class PhotosDownload extends AbstractCommandFlickr
 
             try {
                 $processes[$photoId] = new Process(
-                    ['php', 'cli.php', 'flickr:photodownload', '--photo_id='.$photoId],
+                    ['php', XGALLERY_ROOT.'/cli.php', 'flickr:photodownload', '--photo_id='.$photoId],
                     null,
                     null,
                     null,
@@ -201,7 +206,6 @@ class PhotosDownload extends AbstractCommandFlickr
         foreach ($processes as $id => $process) {
             $this->log('Downloading '.$id.' ...');
             $process->wait();
-            $this->progressBar->advance();
             $this->log('Process complete: '.$id);
         }
 

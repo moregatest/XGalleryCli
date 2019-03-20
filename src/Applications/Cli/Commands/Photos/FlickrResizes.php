@@ -121,7 +121,7 @@ class FlickrResizes extends AbstractCommandPhotos
         }
 
         $process = new Process(
-            ['php', 'cli.php', 'flickr:photos', '--photo_ids='.$photoIds],
+            ['php', XGALLERY_ROOT.'/cli.php', 'flickr:photos', '--photo_ids='.$photoIds],
             null,
             null,
             null,
@@ -187,7 +187,7 @@ class FlickrResizes extends AbstractCommandPhotos
 
             try {
                 $process = new Process(
-                    ['php', 'cli.php', 'photos:flickrresize', '--photo_id='.$photoId],
+                    ['php', XGALLERY_ROOT.'/cli.php', 'photos:flickrresize', '--photo_id='.$photoId],
                     null,
                     null,
                     null,

@@ -93,7 +93,7 @@ class FlickrResize extends AbstractCommandPhotos
              * @TODO Support skip re-download
              */
             $process = new Process(
-                ['php', 'cli.php', 'flickr:photodownload', '--photo_id='.$this->photoId],
+                ['php', XGALLERY_ROOT.'/cli.php', 'flickr:photodownload', '--photo_id='.$this->photoId],
                 null,
                 null,
                 null,

@@ -69,7 +69,7 @@ abstract class AbstractCommandPhotos extends AbstractCommand
         $nsid = $this->getOption('nsid');
 
         if (filter_var($nsid, FILTER_VALIDATE_URL)) {
-            $this->info('Fetching NSID from URL');
+            $this->log('Fetching NSID from URL');
 
             return $this->flickr->flickrUrlsLookupUser($nsid)->user->id;
         }
