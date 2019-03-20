@@ -32,6 +32,7 @@ abstract class AbstractCommandPhotos extends AbstractCommand
     protected function configure()
     {
         $this->setName('photos:'.strtolower($this->getClassName()));
+        $this->flickr = Factory::getServices('flickr');
 
         parent::configure();
     }

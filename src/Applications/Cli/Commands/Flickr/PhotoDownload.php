@@ -63,123 +63,93 @@ class PhotoDownload extends AbstractCommandFlickr
 
     /**
      * @return boolean
-     * @throws DBALException
      */
-    protected function prepare()
-    {
-        parent::prepare();
-
-        if (!$this->loadPhoto()) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * @param array $steps
-     * @return boolean
-     */
-    protected function process($steps = [])
-    {
-        return parent::process(
-            [
-                'download',
-            ]
-        );
-    }
-
-    /**
-     * @return boolean
-     */
-    protected function loadPhoto()
+    protected function preparePhoto()
     {
         static $retry = false;
-
-        $this->info('Getting photo for downloading from database/options...');
 
         try {
             $photoId = $this->getOption('photo_id');
 
             if ($photoId) {
-                $this->info('Working on photo: '.$photoId);
+                $this->log('Working on photo: '.$photoId);
                 $query = 'SELECT * FROM `xgallery_flickr_photos` WHERE id = ? LIMIT 1 FOR UPDATE';
             } else {
                 $query = 'SELECT * FROM `xgallery_flickr_photos` WHERE (`status` = 0 OR `status` IS NULL OR `status` = 4) LIMIT 1 FOR UPDATE';
             }
 
             $this->photo = $this->connection->executeQuery($query, [$photoId])->fetch(FetchMode::STANDARD_OBJECT);
-
-            if (!$this->photo) {
-                $this->logNotice('There is no photo');
-                $this->output->writeln('');
-
-                return false;
-            }
-
-            if ($this->photo->params === null && $retry === true) {
-                $this->logNotice('Retried but not succeed');
-                $this->output->writeln("\n".'Retried but not succeed');
-
-                return false;
-            }
-
-            if ($this->photo->params === null) {
-                $this->info('Trying get photo size');
-                $retry = true;
-                /**
-                 * @TODO Fetch Flickr with photo ID to get data if possible then insert database
-                 */
-                $process = new Process(
-                    ['php', 'cli.php', 'flickr:photossize', '--photo_ids='.$this->photo->id],
-                    null,
-                    null,
-                    null,
-                    DefinesCore::MAX_EXECUTE_TIME
-                );
-                $process->start();
-                $process->wait();
-
-                return $this->loadPhoto();
-            }
-
-            $this->info('Parsing photo media: '.$this->photo->id);
-            $this->photo->params = json_decode($this->photo->params);
-            $this->lastSize      = end($this->photo->params);
-
-            /**
-             * @TODO Use event for filtering
-             */
-            if (!$this->lastSize) {
-                $this->logWarning('Can not get size');
-                $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_NOT_FOUND);
-
-                return false;
-            }
-
-            if (!$this->verifyMediaType($this->lastSize->media)) {
-                $this->updatePhotoStatus($photoId, DefinesFlickr::PHOTO_STATUS_ERROR_NOT_PHOTO);
-
-                return false;
-            }
-
-            $this->info('Photo URL: '.$this->lastSize->source, [], true);
-
-            return true;
-
         } catch (\Exception $exception) {
+            $this->log($exception->getMessage(), 'error');
 
-            $this->logError($exception->getMessage());
+            return false;
         }
 
-        return false;
+        if (!$this->photo) {
+            $this->log('There is no photo', 'notice');
+
+            return false;
+        }
+
+        if ($this->photo->params === null && $retry === true) {
+            $this->log('Retried but not succeed', 'notice');
+
+            return false;
+        }
+
+        if ($this->photo->params === null) {
+            $this->log('Trying get photo size');
+            $retry   = true;
+            $process = new Process(
+                ['php', 'cli.php', 'flickr:photossize', '--photo_ids='.$this->photo->id],
+                null,
+                null,
+                null,
+                DefinesCore::MAX_EXECUTE_TIME
+            );
+            $process->start();
+            $process->wait();
+
+            return $this->preparePhoto();
+        }
+
+        return true;
+    }
+
+    /**
+     * @return boolean
+     */
+    protected function preparePhotoSize()
+    {
+        $this->photo->params = json_decode($this->photo->params);
+        $this->lastSize      = end($this->photo->params);
+
+        /**
+         * @TODO Use event for filtering
+         */
+        if (!$this->lastSize) {
+            $this->log('Can not get size', 'warning');
+            $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_NOT_FOUND);
+
+            return false;
+        }
+
+        if (!$this->verifyMediaType($this->lastSize->media)) {
+            $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_NOT_PHOTO);
+
+            return false;
+        }
+
+        $this->log('Photo URL: '.$this->lastSize->source);
+
+        return true;
     }
 
     /**
      * @param $media
      * @return boolean
      */
-    protected function verifyMediaType($media)
+    private function verifyMediaType($media)
     {
         // At the moment we only download photos
         if ($media !== 'photo') {
@@ -193,9 +163,9 @@ class PhotoDownload extends AbstractCommandFlickr
 
     /**
      * @return boolean
-     * @throws DBALException
+     * @throws \Exception
      */
-    protected function download()
+    protected function processDownload()
     {
         if ($this->lastSize === null || !$this->lastSize) {
             return false;
@@ -209,22 +179,19 @@ class PhotoDownload extends AbstractCommandFlickr
         $fileSystem = new Filesystem;
         $fileSystem->mkdir($targetDir);
 
-        // File exists but no redownlaod required
+        // File exists but no redownload required
         if ($fileSystem->exists($saveTo) && $this->getOption('force') == 0) {
-            $this->logWarning('Photo already exists: '.$saveTo);
-            $this->output->write("\n".'Photo already exists: '.$saveTo);
+            $this->log('Photo already exists: '.$saveTo, 'warning');
 
             // Verify load and redownload if file is corrupted
             $originalFilesize = filesize($saveTo);
             $remoteFilesize   = DownloadHelper::getFilesize($this->lastSize->source);
 
-            $this->info('Local filesize: '.$originalFilesize.' vs remote filesize: '.$remoteFilesize);
+            $this->log('Local filesize: '.$originalFilesize.' vs remote filesize: '.$remoteFilesize);
 
             if ($originalFilesize < $remoteFilesize) {
-                $this->logWarning('Local file is corrupted: '.$saveTo.'');
-                $this->output->write("\n".'Local file is corrupted. Redownloading ...');
+                $this->log('Local file is corrupted: '.$saveTo.'. Redownloading ...', 'notice');
 
-                // Redownload. Local file is broken
                 if (!DownloadHelper::download($this->lastSize->source, $saveTo)) {
 
                     $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_REDOWNLOAD_FAILED);
@@ -232,22 +199,17 @@ class PhotoDownload extends AbstractCommandFlickr
                     return false;
                 }
 
-                $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_DOWNLOADED);
-
-                return true;
+                return $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_DOWNLOADED);
             }
 
             // File exists without force redownload and local file is fine
-            $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_ALREADY_DOWNLOADED);
-
-            return true;
+            return $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_ALREADY_DOWNLOADED);
         }
 
         if ($this->getOption('no_download') == 1) {
-            $this->logNotice('Skip download');
-            $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_SKIP_DOWNLOAD);
+            $this->log('Skip download', 'notice');
 
-            return true;
+            return $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_SKIP_DOWNLOAD);
         }
 
         try {
@@ -258,24 +220,21 @@ class PhotoDownload extends AbstractCommandFlickr
                 return false;
             }
 
-            $this->info('Download completed: '.$targetDir.'/'.$fileName);
-            $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_DOWNLOADED);
+            $this->log('Download completed: '.$targetDir.'/'.$fileName);
 
-            return true;
+            return $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_DOWNLOADED);
 
         } catch (Exception $exception) {
-            $this->logNotice('Download failed');
-            $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_DOWNLOAD_FAILED);
-        }
+            $this->log('Download failed', 'notice');
 
-        return false;
+            return $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_DOWNLOAD_FAILED);
+        }
     }
 
     /**
      * @param $photoId
      * @param $status
      * @return boolean
-     * @throws DBALException
      */
     protected function updatePhotoStatus($photoId, $status)
     {
@@ -285,12 +244,12 @@ class PhotoDownload extends AbstractCommandFlickr
                 'UPDATE `xgallery_flickr_photos` SET status = ? WHERE id = ?',
                 array($status, $photoId)
             )) {
-                $this->info('State updated: '.$status);
+                $this->log('State updated: '.$status);
             }
 
             return true;
-        } catch (Exception $exception) {
-            $this->logError($exception->getMessage());
+        } catch (DBALException $exception) {
+            $this->log($exception->getMessage(), 'error');
 
             return false;
         }

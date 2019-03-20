@@ -13,8 +13,9 @@ use Doctrine\DBAL\FetchMode;
 use ReflectionException;
 use stdClass;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
-use XGallery\Database\DatabaseHelper;
+use XGallery\Model\BaseModel;
 use XGallery\Utilities\DateTimeHelper;
+use XGallery\Utilities\FlickrHelper;
 
 /**
  * Class Photos
@@ -25,7 +26,7 @@ class Photos extends AbstractCommandFlickr
     /**
      * @var stdClass
      */
-    private $people;
+    private $nsid;
 
     /**
      * @var array
@@ -59,15 +60,21 @@ class Photos extends AbstractCommandFlickr
     }
 
     /**
-     * @return boolean
-     * @throws DBALException
+     * @return boolean|integer
      */
-    protected function prepare()
+    protected function prepareOptions()
     {
-        parent::prepare();
+        $this->nsid = FlickrHelper::getNsid($this->getOption('nsid'));
 
-        if (!$this->loadPeople()) {
+        if ($this->getOption('album') && !$this->nsid) {
+            $this->log('Missing NSID for album', 'notice');
+
             return false;
+        }
+
+        // Skip all prepares
+        if ($this->getOption('album') || $this->getOption('photo_ids')) {
+            return 1;
         }
 
         return true;
@@ -76,95 +83,60 @@ class Photos extends AbstractCommandFlickr
     /**
      * @return boolean
      */
-    protected function loadPeople()
+    protected function prepareNsid()
     {
         try {
-
-            if ($this->getOption('album') && !$this->getOption('nsid')) {
-                $this->logNotice('Missing NSID for album');
-                $this->output->writeln("\n".'Missing NSID for album');
-
-                return false;
-            }
-
-            if ($this->getOption('album') || $this->getOption('photo_ids')) {
-                return true;
-            }
-
-            /**
-             * Get NSID from database
-             */
-            $nsid = $this->getNsid();
-
-            if ($nsid) {
-                $this->info('Load specific NSID', [], true);
-                $this->people       = new stdClass;
-                $this->people->nsid = $nsid;
+            if ($this->nsid) {
+                $this->log('Load specific NSID');
 
                 return true;
-            } else {
-                $this->info('Load NSID from database', [], true);
-                $query = 'SELECT `nsid` FROM `xgallery_flickr_contacts` ORDER BY `modified` ASC LIMIT 1 FOR UPDATE';
             }
 
-            $this->people = $this->connection->executeQuery($query, [$nsid])->fetch(FetchMode::STANDARD_OBJECT);
+            $this->log('Load NSID from database');
+            $this->nsid = $this->connection->executeQuery(
+                'SELECT `nsid` FROM `xgallery_flickr_contacts` ORDER BY `modified` ASC LIMIT 1 FOR UPDATE'
+            )->fetch(FetchMode::COLUMN);
 
             /**
              * @TODO If NSID not found in database then insert new one
              */
-            if (!$this->people) {
-                $this->logNotice('Can not get people from database');
-                $this->output->writeln("\n".'Can not get people from database');
+            if (!$this->nsid) {
+                $this->log('Can not get people from database', 'notice');
 
                 return false;
             }
 
             $this->connection->executeUpdate(
                 'UPDATE `xgallery_flickr_contacts` SET `modified` = ? WHERE nsid = ?',
-                array(DateTimeHelper::toMySql(), $this->people->nsid)
+                array(DateTimeHelper::toMySql(), $this->nsid)
             );
 
             return true;
         } catch (DBALException $exception) {
-            $this->logError($exception->getMessage());
+            $this->log($exception->getMessage(), 'error');
         }
 
         return false;
     }
 
     /**
-     * @param array $steps
-     * @return boolean
-     */
-    protected function process($steps = [])
-    {
-        return parent::process(
-            [
-                'fetchPhotos',
-                'insertPhotos',
-                'updateTotal',
-            ]
-        );
-    }
-
-    /**
      * @return array|boolean
      */
-    protected function fetchPhotos()
+    protected function processPhotos()
     {
         $photoIds = $this->getOption('photo_ids');
         $album    = $this->getOption('album');
 
-        if (!$photoIds && !$album && $this->people) {
-            $this->info('Working on NSID: '.$this->people->nsid);
-            $this->photos = $this->flickr->flickrPeopleGetAllPhotos($this->people->nsid);
+        if (!$album && $this->nsid) {
+            $this->log('Working on NSID: '.$this->nsid);
+            $this->photos = $this->flickr->flickrPeopleGetAllPhotos($this->nsid);
 
             return true;
         }
 
         // Fetch specific photo_ids directly
         if ($photoIds) {
-            $this->info('Working on specific photos: '.$photoIds);
+            $this->log('Working on specific photos: '.$photoIds);
             $photos = explode(',', $photoIds);
 
             /**
@@ -196,23 +168,15 @@ class Photos extends AbstractCommandFlickr
         }
 
         if ($album) {
-            $this->people       = new stdClass();
-            $this->people->nsid = $this->getNsid();
+            $this->log('Working on NSID: '.$this->nsid);
+            $this->log('Working on album: '.$album);
+            $this->photos = $this->flickr->flickrPhotoSetsGetPhotos($album, $this->nsid);
 
-            if (!$this->people->nsid) {
-                $this->output->write("\n".'NSID is required');
-
-                return false;
-            }
-
-            $this->info('Working on NSID: '.$this->people->nsid);
-            $this->info('Working on album: '.$album);
-            $this->photos = $this->flickr->flickrPhotoSetsGetPhotos($album, $this->people->nsid);
             if ($this->photos) {
                 $this->photos = $this->photos->photoset->photo;
 
                 foreach ($this->photos as $index => $photo) {
-                    $photo->owner         = $this->people->nsid;
+                    $photo->owner         = $this->nsid;
                     $this->photos[$index] = $photo;
                 }
             }
@@ -225,27 +189,26 @@ class Photos extends AbstractCommandFlickr
      * @return boolean
      * @throws DBALException
      */
-    protected function insertPhotos()
+    protected function processInsertContacts()
     {
         if (!$this->photos || empty($this->photos)) {
-            $this->logNotice('There are not photos');
-            $this->output->write("\n".'There are not photos');
+            $this->log('There are not photos', 'notice');
 
             return false;
         }
 
         $this->totalPhotos = count($this->photos);
-        $this->info('Total: '.$this->totalPhotos.' photos');
+        $this->log('Total: '.$this->totalPhotos.' photos');
 
-        $rows = DatabaseHelper::insertRows('xgallery_flickr_photos', $this->photos);
+        $rows = BaseModel::insertRows('xgallery_flickr_photos', $this->photos);
 
         if ($rows === false) {
-            $this->logError('Can not insert photos', error_get_last());
+            $this->log('Can not insert photos', 'notice', error_get_last());
 
             return false;
         }
 
-        $this->info("Updated ".$rows." photos into contact");
+        $this->log("Updated ".$rows." photos into contact");
 
         return true;
     }
@@ -253,25 +216,25 @@ class Photos extends AbstractCommandFlickr
     /**
      * @return boolean
      */
-    protected function updateTotal()
+    protected function processUpdateTotal()
     {
-        try {
+        // For album & photo_ids we won't update total_photos
+        if ($this->getOption('album') || $this->getOption('photo_ids')) {
+            return true;
+        }
 
-            // For album & photo_ids we won't update total_photos
-            if ($this->getOption('album') || $this->getOption('photo_ids')) {
-                return true;
-            }
+        try {
             // Update total photos
             $this->connection->executeUpdate(
                 'UPDATE `xgallery_flickr_contacts` SET total_photos = ? WHERE nsid = ?',
-                array($this->totalPhotos, $this->people->nsid)
+                array($this->totalPhotos, $this->nsid)
             );
 
-            $this->info('Updated total photos of contact: '.$this->totalPhotos);
+            $this->log('Updated total photos of contact: '.$this->totalPhotos);
 
             return true;
         } catch (DBALException $exception) {
-            $this->logError($exception->getMessage());
+            $this->log($exception->getMessage(), 'error');
         }
 
         return false;

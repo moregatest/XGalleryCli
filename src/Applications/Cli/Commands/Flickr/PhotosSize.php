@@ -15,6 +15,7 @@ use Symfony\Component\Process\Process;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Defines\DefinesCore;
 use XGallery\Defines\DefinesFlickr;
+use XGallery\Utilities\FlickrHelper;
 
 /**
  * Class PhotosSize
@@ -22,6 +23,10 @@ use XGallery\Defines\DefinesFlickr;
  */
 class PhotosSize extends AbstractCommandFlickr
 {
+    /**
+     * @var string
+     */
+    private $nsid;
 
     /**
      * @var array
@@ -58,79 +63,55 @@ class PhotosSize extends AbstractCommandFlickr
     }
 
     /**
-     * @return boolean
-     * @throws DBALException
+     * @return boolean|integer
      */
-    protected function prepare()
+    protected function prepareOptions()
     {
-        parent::prepare();
+        $this->nsid = FlickrHelper::getNsid($this->getOption('nsid'));
 
-        if (!$this->loadPhotos()) {
+        if ($this->getOption('album') && !$this->nsid) {
+            $this->log('Missing NSID for album', 'notice');
+
             return false;
         }
-
-        return true;
     }
 
     /**
-     * @param array $steps
-     * @return boolean
+     * @return boolean|integer
      */
-    protected function process($steps = [])
+    protected function preparePhotosFromAlbum()
     {
-        return parent::process(
-            [
-                'fetchSizes',
-            ]
-        );
-    }
+        $album = $this->getOption('album');
 
-    /**
-     * @return boolean
-     */
-    protected function loadPhotos()
-    {
-        if ($this->loadPhotosFromIds()) {
-            return true;
+        if (!$album) {
+            return -1;
         }
 
-        if ($this->loadPhotosFromAlbum()) {
-            return true;
-        }
+        $photos = $this->flickr->flickrPhotoSetsGetPhotos($album, $this->nsid);
 
-        if (!$this->loadPhotosFromDb()) {
+        if (!$photos) {
             return false;
         }
 
-        if (!$this->photos || empty($this->photos)) {
-            $this->logNotice('Can not get photos from database or no photos found');
-            $this->output->writeln('Can not get photos from database or no photos found');
+        foreach ($photos->photoset->photo as $photo) {
 
-            return false;
+            $this->photos[] = $photo->id;
         }
 
-        if (count($this->photos) > 1000) {
-            $this->logNotice('Over API. Reduced to 1000');
-            $this->photos = array_slice($this->photos, 0, 1000);
-        }
-
-        $this->info('Found '.count($this->photos).' photos', [], true);
-
-        return true;
+        return 1;
     }
 
     /**
      * @return boolean
      */
-    private function loadPhotosFromIds()
+    protected function preparePhotosFromIds()
     {
         $photoIds = $this->getOption('photo_ids');
 
-        if (!$photoIds || empty($photoIds)) {
-            return false;
+        if (!$photoIds) {
+            return -1;
         }
 
-        $this->info(__FUNCTION__, [], true);
         $process = new Process(
             ['php', 'cli.php', 'flickr:photos', '--photo_ids='.$photoIds],
             null,
@@ -143,70 +124,36 @@ class PhotosSize extends AbstractCommandFlickr
 
         $this->photos = explode(',', $photoIds);
 
-        return true;
+        return 1;
     }
 
     /**
      * @return boolean
      */
-    private function loadPhotosFromAlbum()
+    protected function preparePhotosFromDb()
     {
-        $album = $this->getOption('album');
-
-        if (!$album) {
-            return false;
-        }
-
-        if (!$this->getOption('nsid')) {
-            $this->logNotice('Missing NSID for album');
-            $this->output->write("\n".'Missing NSID for album');
-
-            return false;
-        }
-
-        $this->info(__FUNCTION__, [], true);
-        $photos = $this->flickr->flickrPhotoSetsGetPhotos($album, $this->getNsid());
-
-        if (!$photos) {
-            return false;
-        }
-
-        foreach ($photos->photoset->photo as $photo) {
-
-            $this->photos[] = $photo->id;
-        }
-
-        return true;
-    }
-
-    /**
-     * @return boolean
-     */
-    private function loadPhotosFromDb()
-    {
-        $this->info(__FUNCTION__);
-
         $query = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE (`status` = 0 OR `status` IS NULL) AND `params` IS NULL ';
 
-        $nsid = $this->getNsid();
-
         // Specific NSID
-        if ($nsid !== null) {
-            $this->info('Working on NSID: '.$nsid);
+        if ($this->nsid) {
+            $this->log('Working on NSID: '.$this->nsid);
             $query .= ' AND owner = ?';
         }
 
-        if ($nsid === null || ($nsid && !$this->getOption('all'))) {
+        if ($this->nsid === null || ($this->nsid && !$this->getOption('all'))) {
             $query .= 'LIMIT '.(int)$this->getOption('limit').' FOR UPDATE';
         }
 
         try {
-            $this->photos = $this->connection->executeQuery($query, [$nsid])->fetchAll(FetchMode::COLUMN);
+            if ($this->nsid) {
+                $this->photos = $this->connection->executeQuery($query, [$this->nsid])->fetchAll(FetchMode::COLUMN);
+            } else {
+                $this->photos = $this->connection->executeQuery($query)->fetchAll(FetchMode::COLUMN);
+            }
 
-            return true;
+            return 1;
         } catch (DBALException $exception) {
-
-            $this->logError($exception->getMessage());
+            $this->log($exception->getMessage(), 'error');
         }
 
         return false;
@@ -215,17 +162,25 @@ class PhotosSize extends AbstractCommandFlickr
     /**
      * @return boolean
      */
-    protected function fetchSizes()
+    protected function processFetchSizes()
     {
         if (!$this->photos || empty($this->photos)) {
+            $this->log('Can not get photos from database or no photos found', 'notice');
+
             return false;
         }
 
+        if (count($this->photos) > 1000) {
+            $this->log('Over API. Reduced to 1000', 'notice');
+            $this->photos = array_slice($this->photos, 0, 1000);
+        }
+
+        $this->log('Working on '.count($this->photos).' photos');
         $failed = 0;
 
         foreach ($this->photos as $photoId) {
             $photoSize = $this->flickr->flickrPhotosSizes($photoId);
-            $this->info('Fetching '.$photoId);
+            $this->log('Fetching '.$photoId);
 
             if (!$photoSize) {
                 try {
@@ -236,20 +191,14 @@ class PhotosSize extends AbstractCommandFlickr
                     );
 
                 } catch (DBALException $exception) {
-                    $this->logError($exception->getMessage());
+                    $this->log($exception->getMessage(), 'error');
                 }
 
-                /**
-                 * @TODO Update photo status to prevent fetch it again in future
-                 */
-                $this->logNotice('Something wrong on photo_id: '.$photoId);
-                $this->output->write(': Failed');
+                $this->log('Something wrong on photo_id: '.$photoId, 'notice');
                 $failed++;
 
                 continue;
             }
-
-            $this->output->write(': Succeed');
 
             try {
 
@@ -259,11 +208,11 @@ class PhotosSize extends AbstractCommandFlickr
                 );
 
             } catch (DBALException $exception) {
-                $this->logError($exception->getMessage());
+                $this->log($exception->getMessage(), 'error');
             }
         }
 
-        $this->info('Failed count: '.$failed);
+        $this->log('Failed count: '.$failed);
 
         return true;
     }

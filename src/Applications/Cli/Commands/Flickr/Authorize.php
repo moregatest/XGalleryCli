@@ -36,12 +36,11 @@ class Authorize extends AbstractCommandFlickr
     }
 
     /**
-     * @param array $steps
      * @return boolean
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
-    protected function process($steps = [])
+    protected function process()
     {
         switch ($this->getOption('step')) {
             case 1:

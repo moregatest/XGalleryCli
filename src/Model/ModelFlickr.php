@@ -8,8 +8,7 @@
 
 namespace XGallery\Model;
 
-
-class AbstractModel
+class ModelFlickr extends BaseModel
 {
 
 }

@@ -8,10 +8,12 @@
 
 namespace XGallery\Applications\Cli\Commands\Now;
 
+use GuzzleHttp\Exception\GuzzleException;
 use Nahid\JsonQ\Exceptions\ConditionNotAllowedException;
 use Nahid\JsonQ\Exceptions\FileNotFoundException;
 use Nahid\JsonQ\Exceptions\InvalidJsonException;
 use Nahid\JsonQ\Jsonq;
+use Psr\Cache\InvalidArgumentException;
 use ReflectionException;
 use Symfony\Component\Filesystem\Filesystem;
 use XGallery\Applications\Cli\Commands\AbstractCommandNow;
@@ -54,23 +56,11 @@ class Search extends AbstractCommandNow
     }
 
     /**
-     * @param array $steps
      * @return boolean
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
-    protected function process($steps = [])
-    {
-        return parent::process(
-            [
-                'searchDeliveries',
-                'search',
-            ]
-        );
-    }
-
-    /**
-     * @return boolean
-     */
-    protected function searchDeliveries()
+    protected function prepareDeliveries()
     {
         $this->deliveries = $this->now->searchDetailDeliveries(
             [
@@ -96,7 +86,7 @@ class Search extends AbstractCommandNow
      * @throws FileNotFoundException
      * @throws InvalidJsonException
      */
-    protected function search()
+    protected function processSearech()
     {
         $json = new Jsonq;
         $json->json(json_encode($this->deliveries));

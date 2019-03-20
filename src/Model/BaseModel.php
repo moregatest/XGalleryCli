@@ -6,23 +6,19 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace XGallery\Database;
+namespace XGallery\Model;
+
 
 use Doctrine\DBAL\DBALException;
 use XGallery\Exceptions\Exception;
 use XGallery\Factory;
 
-/**
- * Class DatabaseHelper
- * @package XGallery\Database
- */
-class DatabaseHelper
+class BaseModel extends AbstractModel
 {
-
     /**
      * @param $table
      * @param $rows
-     * @return boolean
+     * @return boolean|integer
      * @throws DBALException
      */
     public static function insertRows($table, $rows)
@@ -61,8 +57,6 @@ class DatabaseHelper
         $query = rtrim($query, ',');
         $query .= ' ON DUPLICATE KEY UPDATE '.implode(',', $onDuplicateQuery).';';
 
-        $logger = Factory::getLogger(get_called_class());
-
         try {
             $prepare = $connection->prepare($query);
 
@@ -79,7 +73,7 @@ class DatabaseHelper
             return $prepare->rowCount();
         } catch (Exception $exception) {
             $connection->close();
-            $logger->error($exception->getMessage());
+            Factory::getLogger(get_called_class())->error($exception->getMessage());
 
             return false;
         }

@@ -121,16 +121,12 @@ abstract class AbstractCommand extends Command
 
         // Can not prepare then exit execute
         if ($this->prepare() === false) {
-            $this->output->writeln('Prepare failed');
-            $this->progressBar->finish();
-            $this->output->writeln('');
+            $this->log('Prepare failed', 'notice', [], true);
 
             return 1;
         }
 
-        // Finish prepare step
-        $this->progressBar->advance();
-        $this->info('Prepare successed');
+        $this->log('Prepare succeed. Starting ...');
 
         return $this->executeComplete($this->process());
     }
@@ -142,33 +138,65 @@ abstract class AbstractCommand extends Command
      */
     protected function prepare()
     {
-        $this->output->writeln(__FUNCTION__);
-
+        $this->log(__FUNCTION__);
         $this->connection  = Factory::getConnection();
         $this->progressBar = new ProgressBar($this->output, 0);
         $this->progressBar->setFormat('debug');
-        $this->progressBar->start(1);
+
+        $classes = get_class_methods($this);
+
+        foreach ($classes as $class) {
+            if (strpos($class, 'prepare', 0) === false || $class === 'prepare') {
+                continue;
+            }
+
+            $this->log($class.' ...');
+
+            $return = call_user_func([$this, $class]);
+
+            if ($return === false) {
+                return false;
+            } elseif ($return === 1) { // Force return prepare succeed
+                return true;
+            } elseif ($return === -1) { // Process next prepare
+                continue;
+            }
+        }
+
+        return true;
     }
 
     /**
      * @param array $steps
      * @return boolean
      */
-    protected function process($steps = [])
+    protected function process()
     {
+        $classes = get_class_methods($this);
+        $steps   = [];
+
+        foreach ($classes as $class) {
+            if (strpos($class, 'process', 0) === false || $class === 'process') {
+                continue;
+            }
+
+            $steps[] = $class;
+        }
+
         if (!empty($steps)) {
-            $this->progressBar->setMaxSteps(count($steps) + 1);
-            $this->info('Process steps: '.implode(',', $steps));
+            $this->log('Steps: '.implode(',', $steps), 'info', [], true);
+            $this->progressBar->start(count($steps));
 
             foreach ($steps as $step) {
-                $this->info($step.' ...');
+                $this->log($step.' ...');
                 $result = call_user_func([$this, $step]);
-                $this->output->writeln('');
-                $this->progressBar->advance();
-
                 if (!$result) {
+                    $this->log($step.' failed', 'notice');
+
                     return false;
                 }
+                $this->log('Succeed', 'info', [], true);
+                $this->progressBar->advance();
             }
         }
 
@@ -181,7 +209,7 @@ abstract class AbstractCommand extends Command
      */
     protected function executeComplete($status)
     {
-        $this->info('Completed '.$this->getName().': '.(int)$status."\n");
+        $this->log('Completed '.$this->getName().': '.(int)$status, 'info', [], true);
 
         $this->connection->close();
 
@@ -193,17 +221,27 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * @param         $message
-     * @param array   $context
-     * @param boolean $newLine
+     * @param        $message
+     * @param string $type
+     * @param        $context
+     * @param bool   $newLine
      */
-    protected function info($message, $context = [], $newLine = false)
+    protected function log($message, $type = 'info', $context = [], $newLine = false)
     {
         $this->output->write("\n".$message);
-        $this->logInfo($message, $context);
 
-        if ($newLine) {
-            $this->output->writeln('');
+        call_user_func([$this, 'log'.ucfirst($type)], $message, $context);
+
+        if ($newLine === false) {
+            return;
         }
+
+        if ($newLine === true) {
+            $this->output->writeln('');
+
+            return;
+        }
+
+        $this->output->writeln($newLine);
     }
 }

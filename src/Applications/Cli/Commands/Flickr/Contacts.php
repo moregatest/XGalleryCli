@@ -11,7 +11,7 @@ namespace XGallery\Applications\Cli\Commands\Flickr;
 use Doctrine\DBAL\DBALException;
 use ReflectionException;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
-use XGallery\Database\DatabaseHelper;
+use XGallery\Model\BaseModel;
 
 /**
  * Class Contacts
@@ -37,66 +37,37 @@ class Contacts extends AbstractCommandFlickr
 
     /**
      * @return boolean
-     * @throws DBALException
      */
-    protected function prepare()
+    protected function prepareContacts()
     {
-        parent::prepare();
-
-        if (!$this->fetchContacts()) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * @return boolean
-     */
-    protected function fetchContacts()
-    {
-        $this->info(__FUNCTION__.' ...');
         $this->contacts = $this->flickr->flickrContactsGetAll();
 
         if (!$this->contacts || empty($this->contacts)) {
-            $this->logNotice('Can not get contacts or empty');
+            $this->log('Can not get contacts or empty', 'notice');
 
             return false;
         }
 
-        $this->info("Total contacts: ".count($this->contacts), [], true);
+        $this->log("Total contacts: ".count($this->contacts), 'info');
 
         return true;
-    }
-
-    /**
-     * @param array $steps
-     * @return boolean
-     */
-    protected function process($steps = [])
-    {
-        return parent::process(['insertContacts']);
     }
 
     /**
      * @return boolean
      * @throws DBALException
      */
-    protected function insertContacts()
+    protected function processInsertContacts()
     {
-        if (!$this->contacts || empty($this->contacts)) {
-            return false;
-        }
-
-        $rows = DatabaseHelper::insertRows('xgallery_flickr_contacts', $this->contacts);
+        $rows = BaseModel::insertRows('xgallery_flickr_contacts', $this->contacts);
 
         if ($rows === false) {
-            $this->logError('Can not insert contacts');
+            $this->log('Can not insert contacts', 'error');
 
             return false;
         }
 
-        $this->info("Affected rows: ".(int)$rows);
+        $this->log("Affected rows: ".(int)$rows);
 
         return true;
     }

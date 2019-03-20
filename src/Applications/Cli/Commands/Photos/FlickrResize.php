@@ -18,7 +18,6 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use XGallery\Applications\Cli\Commands\AbstractCommandPhotos;
 use XGallery\Defines\DefinesCore;
-use XGallery\Exceptions\Exception;
 
 /**
  * Class FlickrResize
@@ -69,102 +68,73 @@ class FlickrResize extends AbstractCommandPhotos
     }
 
     /**
-     * @return boolean
+     * @return bool|mixed
      * @throws DBALException
      */
-    protected function prepare()
+    protected function preparePhoto()
     {
-        parent::prepare();
+        static $retry = false;
 
-        if (!$this->getPhoto()) {
+        $this->photoId = $this->getOption('photo_id');
+
+        if (!$this->photoId) {
+            $this->log('No photo id provided', 'notice');
+
             return false;
         }
+
+        $this->log('Work on photo id: '.$this->photoId);
+
+        if (!$retry) {
+            $this->log('Try to download photo');
+            $retry = true;
+
+            /**
+             * @TODO Support skip re-download
+             */
+            $process = new Process(
+                ['php', 'cli.php', 'flickr:photodownload', '--photo_id='.$this->photoId],
+                null,
+                null,
+                null,
+                DefinesCore::MAX_EXECUTE_TIME
+            );
+            $process->start();
+            $process->wait();
+
+            return $this->preparePhoto();
+        }
+
+        try {
+            $this->photo = $this->connection->executeQuery(
+                'SELECT `id`, `owner`, `params` FROM `xgallery_flickr_photos` WHERE `id` = ? LIMIT 1',
+                [$this->photoId]
+            )->fetch(FetchMode::STANDARD_OBJECT);
+        } catch (DBALException $exception) {
+            $this->log($exception->getMessage(), 'error');
+        }
+
+        if (!$this->photo) {
+            $this->log('Can not get photo from database', 'notice');
+
+            return false;
+        }
+
+        if ($this->photo->params === null && $retry === true) {
+            $this->log('Photo have no params', 'notice');
+
+            return false;
+        }
+
+        $this->photo->params = json_decode($this->photo->params);
 
         return true;
     }
 
     /**
-     * @param array $steps
      * @return boolean
      */
-    protected function process($steps = [])
-    {
-        return parent::process(
-            [
-                'resize',
-            ]
-        );
-    }
-
-    /**
-     * @return bool|mixed
-     * @throws DBALException
-     */
-    protected function getPhoto()
-    {
-        static $retry = false;
-        $this->photoId = $this->input->getOption('photo_id');
-
-        if (!$this->photoId) {
-            $this->logNotice('No photo id provided');
-            $this->output->writeln("\n".'No photo id provided');
-
-            return false;
-        }
-
-        $this->info('Work on photo id: '.$this->photoId);
-
-        try {
-            if (!$retry) {
-                $this->info('Try to download photo');
-                $retry = true;
-
-                $process = new Process(
-                    ['php', 'cli.php', 'flickr:photodownload', '--photo_id='.$this->photoId],
-                    null,
-                    null,
-                    null,
-                    DefinesCore::MAX_EXECUTE_TIME
-                );
-                $process->start();
-                $process->wait();
-
-                return $this->getPhoto();
-            }
-
-            $this->photo = $this->connection->executeQuery(
-                'SELECT `id`, `owner`, `params` FROM `xgallery_flickr_photos` WHERE `id` = ? LIMIT 1',
-                [$this->photoId]
-            )->fetch(FetchMode::STANDARD_OBJECT);
-
-            if (!$this->photo) {
-                $this->logNotice('Can not get photo from database');
-
-                return false;
-            }
-
-            if ($this->photo->params === null && $retry === true) {
-                $this->info('Photo have no params');
-                $this->logNotice('Photo have no params');
-
-                return false;
-            }
-
-            $this->photo->params = json_decode($this->photo->params);
-
-            return $this->getMediaFile();
-
-        } catch (Exception $exception) {
-            $this->logError($exception->getMessage());
-        }
-
-        return false;
-    }
-
-    /**
-     * @return boolean
-     */
-    private function getMediaFile()
+    protected function prepareMediaFile()
     {
         $lastSize = end($this->photo->params);
 
@@ -172,22 +142,20 @@ class FlickrResize extends AbstractCommandPhotos
             return false;
         }
 
-        $this->info('Got sized', (array)$lastSize);
+        $this->log('Got sized', 'info', (array)$lastSize);
 
         $fileName        = basename($lastSize->source);
         $this->localFile = getenv('flickr_storage').'/'.$this->photo->owner.'/'.$fileName;
-
-        return (new Filesystem())->exists($this->localFile);
     }
 
     /**
      * @return bool
      * @throws ImageResizeException
      */
-    protected function resize()
+    protected function processResize()
     {
-        if (!$this->localFile) {
-            $this->logNotice('Local file not found');
+        if (!(new Filesystem())->exists($this->localFile)) {
+            $this->log('Local file not found', 'notice');
 
             return false;
         }
@@ -197,24 +165,25 @@ class FlickrResize extends AbstractCommandPhotos
         $resizeWidth  = $this->input->getOption('width');
         $resizeHeight = $this->input->getOption('height');
 
-        $this->info('Local file: '.$this->localFile);
-        $this->info('Dimension: '.implode(',', $imageSize));
-        $this->info('Resize: '.$resizeWidth.'x'.$resizeHeight);
+        $this->log('Local file: '.$this->localFile);
+        $this->log('Dimension: '.implode(',', $imageSize));
+        $this->log('Resize: '.$resizeWidth.'x'.$resizeHeight);
 
         if ($imageSize[0] < $resizeWidth && $imageSize[1] < $resizeHeight) {
-            $this->logNotice('Target image dimension is larger then source');
+            $this->log('Target image dimension is larger then source', 'notice');
 
             return false;
         }
 
-        $saveTo = getenv('photos_storage').'/'.$resizeWidth.'x'.$resizeHeight.'/'.basename($this->localFile);
-        (new Filesystem())->mkdir(getenv('photos_storage').'/'.$resizeWidth.'x'.$resizeHeight);
+        $dirSaveTo = getenv('photos_storage').'/'.$this->photo->owner.'/'.$resizeWidth.'x'.$resizeHeight;
+        $saveTo    = $dirSaveTo.'/'.basename($this->localFile);
+        (new Filesystem())->mkdir($dirSaveTo);
 
         $imager = new ImageResize($this->localFile);
         $imager
             ->crop($resizeWidth, $resizeHeight, false, $this->input->getOption('position'))
             ->save($saveTo, null, 100);
-        $this->info('Resized: '.$saveTo.' with dimension: '.$imager->getDestWidth().' x '.$imager->getDestHeight());
+        $this->log('Resized: '.$saveTo.' with dimension: '.$imager->getDestWidth().' x '.$imager->getDestHeight());
 
         return true;
     }

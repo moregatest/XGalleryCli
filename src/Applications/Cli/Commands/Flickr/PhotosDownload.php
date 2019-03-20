@@ -11,11 +11,12 @@ namespace XGallery\Applications\Cli\Commands\Flickr;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\FetchMode;
 use ReflectionException;
+use Symfony\Component\Process\Exception\RuntimeException;
 use Symfony\Component\Process\Process;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Defines\DefinesCore;
 use XGallery\Defines\DefinesFlickr;
-use XGallery\Exceptions\Exception;
+use XGallery\Utilities\FlickrHelper;
 
 /**
  * Class PhotosDownload
@@ -25,14 +26,14 @@ class PhotosDownload extends AbstractCommandFlickr
 {
 
     /**
+     * @var string
+     */
+    private $nsid;
+
+    /**
      * @var array
      */
     private $photos;
-
-    /**
-     * @var int
-     */
-    private $totalPhotos = 0;
 
     /**
      * @throws ReflectionException
@@ -65,111 +66,31 @@ class PhotosDownload extends AbstractCommandFlickr
     }
 
     /**
-     * @return boolean
-     * @throws DBALException
+     * @return boolean|integer
      */
-    protected function prepare()
+    protected function prepareOptions()
     {
-        parent::prepare();
+        $this->nsid = FlickrHelper::getNsid($this->getOption('nsid'));
 
-        if ($this->getOption('photo_ids')) {
-            $this->photos = explode(',', $this->getOption('photo_ids'));
+        if ($this->getOption('album') && !$this->nsid) {
+            $this->log('Missing NSID for album', 'notice');
 
-            return true;
-        }
-
-        if ($this->loadPhotosFromAlbum()) {
-            return true;
-        }
-
-        if (!$this->loadPhotos()) {
             return false;
         }
-
-        return true;
     }
 
     /**
-     * @param array $steps
-     * @return boolean
+     * @return boolean|integer
      */
-    protected function process($steps = [])
-    {
-        return parent::process(
-            [
-                'downloadPhotos',
-            ]
-        );
-    }
-
-    /**
-     * @return boolean
-     */
-    protected function loadPhotos()
-    {
-        $this->info(__FUNCTION__);
-        $nsid = $this->getNsid();
-
-        try {
-            if ($this->getOption('advanced')) {
-                $query = 'SELECT `id` FROM xgallery_flickr_photos WHERE `status` = 0 '
-                    .'AND `owner` IN '
-                    .'( SELECT `contacts`.`nsid` FROM `xgallery_flickr_contacts` AS `contacts` '
-                    .'INNER JOIN( SELECT `owner`, COUNT(`id`) AS `total` FROM `xgallery_flickr_photos` WHERE `status` <> 0 GROUP BY `owner` ) AS `photos` ON `photos`.`owner` = `contacts`.`nsid` '
-                    .'WHERE `photos`.`total` < `contacts`.`total_photos` )';
-            } else {
-                $query = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE `status` = 0';
-                if ($nsid) {
-                    $this->info('Specific on NSID: '.$nsid);
-                    $query .= ' AND `owner` = ?';
-                }
-            }
-
-            $query .= ' LIMIT '.(int)$this->getOption('limit');
-
-            if ($nsid) {
-                $this->photos = $this->connection->executeQuery($query, [$nsid])->fetchAll(FetchMode::COLUMN);
-            } else {
-                $this->photos = $this->connection->executeQuery($query, [])->fetchAll(FetchMode::COLUMN);
-            }
-
-            if (!$this->photos || empty($this->photos)) {
-                $this->logNotice('There are no photos');
-
-                return false;
-            }
-
-            $this->totalPhotos = count($this->photos);
-            $this->info('Total photos being download: '.$this->totalPhotos, [], true);
-
-            return true;
-        } catch (DBALException $exception) {
-            $this->logError($exception->getMessage());
-        }
-
-        return false;
-    }
-
-    /**
-     * @return boolean
-     */
-    protected function loadPhotosFromAlbum()
+    protected function preparePhotosFromAlbum()
     {
         $album = $this->getOption('album');
 
         if (!$album) {
-            return false;
+            return -1;
         }
 
-        if (!$this->getOption('nsid')) {
-            $this->logNotice('Missing NSID for album');
-            $this->output->write("\n".'Missing NSID for album');
-
-            return false;
-        }
-
-        $this->info(__FUNCTION__);
-        $photos = $this->flickr->flickrPhotoSetsGetPhotos($album, $this->getNsid());
+        $photos = $this->flickr->flickrPhotoSetsGetPhotos($album, $this->nsid);
 
         if (!$photos) {
             return false;
@@ -180,18 +101,89 @@ class PhotosDownload extends AbstractCommandFlickr
             $this->photos[] = $photo->id;
         }
 
+        return 1;
+    }
+
+    /**
+     * @return boolean
+     */
+    protected function preparePhotosFromIds()
+    {
+        $photoIds = $this->getOption('photo_ids');
+
+        if (!$photoIds) {
+            return -1;
+        }
+
+        $process = new Process(
+            ['php', 'cli.php', 'flickr:photos', '--photo_ids='.$photoIds],
+            null,
+            null,
+            null,
+            DefinesCore::MAX_EXECUTE_TIME
+        );
+        $process->start();
+        $process->wait();
+
+        $this->photos = explode(',', $photoIds);
+
+        return 1;
+    }
+
+    /**
+     * @return boolean
+     */
+    protected function preparePhotosFromDb()
+    {
+        if ($this->getOption('advanced')) {
+            $this->log('Use advanced query');
+            $query = 'SELECT `id` FROM xgallery_flickr_photos WHERE `status` = 0 '
+                .'AND `owner` IN '
+                .'( SELECT `contacts`.`nsid` FROM `xgallery_flickr_contacts` AS `contacts` '
+                .'INNER JOIN( SELECT `owner`, COUNT(`id`) AS `total` FROM `xgallery_flickr_photos` WHERE `status` <> 0 GROUP BY `owner` ) AS `photos` ON `photos`.`owner` = `contacts`.`nsid` '
+                .'WHERE `photos`.`total` < `contacts`.`total_photos` )';
+        } else {
+            $query = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE `status` = 0';
+
+            if ($this->nsid) {
+                $this->log('Specific on NSID: '.$this->nsid);
+                $query .= ' AND `owner` = ?';
+            }
+        }
+
+        $query .= ' LIMIT '.(int)$this->getOption('limit');
+
+        try {
+            if ($this->nsid) {
+                $this->photos = $this->connection->executeQuery($query, [$this->nsid])->fetchAll(FetchMode::COLUMN);
+            } else {
+                $this->photos = $this->connection->executeQuery($query, [])->fetchAll(FetchMode::COLUMN);
+            }
+        } catch (DBALException $exception) {
+            $this->log($exception->getMessage(), 'error');
+
+            return false;
+        }
+
         return true;
     }
 
     /**
      * @return boolean
      */
-    protected function downloadPhotos()
+    protected function processDownload()
     {
+        if (!$this->photos || empty($this->photos)) {
+            $this->log('There are no photos', 'notice');
+
+            return false;
+        }
+
         $processes = [];
 
         foreach ($this->photos as $photoId) {
-            $this->info('Sending request: '.$photoId, [], true);
+            $this->log('Sending request: '.$photoId);
+
             try {
                 $processes[$photoId] = new Process(
                     ['php', 'cli.php', 'flickr:photodownload', '--photo_id='.$photoId],
@@ -201,16 +193,16 @@ class PhotosDownload extends AbstractCommandFlickr
                     DefinesCore::MAX_EXECUTE_TIME
                 );
                 $processes[$photoId]->start();
-                $this->progressBar->advance();
-            } catch (Exception $exception) {
-                $this->logError($exception->getMessage());
+            } catch (RuntimeException $exception) {
+                $this->log($exception->getMessage(), 'error');
             }
         }
 
         foreach ($processes as $id => $process) {
-            $this->info('Downloading '.$id.' ...');
+            $this->log('Downloading '.$id.' ...');
             $process->wait();
-            $this->logInfo('Process complete: '.$id);
+            $this->progressBar->advance();
+            $this->log('Process complete: '.$id);
         }
 
         return true;
