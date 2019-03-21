@@ -93,4 +93,18 @@ trait HasPeople
 
         return $photos;
     }
+
+    /**
+     * @param $nsid
+     * @return mixed
+     */
+    public function flickrPeopleGetInfo($nsid)
+    {
+        return $this->rest(
+            [
+                'method' => 'flickr.people.getInfo',
+                'user_id' => $nsid,
+            ]
+        );
+    }
 }
