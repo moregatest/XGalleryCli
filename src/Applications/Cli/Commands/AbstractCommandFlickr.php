@@ -11,6 +11,7 @@ namespace XGallery\Applications\Cli\Commands;
 use ReflectionException;
 use XGallery\Applications\Cli\AbstractCommand;
 use XGallery\Factory;
+use XGallery\Model\ModelFlickr;
 use XGallery\Webservices\Services\Flickr;
 
 /**
@@ -25,12 +26,18 @@ abstract class AbstractCommandFlickr extends AbstractCommand
     protected $flickr;
 
     /**
+     * @var ModelFlickr
+     */
+    protected $model;
+
+    /**
      * @throws ReflectionException
      */
     protected function configure()
     {
         $this->setName('flickr:'.strtolower($this->getClassName()));
         $this->flickr = Factory::getServices('flickr');
+        $this->model  = ModelFlickr::getInstance();
 
         parent::configure();
     }

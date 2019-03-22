@@ -19,4 +19,6 @@ class DefinesCore
     const VERSION = '3.0.0';
 
     const MAX_EXECUTE_TIME = 300;
+
+    const MAX_RESTFUL_PER_TIME = 1000;
 }

@@ -48,9 +48,8 @@ trait HasAuthorize
             /**
              * @uses Both $key and $value MUST BE encoded
              */
-            $parametersString[] = OauthHelper::encode(
-                    $key
-                ).'='.OauthHelper::encode($value);
+            $parametersString[] = OauthHelper::encode($key)
+                .'='.OauthHelper::encode($value);
         }
 
         $baseSignature = OauthHelper::encode(strtoupper($method))

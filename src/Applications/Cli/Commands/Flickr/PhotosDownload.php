@@ -8,18 +8,17 @@
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\FetchMode;
 use ReflectionException;
 use Symfony\Component\Process\Exception\RuntimeException;
-use Symfony\Component\Process\Process;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
-use XGallery\Defines\DefinesCore;
 use XGallery\Defines\DefinesFlickr;
 use XGallery\Utilities\FlickrHelper;
+use XGallery\Utilities\SystemHelper;
 
 /**
  * Class PhotosDownload
+ * Massive download photos
+ *
  * @package XGallery\Applications\Commands\Flickr
  */
 class PhotosDownload extends AbstractCommandFlickr
@@ -50,10 +49,6 @@ class PhotosDownload extends AbstractCommandFlickr
             ],
             'photo_ids' => [
                 'description' => 'Fetch photo from specific ids',
-            ],
-            'advanced' => [
-                'description' => 'Execute advanced query to get right photos',
-                'default' => null,
             ],
             'limit' => [
                 'description' => 'Limit number of download',
@@ -91,6 +86,7 @@ class PhotosDownload extends AbstractCommandFlickr
     {
         $album = $this->getOption('album');
 
+        // Skip
         if (!$album) {
             return -1;
         }
@@ -122,13 +118,7 @@ class PhotosDownload extends AbstractCommandFlickr
             return -1;
         }
 
-        (new Process(
-            ['php', XGALLERY_ROOT.'/cli.php', 'flickr:photos', '--photo_ids='.$photoIds],
-            null,
-            null,
-            null,
-            DefinesCore::MAX_EXECUTE_TIME
-        ))->run();
+        SystemHelper::getProcess(['php', XGALLERY_ROOT.'/cli.php', 'flickr:photos', '--photo_ids='.$photoIds])->run();
 
         $this->photos = explode(',', $photoIds);
 
@@ -136,38 +126,20 @@ class PhotosDownload extends AbstractCommandFlickr
     }
 
     /**
+     * Get photos for download
+     *
      * @return boolean
      */
     protected function preparePhotosFromDb()
     {
-        if ($this->getOption('advanced')) {
-            $this->log('Use advanced query');
-            $query = 'SELECT `id` FROM xgallery_flickr_photos WHERE `status` = 0 '
-                .'AND `owner` IN '
-                .'( SELECT `contacts`.`nsid` FROM `xgallery_flickr_contacts` AS `contacts` '
-                .'INNER JOIN( SELECT `owner`, COUNT(`id`) AS `total` FROM `xgallery_flickr_photos` WHERE `status` <> 0 GROUP BY `owner` ) AS `photos` ON `photos`.`owner` = `contacts`.`nsid` '
-                .'WHERE `photos`.`total` < `contacts`.`total_photos` )';
-        } else {
-            $query = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE `status` = 0';
-
-            if ($this->nsid) {
-                $this->log('Specific on NSID: '.$this->nsid);
-                $query .= ' AND `owner` = ?';
-            }
-        }
-
         if (!$this->nsid || ($this->nsid && !$this->getOption('all'))) {
-            $query .= ' LIMIT '.(int)$this->getOption('limit');
+            $this->photos = $this->model->getPhotoIds(0, $this->nsid, $this->getOption('limit'));
+        } else {
+            $this->photos = $this->model->getPhotoIds(0, $this->nsid);
         }
 
-        try {
-            if ($this->nsid) {
-                $this->photos = $this->connection->executeQuery($query, [$this->nsid])->fetchAll(FetchMode::COLUMN);
-            } else {
-                $this->photos = $this->connection->executeQuery($query, [])->fetchAll(FetchMode::COLUMN);
-            }
-        } catch (DBALException $exception) {
-            $this->log($exception->getMessage(), 'error');
+        if (!$this->photos || empty($this->photos)) {
+            $this->log('There are no photos', 'notice', $this->model->getErrors());
 
             return false;
         }
@@ -186,19 +158,22 @@ class PhotosDownload extends AbstractCommandFlickr
             return false;
         }
 
+        $this->log('Working on: '.count($this->photos).' photos');
         $processes = [];
 
         foreach ($this->photos as $photoId) {
             $this->log('Sending request: '.$photoId);
 
+            /**
+             * @TODO Prevent flickr:photodownload query again
+             */
             try {
-                $processes[$photoId] = new Process(
-                    ['php', XGALLERY_ROOT.'/cli.php', 'flickr:photodownload', '--photo_id='.$photoId],
-                    null,
-                    null,
-                    null,
-                    DefinesCore::MAX_EXECUTE_TIME
-                );
+                $processes[$photoId] = SystemHelper::getProcess([
+                    'php',
+                    XGALLERY_ROOT.'/cli.php',
+                    'flickr:photodownload',
+                    '--photo_id='.$photoId,
+                ]);
                 $processes[$photoId]->start();
             } catch (RuntimeException $exception) {
                 $this->log($exception->getMessage(), 'error');

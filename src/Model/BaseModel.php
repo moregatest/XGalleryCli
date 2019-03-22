@@ -8,24 +8,81 @@
 
 namespace XGallery\Model;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
-use XGallery\Exceptions\Exception;
+use Monolog\Logger;
 use XGallery\Factory;
 
-class BaseModel extends AbstractModel
+class BaseModel
 {
+
+    /**
+     * @var Connection
+     */
+    protected $connection;
+
+    /**
+     * @var array
+     */
     protected $errors = [];
+
+    /**
+     * @var Logger
+     */
+    protected $logger;
+
+    /**
+     * AbstractModel constructor.
+     */
+    public function __construct()
+    {
+        try {
+            $this->connection = Factory::getConnection();
+            $this->logger     = Factory::getLogger(get_called_class());
+        } catch (DBALException $exception) {
+            $this->errors[] = $exception->getMessage();
+
+            return false;
+        }
+    }
+
+    public function __destruct()
+    {
+        $this->cleanup();
+    }
+
+    protected function cleanup()
+    {
+        $this->connection->close();
+
+        if (!empty($this->getErrors())) {
+            $this->logger->error('', $this->errors);
+        }
+    }
+
+    protected function reset()
+    {
+        $this->connection->close();
+        $this->errors = [];
+    }
+
+    /**
+     * return array
+     */
+    public function getErrors()
+    {
+        return $this->errors;
+    }
 
     /**
      * @param $table
      * @param $rows
      * @return boolean|integer
-     * @throws DBALException
      */
-    public static function insertRows($table, $rows)
+    public function insertRows($table, $rows)
     {
-        $connection = Factory::getConnection();
-        $query      = 'INSERT INTO `'.$table.'`';
+        $this->reset();
+        $query = 'INSERT INTO `'.$table.'`';
 
         // Columns
         $query            .= '(';
@@ -59,24 +116,27 @@ class BaseModel extends AbstractModel
         $query .= ' ON DUPLICATE KEY UPDATE '.implode(',', $onDuplicateQuery).';';
 
         try {
-            $prepare = $connection->prepare($query);
-
-            // Bind values
-            foreach ($bindKeys as $index => $columns) {
-                foreach ($columns as $columnId => $value) {
-                    $prepare->bindValue(':'.$columnId, $value);
-                }
-            }
-
-            $prepare->execute();
-            $connection->close();
-
-            return $prepare->rowCount();
-        } catch (Exception $exception) {
-            $connection->close();
-            Factory::getLogger(get_called_class())->error($exception->getMessage());
+            $prepare = $this->connection->prepare($query);
+        } catch (DBALException $exception) {
+            $this->connection->close();
+            $this->errors[] = $exception->getMessage();
 
             return false;
         }
+
+        // Bind values
+        foreach ($bindKeys as $index => $columns) {
+            foreach ($columns as $columnId => $value) {
+                $prepare->bindValue(':'.$columnId, $value);
+            }
+        }
+
+        if (!$prepare->execute()) {
+            return false;
+        }
+
+        $this->connection->close();
+
+        return $prepare->rowCount();
     }
 }

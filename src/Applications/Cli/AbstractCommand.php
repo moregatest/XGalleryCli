@@ -8,8 +8,6 @@
 
 namespace XGallery\Applications\Cli;
 
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
 use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
@@ -18,7 +16,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use XGallery\Factory;
 use XGallery\Traits\HasLogger;
 use XGallery\Traits\HasObject;
 
@@ -50,11 +47,6 @@ abstract class AbstractCommand extends Command
      * @var OutputInterface
      */
     protected $output;
-
-    /**
-     * @var Connection
-     */
-    protected $connection;
 
     /**
      * @var ProgressBar
@@ -133,13 +125,10 @@ abstract class AbstractCommand extends Command
 
     /**
      * Prepare data before execute command
-     *
-     * @throws DBALException
      */
     protected function prepare()
     {
         $this->log(__FUNCTION__);
-        $this->connection  = Factory::getConnection();
         $this->progressBar = new ProgressBar($this->output);
         $this->progressBar->setFormat('debug');
 
@@ -211,8 +200,6 @@ abstract class AbstractCommand extends Command
     {
         $this->log('Completed '.$this->getName().': '.(int)$status, 'info', [], true);
 
-        $this->connection->close();
-
         if ($status === true) {
             return 0;
         }
@@ -221,10 +208,10 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * @param        $message
-     * @param string $type
-     * @param        $context
-     * @param bool   $newLine
+     * @param         $message
+     * @param string  $type
+     * @param array   $context
+     * @param boolean $newLine
      */
     protected function log($message, $type = 'info', $context = [], $newLine = false)
     {

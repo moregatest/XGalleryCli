@@ -21,8 +21,10 @@ use XGallery\Factory;
 class DownloadHelper
 {
     /**
-     * @param $url
-     * @param $saveTo
+     * Download remote file
+     *
+     * @param string $url    Remote file URL
+     * @param string $saveTo Download to
      * @return boolean
      * @throws Exception
      */
@@ -35,29 +37,30 @@ class DownloadHelper
         }
 
         try {
-            $client             = new Client;
-            $response           = $client->request('GET', $url, ['sink' => $saveTo]);
-            $orgFileSize        = $response->getHeader('Content-Length')[0];
-            $downloadedFileSize = filesize($saveTo);
-
-            if ($orgFileSize != $downloadedFileSize) {
-                $logger->notice('Download file error: Filesize does not match');
-
-                return false;
-            }
-
-            if ($response->getStatusCode() === 200) {
-                return true;
-            }
-
-            $logger->notice($response->getReasonPhrase());
-
-            return false;
+            $client   = new Client;
+            $response = $client->request('GET', $url, ['sink' => $saveTo]);
         } catch (GuzzleException $exception) {
             $logger->error($exception->getMessage());
 
             return false;
         }
+
+        $orgFileSize        = $response->getHeader('Content-Length')[0];
+        $downloadedFileSize = filesize($saveTo);
+
+        if ($orgFileSize != $downloadedFileSize) {
+            $logger->notice('Download file error: Filesize does not match');
+
+            return false;
+        }
+
+        if ($response->getStatusCode() === 200) {
+            return true;
+        }
+
+        $logger->notice($response->getReasonPhrase());
+
+        return false;
     }
 
     /**

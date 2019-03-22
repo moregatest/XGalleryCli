@@ -8,10 +8,8 @@
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
-use Doctrine\DBAL\DBALException;
 use ReflectionException;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
-use XGallery\Model\BaseModel;
 
 /**
  * Class Contacts
@@ -36,6 +34,8 @@ class Contacts extends AbstractCommandFlickr
     }
 
     /**
+     * Fetch my contacts
+     *
      * @return boolean
      */
     protected function prepareContacts()
@@ -48,21 +48,20 @@ class Contacts extends AbstractCommandFlickr
             return false;
         }
 
-        $this->log("Total contacts: ".count($this->contacts), 'info');
+        $this->log("Total contacts: ".count($this->contacts));
 
         return true;
     }
 
     /**
      * @return boolean
-     * @throws DBALException
      */
     protected function processInsertContacts()
     {
-        $rows = BaseModel::insertRows('xgallery_flickr_contacts', $this->contacts);
+        $rows = $this->model->insertContacts($this->contacts);
 
         if ($rows === false) {
-            $this->log('Can not insert contacts', 'error');
+            $this->log('Can not insert contacts', 'error', $this->model->getErrors());
 
             return false;
         }

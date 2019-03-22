@@ -8,10 +8,9 @@
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
-use Doctrine\DBAL\DBALException;
 use ReflectionException;
+use stdClass;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
-use XGallery\Model\BaseModel;
 use XGallery\Utilities\FlickrHelper;
 
 /**
@@ -42,6 +41,8 @@ class Contact extends AbstractCommandFlickr
     }
 
     /**
+     * Fetch contact information
+     *
      * @return boolean
      */
     protected function prepareContact()
@@ -58,35 +59,31 @@ class Contact extends AbstractCommandFlickr
     }
 
     /**
+     * Insert contact into database
+     *
      * @return boolean
-     * @throws DBALException
      */
     protected function processInsertContact()
     {
-        if (!$this->contact) {
-            return false;
-        }
-
         $this->log('Working on NSID '.$this->contact->person->nsid);
-        $contact = [
-            'nsid' => $this->contact->person->nsid,
-            'username' => $this->contact->person->username->_content,
-            'iconserver' => $this->contact->person->iconserver,
-            'iconfarm' => $this->contact->person->iconfarm,
-            'ignored' => $this->contact->person->ignored,
-            'realname' => $this->contact->person->realname->_content,
-            'friend' => $this->contact->person->friend,
-            'family' => $this->contact->person->family,
-            'path_alias' => $this->contact->person->path_alias,
-            'location' => $this->contact->person->location->_content,
-            'total_photos' => $this->contact->person->photos->count->_content,
-        ];
-        $contact = json_encode($contact);
-        $contact = json_decode($contact);
-        $rows    = BaseModel::insertRows('xgallery_flickr_contacts', [$contact]);
+
+        $contact               = new stdClass;
+        $contact->nsid         = $this->contact->person->nsid;
+        $contact->username     = $this->contact->person->username->_content;
+        $contact->iconserver   = $this->contact->person->iconserver;
+        $contact->iconfarm     = $this->contact->person->iconfarm;
+        $contact->ignored      = $this->contact->person->ignored;
+        $contact->realname     = $this->contact->person->realname->_content;
+        $contact->friend       = $this->contact->person->friend;
+        $contact->family       = $this->contact->person->family;
+        $contact->path_alias   = $this->contact->person->path_alias;
+        $contact->location     = $this->contact->person->location->_content;
+        $contact->total_photos = $this->contact->person->photos->count->_content;
+
+        $rows = $this->model->insertContacts([$contact]);
 
         if ($rows === false) {
-            $this->log('Can not insert contacts', 'error');
+            $this->log('Can not insert contacts', 'error', $this->model->getErrors());
 
             return false;
         }

@@ -8,17 +8,16 @@
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\FetchMode;
 use ReflectionException;
 use stdClass;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
-use XGallery\Model\BaseModel;
 use XGallery\Utilities\DateTimeHelper;
 use XGallery\Utilities\FlickrHelper;
 
 /**
  * Class Photos
+ * Fetch all photos and insert into database
+ *
  * @package XGallery\Applications\Commands\Flickr
  */
 class Photos extends AbstractCommandFlickr
@@ -85,41 +84,30 @@ class Photos extends AbstractCommandFlickr
      */
     protected function prepareNsid()
     {
-        try {
-            if ($this->nsid) {
-                $this->log('Load specific NSID');
-
-                return true;
-            }
-
-            $this->log('Load NSID from database');
-            $this->nsid = $this->connection->executeQuery(
-                'SELECT `nsid` FROM `xgallery_flickr_contacts` ORDER BY `modified` ASC LIMIT 1 FOR UPDATE'
-            )->fetch(FetchMode::COLUMN);
-
-            /**
-             * @TODO If NSID not found in database then insert new one
-             */
-            if (!$this->nsid) {
-                $this->log('Can not get people from database', 'notice');
-
-                return false;
-            }
-
-            $this->connection->executeUpdate(
-                'UPDATE `xgallery_flickr_contacts` SET `modified` = ? WHERE nsid = ?',
-                array(DateTimeHelper::toMySql(), $this->nsid)
-            );
+        if ($this->nsid) {
+            $this->log('Load specific NSID');
 
             return true;
-        } catch (DBALException $exception) {
-            $this->log($exception->getMessage(), 'error');
         }
 
-        return false;
+        $this->log('Load NSID from database');
+        $this->nsid = $this->model->getContactNsid();
+
+        /**
+         * @TODO If NSID not found in database then insert new one
+         */
+        if (!$this->nsid) {
+            $this->log('Can not get people from database', 'notice', $this->model->getErrors());
+
+            return false;
+        }
+
+        return $this->model->updateContact($this->nsid, ['modified' => DateTimeHelper::toMySql()]);
     }
 
     /**
+     * Get photos detail
+     *
      * @return array|boolean
      */
     protected function processPhotos()
@@ -186,10 +174,11 @@ class Photos extends AbstractCommandFlickr
     }
 
     /**
+     * Insert photos into database
+     *
      * @return boolean
-     * @throws DBALException
      */
-    protected function processInsertContacts()
+    protected function processInsertPhotos()
     {
         if (!$this->photos || empty($this->photos)) {
             $this->log('There are not photos', 'notice');
@@ -200,10 +189,10 @@ class Photos extends AbstractCommandFlickr
         $this->totalPhotos = count($this->photos);
         $this->log('Total: '.$this->totalPhotos.' photos');
 
-        $rows = BaseModel::insertRows('xgallery_flickr_photos', $this->photos);
+        $rows = $this->model->insertPhotos($this->photos);
 
         if ($rows === false) {
-            $this->log('Can not insert photos', 'notice', error_get_last());
+            $this->log('Can not insert photos', 'notice', $this->model->getErrors());
 
             return false;
         }
@@ -211,32 +200,5 @@ class Photos extends AbstractCommandFlickr
         $this->log("Updated ".$rows." photos into contact");
 
         return true;
-    }
-
-    /**
-     * @return boolean
-     */
-    protected function processUpdateTotal()
-    {
-        // For album & photo_ids we won't update total_photos
-        if ($this->getOption('album') || $this->getOption('photo_ids')) {
-            return true;
-        }
-
-        try {
-            // Update total photos
-            $this->connection->executeUpdate(
-                'UPDATE `xgallery_flickr_contacts` SET total_photos = ? WHERE nsid = ?',
-                array($this->totalPhotos, $this->nsid)
-            );
-
-            $this->log('Updated total photos of contact: '.$this->totalPhotos);
-
-            return true;
-        } catch (DBALException $exception) {
-            $this->log($exception->getMessage(), 'error');
-        }
-
-        return false;
     }
 }
