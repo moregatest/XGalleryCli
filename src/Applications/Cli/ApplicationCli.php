@@ -8,6 +8,8 @@
 
 namespace XGallery\Applications\Cli;
 
+use DirectoryIterator;
+use FilesystemIterator;
 use Symfony\Component\Finder\Finder;
 use XGallery\Applications\AbstractApplicationCli;
 
@@ -25,18 +27,25 @@ class ApplicationCli extends AbstractApplicationCli
         $folders = (new Finder())->directories()->in(__DIR__.'/Commands')->depth(0);
 
         foreach ($folders as $folder) {
+            /**
+             * @var DirectoryIterator $folder
+             */
             $dirName = $folder->getFilename();
             $files   = (new Finder())->files()->in(__DIR__.'/Commands/'.$dirName)->depth(0)->name('*.php');
             foreach ($files as $file) {
-                $class = '\\XGallery\\Applications\\Cli\\Commands\\'.$dirName.'\\'.ucfirst(
-                        basename($file->getFilename(), '.php')
-                    );
+                /**
+                 * @var FilesystemIterator $file
+                 */
+                $class = '\\XGallery\\Applications\\Cli\\Commands\\'.$dirName.'\\'
+                    .ucfirst(basename($file->getFilename(), '.php'));
                 $this->add((new $class));
             }
         }
     }
 
     /**
+     * Application execute completed
+     *
      * @param $status
      * @return integer
      */
