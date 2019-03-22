@@ -27,7 +27,6 @@ use XGallery\Webservices\Services\Flickr\Traits\HasUrls;
  */
 class Flickr extends Client
 {
-
     use HasActivity;
     use HasUrls;
     use HasProfile;

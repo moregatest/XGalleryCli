@@ -18,7 +18,6 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class CliEvent extends Event
 {
-
     private $input;
     private $output;
 

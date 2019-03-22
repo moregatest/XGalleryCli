@@ -15,7 +15,6 @@
 
 namespace XGallery\Events;
 
-
 use Symfony\Component\EventDispatcher\Event;
 
 class Test

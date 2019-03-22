@@ -18,7 +18,7 @@ use XGallery\Applications\AbstractApplicationCli;
 class ApplicationCli extends AbstractApplicationCli
 {
     /**
-     *
+     * Auto register all commands
      */
     protected function registerCommands()
     {

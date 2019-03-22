@@ -83,6 +83,8 @@ class PhotosDownload extends AbstractCommandFlickr
     }
 
     /**
+     * Get photo IDs from Album
+     *
      * @return boolean|integer
      */
     protected function preparePhotosFromAlbum()
@@ -100,7 +102,6 @@ class PhotosDownload extends AbstractCommandFlickr
         }
 
         foreach ($photos->photoset->photo as $photo) {
-
             $this->photos[] = $photo->id;
         }
 
@@ -108,6 +109,9 @@ class PhotosDownload extends AbstractCommandFlickr
     }
 
     /**
+     * Get photos from IDs
+     * Call flickr:photos to get photo information
+     *
      * @return boolean
      */
     protected function preparePhotosFromIds()
@@ -118,15 +122,13 @@ class PhotosDownload extends AbstractCommandFlickr
             return -1;
         }
 
-        $process = new Process(
+        (new Process(
             ['php', XGALLERY_ROOT.'/cli.php', 'flickr:photos', '--photo_ids='.$photoIds],
             null,
             null,
             null,
             DefinesCore::MAX_EXECUTE_TIME
-        );
-        $process->start();
-        $process->wait();
+        ))->run();
 
         $this->photos = explode(',', $photoIds);
 

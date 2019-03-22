@@ -28,7 +28,6 @@ use Symfony\Component\Templating\TemplateNameParser;
  */
 class Factory
 {
-
     const APP_NAMESPACE = 'XGallery3';
 
     /**
@@ -50,7 +49,6 @@ class Factory
             ],
             $config
         );
-
     }
 
     /**
@@ -74,7 +72,7 @@ class Factory
         $logFile        = str_replace('\\', DIRECTORY_SEPARATOR, strtolower($name));
 
         $loggers[$name]->pushHandler(
-            new StreamHandler(getenv('log_path').'/'.$logFile.'_'.date("Y-m-d").'_'.time().uniqid().'.log')
+            new StreamHandler(getenv('log_path').'/'.$logFile.'/'.date("Y-m-d").'_'.time().uniqid().'.log')
         );
 
         return $loggers[$name];

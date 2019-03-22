@@ -58,6 +58,4 @@ trait HasReservation
 
         return $respond->merchant_infos;
     }
-
-
 }

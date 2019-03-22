@@ -8,8 +8,6 @@
 
 namespace XGallery\Model;
 
-
 class AbstractModel
 {
-
 }

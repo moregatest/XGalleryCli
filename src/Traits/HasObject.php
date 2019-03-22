@@ -18,6 +18,8 @@ use ReflectionException;
 trait HasObject
 {
     /**
+     * Get classname with or without namespace
+     *
      * @param boolean $shortname
      * @return string
      * @throws ReflectionException

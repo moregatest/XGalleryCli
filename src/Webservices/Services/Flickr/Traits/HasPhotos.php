@@ -22,7 +22,7 @@ trait HasPhotos
      *
      * @return mixed
      */
-    abstract function rest($parameters, $options = []);
+    abstract public function rest($parameters, $options = []);
 
     /**
      * @param string $keyword

@@ -24,6 +24,8 @@ class Restful extends Client
 {
 
     /**
+     * Logger object
+     *
      * @var Logger
      */
     protected $logger;

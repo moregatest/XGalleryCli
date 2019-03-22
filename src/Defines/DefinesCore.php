@@ -14,7 +14,6 @@ namespace XGallery\Defines;
  */
 class DefinesCore
 {
-
     const APPLICATION = 'XGallery';
 
     const VERSION = '3.0.0';

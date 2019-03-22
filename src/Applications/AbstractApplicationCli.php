@@ -25,7 +25,8 @@ abstract class AbstractApplicationCli extends Application
     use HasLogger;
 
     /**
-     * ApplicationCli constructor.
+     * ApplicationCli constructor
+     *
      * @param string $name
      * @param string $version
      * @throws Exception
@@ -38,11 +39,15 @@ abstract class AbstractApplicationCli extends Application
     }
 
     /**
+     * Register all required commands
+     *
      * @return mixed
      */
     abstract protected function registerCommands();
 
     /**
+     * Wrapped run with complete method
+     *
      * @param InputInterface|null  $input
      * @param OutputInterface|null $output
      * @return integer
@@ -54,6 +59,8 @@ abstract class AbstractApplicationCli extends Application
     }
 
     /**
+     * Trigger after application run completed
+     *
      * @param $status
      * @return integer
      */

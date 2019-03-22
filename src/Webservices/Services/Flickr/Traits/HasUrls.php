@@ -22,7 +22,7 @@ trait HasUrls
      *
      * @return mixed
      */
-    abstract function rest($parameters, $options = []);
+    abstract public function rest($parameters, $options = []);
 
     /**
      * @param $groupId

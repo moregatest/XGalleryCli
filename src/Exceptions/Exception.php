@@ -15,5 +15,4 @@ namespace XGallery\Exceptions;
  */
 class Exception extends \Exception
 {
-
 }

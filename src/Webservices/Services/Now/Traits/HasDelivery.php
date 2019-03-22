@@ -132,7 +132,6 @@ trait HasDelivery
         $deliveries = [];
 
         foreach ($ids as $id) {
-
             $data = $this->getDetail($id);
 
             if (!$data) {

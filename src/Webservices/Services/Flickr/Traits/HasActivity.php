@@ -22,7 +22,7 @@ trait HasActivity
      *
      * @return mixed
      */
-    abstract function rest($parameters, $options = []);
+    abstract public function rest($parameters, $options = []);
 
     /**
      * @param $params

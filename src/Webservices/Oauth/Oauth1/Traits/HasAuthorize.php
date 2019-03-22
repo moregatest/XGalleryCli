@@ -17,7 +17,6 @@ use XGallery\Webservices\Oauth\Common\OauthHelper;
  */
 trait HasAuthorize
 {
-
     use HasCredential;
 
     /**

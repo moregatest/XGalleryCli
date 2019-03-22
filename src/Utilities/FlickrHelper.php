@@ -17,8 +17,10 @@ use XGallery\Factory;
 class FlickrHelper
 {
     /**
-     * @param $id
-     * @return bool
+     * Get by NSID by URL or ID
+     *
+     * @param string $id
+     * @return boolean|string
      */
     public static function getNsid($id)
     {

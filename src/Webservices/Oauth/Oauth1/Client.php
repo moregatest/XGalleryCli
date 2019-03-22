@@ -21,7 +21,6 @@ use XGallery\Webservices\Restful;
  */
 class Client extends Restful
 {
-
     use HasAuthorize;
 
     const SIGNATURE_METHOD = 'HMAC-SHA1';

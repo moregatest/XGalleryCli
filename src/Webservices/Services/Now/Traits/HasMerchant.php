@@ -58,6 +58,4 @@ trait HasMerchant
 
         return $respond->merchant_infos;
     }
-
-
 }

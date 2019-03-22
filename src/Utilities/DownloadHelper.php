@@ -28,7 +28,6 @@ class DownloadHelper
      */
     public static function download($url, $saveTo)
     {
-        $client = new Client();
         $logger = Factory::getLogger(get_called_class());
 
         if ((new Filesystem())->exists($saveTo)) {
@@ -36,6 +35,7 @@ class DownloadHelper
         }
 
         try {
+            $client             = new Client;
             $response           = $client->request('GET', $url, ['sink' => $saveTo]);
             $orgFileSize        = $response->getHeader('Content-Length')[0];
             $downloadedFileSize = filesize($saveTo);
@@ -46,18 +46,18 @@ class DownloadHelper
                 return false;
             }
 
-            if ($response->getStatusCode() !== 200) {
-                $logger->notice($response->getReasonPhrase());
-
-                return false;
+            if ($response->getStatusCode() === 200) {
+                return true;
             }
 
-            return true;
+            $logger->notice($response->getReasonPhrase());
+
+            return false;
         } catch (GuzzleException $exception) {
             $logger->error($exception->getMessage());
-        }
 
-        return false;
+            return false;
+        }
     }
 
     /**
@@ -66,8 +66,6 @@ class DownloadHelper
      */
     public static function getFilesize($url)
     {
-        $client = new Client();
-
-        return (int)$client->head($url)->getHeader('Content-Length')[0];
+        return (int)(new Client)->head($url)->getHeader('Content-Length')[0];
     }
 }

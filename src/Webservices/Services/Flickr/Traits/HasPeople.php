@@ -22,7 +22,7 @@ trait HasPeople
      *
      * @return mixed
      */
-    abstract function rest($parameters, $options = []);
+    abstract public function rest($parameters, $options = []);
 
     /**
      * @param $email
@@ -51,8 +51,7 @@ trait HasPeople
                 [
                     'method' => 'flickr.people.getPhotos',
                     'per_page' => 200,
-                ]
-                ,
+                ],
                 ['user_id' => $nsid],
                 $params
             )

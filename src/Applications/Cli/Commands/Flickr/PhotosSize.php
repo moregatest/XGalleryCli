@@ -94,7 +94,6 @@ class PhotosSize extends AbstractCommandFlickr
         }
 
         foreach ($photos->photoset->photo as $photo) {
-
             $this->photos[] = $photo->id;
         }
 
@@ -184,12 +183,10 @@ class PhotosSize extends AbstractCommandFlickr
 
             if (!$photoSize) {
                 try {
-
                     $this->connection->executeUpdate(
                         'UPDATE `xgallery_flickr_photos` SET `status` = ? WHERE `id` = ?',
                         [DefinesFlickr::PHOTO_STATUS_ERROR_NOT_FOUND_GET_SIZES, $photoId]
                     );
-
                 } catch (DBALException $exception) {
                     $this->log($exception->getMessage(), 'error');
                 }
@@ -201,12 +198,10 @@ class PhotosSize extends AbstractCommandFlickr
             }
 
             try {
-
                 $this->connection->executeUpdate(
                     'UPDATE `xgallery_flickr_photos` SET `params` = ? WHERE `id` = ?',
                     [json_encode($photoSize->sizes->size), $photoId]
                 );
-
             } catch (DBALException $exception) {
                 $this->log($exception->getMessage(), 'error');
             }

@@ -8,13 +8,14 @@
 
 namespace XGallery\Model;
 
-
 use Doctrine\DBAL\DBALException;
 use XGallery\Exceptions\Exception;
 use XGallery\Factory;
 
 class BaseModel extends AbstractModel
 {
+    protected $errors = [];
+
     /**
      * @param $table
      * @param $rows

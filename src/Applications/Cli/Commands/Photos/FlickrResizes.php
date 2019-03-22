@@ -102,7 +102,6 @@ class FlickrResizes extends AbstractCommandPhotos
         }
 
         foreach ($photos->photoset->photo as $photo) {
-
             $this->photos[] = $photo->id;
         }
 
@@ -159,7 +158,6 @@ class FlickrResizes extends AbstractCommandPhotos
 
             return 1;
         } catch (DBALException $exception) {
-
             $this->log($exception->getMessage(), 'error');
         }
 
@@ -197,7 +195,6 @@ class FlickrResizes extends AbstractCommandPhotos
                 $process->wait();
                 $this->progressBar->advance();
                 $this->log('Process completed: '.$photoId);
-
             } catch (RuntimeException $exception) {
                 $this->log($exception->getMessage(), 'error');
             }
