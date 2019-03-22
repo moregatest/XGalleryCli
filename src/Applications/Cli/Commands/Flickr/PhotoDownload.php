@@ -28,16 +28,22 @@ class PhotoDownload extends AbstractCommandFlickr
 {
 
     /**
+     * Photo object
+     *
      * @var stdClass
      */
     private $photo = null;
 
     /**
+     * Photo size
+     *
      * @var stdClass
      */
     private $lastSize = null;
 
     /**
+     * Configures the current command
+     *
      * @throws ReflectionException
      */
     protected function configure()
@@ -62,6 +68,8 @@ class PhotoDownload extends AbstractCommandFlickr
     }
 
     /**
+     * Get photo & sizes for download
+     *
      * @return boolean
      */
     protected function preparePhoto()
@@ -79,7 +87,6 @@ class PhotoDownload extends AbstractCommandFlickr
             }
 
             $this->photo = $this->connection->executeQuery($query, [$photoId])->fetch(FetchMode::STANDARD_OBJECT);
-
         } catch (\Exception $exception) {
             $this->log($exception->getMessage(), 'error');
 
@@ -118,6 +125,8 @@ class PhotoDownload extends AbstractCommandFlickr
     }
 
     /**
+     * Pre process photo sizes
+     *
      * @return boolean
      */
     protected function preparePhotoSize()
@@ -135,7 +144,7 @@ class PhotoDownload extends AbstractCommandFlickr
             return false;
         }
 
-        if (!$this->verifyMediaType($this->lastSize->media)) {
+        if ($this->verifyMedia() !== true) {
             $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_NOT_PHOTO);
 
             return false;
@@ -147,22 +156,31 @@ class PhotoDownload extends AbstractCommandFlickr
     }
 
     /**
-     * @param $media
+     * Validate media type
+     *
      * @return boolean
      */
-    private function verifyMediaType($media)
+    private function verifyMedia()
     {
         // At the moment we only download photos
-        if ($media !== 'photo') {
-            $this->logWarning('It\'s not media \'photo\': '.$media);
+        if ($this->lastSize->media !== 'photo') {
+            $this->log('It\'s not media \'photo\': '.$this->lastSize->media, 'notice');
 
-            return false;
+            return DefinesFlickr::PHOTO_STATUS_ERROR_NOT_PHOTO;
+        }
+
+        if ($this->lastSize->width < DefinesFlickr::FLICKR_PHOTO_MIN_WIDTH && $this->lastSize->height < DefinesFlickr::FLICKR_PHOTO_MIN_HEIGHT) {
+            $this->log('Photo is not matched minimum requirement', 'notice');
+
+            return DefinesFlickr::PHOTO_STATUS_ERROR_NOT_MATCH_REQUIREMENT;
         }
 
         return true;
     }
 
     /**
+     * Download file
+     *
      * @return boolean
      * @throws \Exception
      */
@@ -196,7 +214,6 @@ class PhotoDownload extends AbstractCommandFlickr
                 $this->log('Local file is corrupted: '.$saveTo.'. Redownloading ...', 'notice');
 
                 if (!DownloadHelper::download($this->lastSize->source, $saveTo)) {
-
                     $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_REDOWNLOAD_FAILED);
 
                     return false;
@@ -217,7 +234,6 @@ class PhotoDownload extends AbstractCommandFlickr
 
         try {
             if (!DownloadHelper::download($this->lastSize->source, $saveTo)) {
-
                 $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_ERROR_REDOWNLOAD_FAILED);
 
                 return false;
@@ -226,7 +242,6 @@ class PhotoDownload extends AbstractCommandFlickr
             $this->log('Download completed: '.$targetDir.'/'.$fileName);
 
             return $this->updatePhotoStatus($this->photo->id, DefinesFlickr::PHOTO_STATUS_DOWNLOADED);
-
         } catch (Exception $exception) {
             $this->log('Download failed', 'notice');
 
@@ -235,6 +250,8 @@ class PhotoDownload extends AbstractCommandFlickr
     }
 
     /**
+     * Update photo state
+     *
      * @param $photoId
      * @param $status
      * @return boolean
@@ -242,7 +259,6 @@ class PhotoDownload extends AbstractCommandFlickr
     protected function updatePhotoStatus($photoId, $status)
     {
         try {
-
             if ($result = $this->connection->executeUpdate(
                 'UPDATE `xgallery_flickr_photos` SET status = ? WHERE id = ?',
                 array($status, $photoId)
