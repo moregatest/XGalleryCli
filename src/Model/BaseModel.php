@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -41,8 +41,6 @@ class BaseModel
             $this->logger     = Factory::getLogger(get_called_class());
         } catch (DBALException $exception) {
             $this->errors[] = $exception->getMessage();
-
-            return false;
         }
     }
 
@@ -75,11 +73,12 @@ class BaseModel
     }
 
     /**
-     * @param $table
-     * @param $rows
+     * @param       $table
+     * @param       $rows
+     * @param array $excludeFields
      * @return boolean|integer
      */
-    public function insertRows($table, $rows)
+    public function insertRows($table, $rows, $excludeFields = [])
     {
         $this->reset();
         $query = 'INSERT INTO `'.$table.'`';
@@ -90,7 +89,11 @@ class BaseModel
         $columnNames      = array_keys(get_object_vars($rows[0]));
 
         // Bind column names
-        foreach ($columnNames as $columnName) {
+        foreach ($columnNames as $index => $columnName) {
+            if (in_array($columnName, $excludeFields)) {
+                unset($columnNames[$index]);
+                continue;
+            }
             $query              .= '`'.$columnName.'`,';
             $onDuplicateQuery[] = '`'.$columnName.'`='.' VALUES(`'.$columnName.'`)';
             $onDuplicateQuery[] = '`'.$columnName.'`='.' VALUES(`'.$columnName.'`)';
