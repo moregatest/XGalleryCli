@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -20,10 +20,10 @@ use XGallery\Utilities\FlickrHelper;
  *
  * @package XGallery\Applications\Commands\Flickr
  */
-class Photos extends AbstractCommandFlickr
+final class Photos extends AbstractCommandFlickr
 {
     /**
-     * @var stdClass
+     * @var string
      */
     private $nsid;
 
@@ -49,6 +49,9 @@ class Photos extends AbstractCommandFlickr
             ],
             'album' => [
                 'description' => 'Fetch photos from specific album. NSID is required to use Album',
+            ],
+            'gallery' => [
+                'description' => 'Fetch photos from specific gallery',
             ],
             'photo_ids' => [
                 'description' => 'Fetch photo from specific ids',
@@ -102,20 +105,41 @@ class Photos extends AbstractCommandFlickr
             return false;
         }
 
-        return $this->model->updateContact($this->nsid, ['modified' => DateTimeHelper::toMySql()]);
+        return true;
+    }
+
+    /**
+     * Update contact
+     *
+     * @return boolean|integer
+     */
+    protected function prepareUpdateContact()
+    {
+        $contact = $this->flickr->flickrPeopleGetInfo($this->nsid);
+
+        $total = null;
+        if ($contact) {
+            $total = $contact->person->photos->count->_content;
+        }
+
+        return $this->model->updateContact(
+            $this->nsid,
+            ['modified' => DateTimeHelper::toMySql(), 'total_photos' => $total]
+        );
     }
 
     /**
      * Get photos detail
      *
-     * @return array|boolean
+     * @return boolean
      */
     protected function processPhotos()
     {
         $photoIds = $this->getOption('photo_ids');
         $album    = $this->getOption('album');
+        $gallery  = $this->getOption('gallery');
 
-        if (!$album && $this->nsid) {
+        if ((!$album && !$gallery) && $this->nsid) {
             $this->log('Working on NSID: '.$this->nsid);
             $this->photos = $this->flickr->flickrPeopleGetAllPhotos($this->nsid);
 
@@ -158,11 +182,9 @@ class Photos extends AbstractCommandFlickr
         if ($album) {
             $this->log('Working on NSID: '.$this->nsid);
             $this->log('Working on album: '.$album);
-            $this->photos = $this->flickr->flickrPhotoSetsGetPhotos($album, $this->nsid);
+            $this->photos = $this->flickr->flickrPhotoSetsGetAllPhotos($album, $this->nsid);
 
             if ($this->photos) {
-                $this->photos = $this->photos->photoset->photo;
-
                 foreach ($this->photos as $index => $photo) {
                     $photo->owner         = $this->nsid;
                     $this->photos[$index] = $photo;
@@ -171,6 +193,22 @@ class Photos extends AbstractCommandFlickr
 
             return true;
         }
+
+        if ($gallery) {
+            $this->log('Working on gallery: '.$gallery);
+            $this->photos = $this->flickr->flickrGalleriesGetAllPhotos($gallery);
+
+            if ($this->photos) {
+                foreach ($this->photos as $index => $photo) {
+                    unset($photo->has_comment);
+                    $this->photos[$index] = $photo;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
