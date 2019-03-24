@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -14,6 +14,7 @@ use stdClass;
 use Symfony\Component\Filesystem\Filesystem;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Defines\DefinesFlickr;
+use XGallery\Factory;
 use XGallery\Utilities\DownloadHelper;
 use XGallery\Utilities\SystemHelper;
 
@@ -21,7 +22,7 @@ use XGallery\Utilities\SystemHelper;
  * Class PhotoDownload
  * @package XGallery\Applications\Cli\Commands\Flickr
  */
-class PhotoDownload extends AbstractCommandFlickr
+final class PhotoDownload extends AbstractCommandFlickr
 {
 
     /**
@@ -50,8 +51,8 @@ class PhotoDownload extends AbstractCommandFlickr
             'photo_id' => [
                 'description' => 'Download specific photo id',
             ],
-            'redownload' => [
-                'description' => 'Force redownload even if file already exists',
+            're_download' => [
+                'description' => 'Force re-download if file already exists and corrupted',
                 'default' => 1,
             ],
             'no_download' => [
@@ -76,12 +77,11 @@ class PhotoDownload extends AbstractCommandFlickr
         if ($photoId) {
             $this->log('Working on specific photo: '.$photoId);
         }
-        $this->photo = $this->model->getPhotoForDownload($photoId);
 
         if (!$this->photo = $this->model->getPhotoForDownload($photoId)) {
             $this->log('There is no photo', 'notice', $this->model->getErrors());
 
-            return false;
+            return -1;
         }
 
         if ($this->photo->params === null && $retry === true) {
@@ -110,6 +110,42 @@ class PhotoDownload extends AbstractCommandFlickr
     }
 
     /**
+     * Fetch specific photo
+     *
+     * @return boolean
+     */
+    protected function prepareGetPhoto()
+    {
+        $photoId = $this->getOption('photo_id');
+
+        $photo = $this->flickr->flickrPhotosGetInfo($photoId);
+        $photo = $photo->photo;
+
+        // Insert this new photo into database
+        $this->photo         = new stdClass;
+        $this->photo->id     = $photo->id;
+        $this->photo->owner  = $photo->owner->nsid;
+        $this->photo->secret = $photo->secret;
+        $this->photo->server = $photo->server;
+        $this->photo->farm   = $photo->farm;
+        $this->photo->title  = $photo->title->_content;
+
+        $this->model->insertPhotos([$this->photo]);
+
+        $this->log('Trying get photo size');
+        $process = SystemHelper::getProcess([
+            'php',
+            XGALLERY_ROOT.'/cli.php',
+            'flickr:photossize',
+            '--photo_ids='.$photo->id,
+        ]);
+        $process->start();
+        $process->wait();
+
+        return $this->preparePhoto();
+    }
+
+    /**
      * Pre process photo sizes
      *
      * @return boolean
@@ -128,6 +164,13 @@ class PhotoDownload extends AbstractCommandFlickr
 
             return false;
         }
+
+        /**
+         * WIP
+         */
+        $this->event->addPhoto($this->photo);
+        $dispatcher = Factory::getDispatcher();
+        $dispatcher->dispatch('onPreparePhoto', $this->event);
 
         $verifyMedia = $this->verifyMedia();
 
@@ -192,14 +235,14 @@ class PhotoDownload extends AbstractCommandFlickr
         if ($fileExists) {
             $this->log('Photo already exists: '.$saveTo, 'notice');
 
-            // Verify load and redownload if file is corrupted
+            // Verify load and re-download if file is corrupted
             $originalFilesize = filesize($saveTo);
             $remoteFilesize   = DownloadHelper::getFilesize($this->lastSize->source);
 
-            $this->log('Local filesize: '.$originalFilesize.' vs remote filesize: '.$remoteFilesize);
+            $this->log('Local file-size: '.$originalFilesize.' vs remote file-size: '.$remoteFilesize);
 
-            // Than we only re-download if corrupted and redownload is required
-            if ($originalFilesize != $remoteFilesize && $this->getOption('redownload') == 1) {
+            // Than we only re-download if corrupted and re-download is required
+            if ($originalFilesize != $remoteFilesize && $this->getOption('re_download') == 1) {
                 $this->log('Local file is corrupted: '.$saveTo.'. Re-downloading ...', 'notice');
 
                 if (!DownloadHelper::download($this->lastSize->source, $saveTo)) {
