@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -72,10 +72,8 @@ class Client extends Restful
 
     /**
      * @param $callback
-     *
-     * @return boolean
+     * @return boolean|string
      * @throws GuzzleException
-     * @throws InvalidArgumentException
      */
     public function getRequestToken($callback)
     {
@@ -91,10 +89,8 @@ class Client extends Restful
 
     /**
      * @param $callback
-     *
      * @return boolean|string
      * @throws GuzzleException
-     * @throws InvalidArgumentException
      */
     public function getRequestTokenUrl($callback)
     {
