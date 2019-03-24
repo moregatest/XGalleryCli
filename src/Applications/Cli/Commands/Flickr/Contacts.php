@@ -13,10 +13,9 @@ use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 
 /**
  * Class Contacts
- *
- * @package XGallery\Applications\Commands\Flickr
+ * @package XGallery\Applications\Cli\Commands\Flickr
  */
-class Contacts extends AbstractCommandFlickr
+final class Contacts extends AbstractCommandFlickr
 {
     /**
      * @var array
