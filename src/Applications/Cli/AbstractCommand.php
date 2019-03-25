@@ -29,19 +29,21 @@ abstract class AbstractCommand extends Command
     use HasLogger;
 
     /**
-     * Complete prepare. Move to next prepare
+     * Ignore this prepare. Move to next
      */
-    const NEXT_PREPARE = true;
+    const NEXT_PREPARE = 1;
 
     /**
      * Prepare failed. Escape prepare with failed
      */
     const PREPARE_FAILED = false;
 
+    const PREPARE_SUCCEED = true;
+
     /**
      * Complete prepare. Move to process directly
      */
-    const SKIP_PREPARE = 1;
+    const SKIP_PREPARE = 2;
 
     /**
      * @var array
@@ -163,8 +165,10 @@ abstract class AbstractCommand extends Command
             if ($return === self::PREPARE_FAILED) {
                 return false;
             } elseif ($return === self::NEXT_PREPARE) {
+                $this->log('Skip this prepare. Move to next');
                 continue;
             } elseif ($return === self::SKIP_PREPARE) {
+                $this->log('Skip prepare. Move to process');
                 return true;
             }
         }
