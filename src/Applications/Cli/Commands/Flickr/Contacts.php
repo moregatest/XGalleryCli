@@ -48,12 +48,12 @@ final class Contacts extends AbstractCommandFlickr
         if (!$this->contacts || empty($this->contacts)) {
             $this->log('Can not get contacts or empty', 'notice');
 
-            return false;
+            return self::PREPARE_FAILED;
         }
 
         $this->log("Total contacts: ".count($this->contacts));
 
-        return true;
+        return self::SKIP_PREPARE;
     }
 
     /**
