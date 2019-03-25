@@ -20,6 +20,8 @@ use XGallery\Utilities\SystemHelper;
 
 /**
  * Class PhotoDownload
+ * Download a specific photo
+ *
  * @package XGallery\Applications\Cli\Commands\Flickr
  */
 final class PhotoDownload extends AbstractCommandFlickr
@@ -68,7 +70,7 @@ final class PhotoDownload extends AbstractCommandFlickr
      *
      * @return boolean
      */
-    protected function preparePhoto()
+    protected function prepareGetPhoto()
     {
         static $retry = false;
 
@@ -81,7 +83,7 @@ final class PhotoDownload extends AbstractCommandFlickr
         if (!$this->photo = $this->model->getPhotoForDownload($photoId)) {
             $this->log('There is no photo', 'notice', $this->model->getErrors());
 
-            return -1;
+            return self::NEXT_PREPARE;
         }
 
         if ($this->photo->params === null && $retry === true) {
@@ -114,7 +116,7 @@ final class PhotoDownload extends AbstractCommandFlickr
      *
      * @return boolean
      */
-    protected function prepareGetPhoto()
+    protected function prepareGetOnlinePhoto()
     {
         $photoId = $this->getOption('photo_id');
 
@@ -139,10 +141,9 @@ final class PhotoDownload extends AbstractCommandFlickr
             'flickr:photossize',
             '--photo_ids='.$photo->id,
         ]);
-        $process->start();
-        $process->wait();
+        $process->run();
 
-        return $this->preparePhoto();
+        return $this->prepareGetPhoto();
     }
 
     /**
@@ -188,7 +189,7 @@ final class PhotoDownload extends AbstractCommandFlickr
     /**
      * Validate media type
      *
-     * @return boolean
+     * @return boolean|integer
      */
     private function verifyMedia()
     {
