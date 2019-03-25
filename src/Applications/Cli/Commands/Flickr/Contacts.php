@@ -13,6 +13,8 @@ use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 
 /**
  * Class Contacts
+ * Insert all contacts from current user into database
+ *
  * @package XGallery\Applications\Cli\Commands\Flickr
  */
 final class Contacts extends AbstractCommandFlickr
@@ -23,6 +25,8 @@ final class Contacts extends AbstractCommandFlickr
     private $contacts;
 
     /**
+     * Configures the current command.
+     *
      * @throws ReflectionException
      */
     protected function configure()
@@ -53,6 +57,8 @@ final class Contacts extends AbstractCommandFlickr
     }
 
     /**
+     * Insert all contacts
+     *
      * @return boolean
      */
     protected function processInsertContacts()
