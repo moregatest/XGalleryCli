@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -48,7 +48,7 @@ class ModelFlickr extends BaseModel
      */
     public function insertPhotos($photos)
     {
-        return $this->insertRows('xgallery_flickr_photos', $photos);
+        return $this->insertRows('xgallery_flickr_photos', $photos, ['is_primary', 'isprimary']);
     }
 
     /**
@@ -196,6 +196,26 @@ class ModelFlickr extends BaseModel
         } catch (DBALException $exception) {
             $this->errors[] = $exception->getMessage();
 
+            return false;
+        }
+    }
+
+    /**
+     * @param $id
+     * @return mixed
+     */
+    public function getPhotoById($id)
+    {
+        $queryBuilder = $this->connection->createQueryBuilder();
+        $queryBuilder->select('*')
+            ->from('`xgallery_flickr_photos`')
+            ->where('`id` = ?');
+
+        try {
+            $this->reset();
+
+            return $this->connection->executeQuery($queryBuilder, [$id])->fetch(FetchMode::STANDARD_OBJECT);
+        } catch (DBALException $exception) {
             return false;
         }
     }

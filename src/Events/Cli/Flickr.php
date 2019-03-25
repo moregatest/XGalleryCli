@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -16,4 +16,13 @@ use XGallery\Events\CliEvent;
  */
 class Flickr extends CliEvent
 {
+    /**
+     * @var \stdClass
+     */
+    private $photo;
+
+    public function addPhoto($photo)
+    {
+        $this->photo = $photo;
+    }
 }

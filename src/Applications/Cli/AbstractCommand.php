@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -27,6 +27,21 @@ abstract class AbstractCommand extends Command
 {
     use HasObject;
     use HasLogger;
+
+    /**
+     * Complete prepare. Move to next prepare
+     */
+    const NEXT_PREPARE = true;
+
+    /**
+     * Prepare failed. Escape prepare with failed
+     */
+    const PREPARE_FAILED = false;
+
+    /**
+     * Complete prepare. Move to process directly
+     */
+    const SKIP_PREPARE = 1;
 
     /**
      * @var array
@@ -112,7 +127,7 @@ abstract class AbstractCommand extends Command
         $this->output = $output;
 
         // Can not prepare then exit execute
-        if ($this->prepare() === false) {
+        if ($this->prepare() === self::PREPARE_FAILED) {
             $this->log('Prepare failed', 'notice', [], true);
 
             return 1;
@@ -125,6 +140,8 @@ abstract class AbstractCommand extends Command
 
     /**
      * Prepare data before execute command
+     *
+     * @return boolean
      */
     protected function prepare()
     {
@@ -143,12 +160,12 @@ abstract class AbstractCommand extends Command
 
             $return = call_user_func([$this, $class]);
 
-            if ($return === false) {
+            if ($return === self::PREPARE_FAILED) {
                 return false;
-            } elseif ($return === 1) { // Force return prepare succeed
-                return true;
-            } elseif ($return === -1) { // Process next prepare
+            } elseif ($return === self::NEXT_PREPARE) {
                 continue;
+            } elseif ($return === self::SKIP_PREPARE) {
+                return true;
             }
         }
 

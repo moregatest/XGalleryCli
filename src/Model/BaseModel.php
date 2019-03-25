@@ -13,6 +13,10 @@ use Doctrine\DBAL\DBALException;
 use Monolog\Logger;
 use XGallery\Factory;
 
+/**
+ * Class BaseModel
+ * @package XGallery\Model
+ */
 class BaseModel
 {
 

@@ -1,17 +1,17 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
 namespace XGallery\Applications\Cli\Commands;
 
-use Doctrine\DBAL\DBALException;
 use ReflectionException;
 use XGallery\Applications\Cli\AbstractCommand;
 use XGallery\Factory;
+use XGallery\Model\ModelFlickr;
 use XGallery\Webservices\Services\Flickr;
 
 /**
@@ -27,12 +27,18 @@ abstract class AbstractCommandPhotos extends AbstractCommand
     protected $flickr;
 
     /**
+     * @var ModelFlickr
+     */
+    protected $model;
+
+    /**
      * @throws ReflectionException
      */
     protected function configure()
     {
         $this->setName('photos:'.strtolower($this->getClassName()));
         $this->flickr = Factory::getServices('flickr');
+        $this->model  = ModelFlickr::getInstance();
 
         parent::configure();
     }
@@ -43,14 +49,11 @@ abstract class AbstractCommandPhotos extends AbstractCommand
      */
     protected function executeComplete($status)
     {
-        $this->connection->close();
-
         parent::executeComplete($status);
     }
 
     /**
      * @return boolean
-     * @throws DBALException
      */
     protected function prepare()
     {

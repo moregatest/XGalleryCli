@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -9,7 +9,6 @@
 namespace XGallery\Applications\Cli\Commands\Photos;
 
 use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\FetchMode;
 use Gumlet\ImageResize;
 use Gumlet\ImageResizeException;
 use ReflectionException;
@@ -105,17 +104,10 @@ class FlickrResize extends AbstractCommandPhotos
             return $this->preparePhoto();
         }
 
-        try {
-            $this->photo = $this->connection->executeQuery(
-                'SELECT `id`, `owner`, `params` FROM `xgallery_flickr_photos` WHERE `id` = ? LIMIT 1',
-                [$this->photoId]
-            )->fetch(FetchMode::STANDARD_OBJECT);
-        } catch (DBALException $exception) {
-            $this->log($exception->getMessage(), 'error');
-        }
+        $this->photo = $this->model->getPhotoById($this->photoId);
 
         if (!$this->photo) {
-            $this->log('Can not get photo from database', 'notice');
+            $this->log('Can not get photo from database', 'notice', $this->model->getErrors());
 
             return false;
         }
@@ -146,6 +138,8 @@ class FlickrResize extends AbstractCommandPhotos
 
         $fileName        = basename($lastSize->source);
         $this->localFile = getenv('flickr_storage').'/'.$this->photo->owner.'/'.$fileName;
+
+        return true;
     }
 
     /**

@@ -1,15 +1,13 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
 namespace XGallery\Applications\Cli\Commands\Photos;
 
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\FetchMode;
 use Gumlet\ImageResize;
 use ReflectionException;
 use Symfony\Component\Process\Exception\RuntimeException;
@@ -82,6 +80,8 @@ class FlickrResizes extends AbstractCommandPhotos
 
             return false;
         }
+
+        return true;
     }
 
     /**
@@ -137,36 +137,6 @@ class FlickrResizes extends AbstractCommandPhotos
     /**
      * @return boolean
      */
-    protected function preparePhotosFromDb()
-    {
-        $query = 'SELECT `id` FROM `xgallery_flickr_photos` WHERE `status` > 0 AND `params` IS NOT NULL ';
-
-        // Specific NSID
-        if ($this->nsid) {
-            $this->log('Working on NSID: '.$this->nsid);
-            $query .= ' AND owner = ?';
-        }
-
-        $query .= ' LIMIT '.(int)$this->getOption('limit');
-
-        try {
-            if ($this->nsid) {
-                $this->photos = $this->connection->executeQuery($query, [$this->nsid])->fetchAll(FetchMode::COLUMN);
-            } else {
-                $this->photos = $this->connection->executeQuery($query)->fetchAll(FetchMode::COLUMN);
-            }
-
-            return 1;
-        } catch (DBALException $exception) {
-            $this->log($exception->getMessage(), 'error');
-        }
-
-        return false;
-    }
-
-    /**
-     * @return boolean
-     */
     protected function processResize()
     {
         if (!$this->photos || empty($this->photos)) {
@@ -191,8 +161,7 @@ class FlickrResizes extends AbstractCommandPhotos
                     null,
                     DefinesCore::MAX_EXECUTE_TIME
                 );
-                $process->start();
-                $process->wait();
+                $process->run();
                 $this->progressBar->advance();
                 $this->log('Process completed: '.$photoId);
             } catch (RuntimeException $exception) {

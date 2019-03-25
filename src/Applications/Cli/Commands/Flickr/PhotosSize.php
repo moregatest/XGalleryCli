@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -69,11 +69,7 @@ class PhotosSize extends AbstractCommandFlickr
     {
         $this->nsid = FlickrHelper::getNsid($this->getOption('nsid'));
 
-        if ($this->getOption('album') && !$this->nsid) {
-            $this->log('Missing NSID for album', 'notice');
-
-            return false;
-        }
+        return self::NEXT_PREPARE;
     }
 
     /**
@@ -84,20 +80,20 @@ class PhotosSize extends AbstractCommandFlickr
         $album = $this->getOption('album');
 
         if (!$album) {
-            return -1;
+            return self::NEXT_PREPARE;
         }
 
         $photos = $this->flickr->flickrPhotoSetsGetPhotos($album, $this->nsid);
 
         if (!$photos) {
-            return false;
+            return self::NEXT_PREPARE;
         }
 
         foreach ($photos->photoset->photo as $photo) {
             $this->photos[] = $photo->id;
         }
 
-        return 1;
+        return self::SKIP_PREPARE;
     }
 
     /**
@@ -109,7 +105,7 @@ class PhotosSize extends AbstractCommandFlickr
 
         // Skip
         if (!$photoIds) {
-            return -1;
+            return self::NEXT_PREPARE;
         }
 
         $process = SystemHelper::getProcess([
@@ -122,7 +118,7 @@ class PhotosSize extends AbstractCommandFlickr
 
         $this->photos = explode(',', $photoIds);
 
-        return 1;
+        return self::SKIP_PREPARE;
     }
 
     /**
@@ -144,10 +140,10 @@ class PhotosSize extends AbstractCommandFlickr
         if (!$this->photos || empty($this->photos)) {
             $this->log('There are no photos', 'notice', $this->model->getErrors());
 
-            return false;
+            return self::PREPARE_FAILED;
         }
 
-        return true;
+        return self::NEXT_PREPARE;
     }
 
     /**

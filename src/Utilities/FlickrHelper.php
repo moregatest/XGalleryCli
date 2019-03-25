@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -35,5 +35,24 @@ class FlickrHelper
         }
 
         return $id;
+    }
+
+    /**
+     * Get all photos in Album via URL
+     *
+     * @param $albumUrl
+     * @return array
+     */
+    public static function getAlbumPhotos($albumUrl)
+    {
+        $parts   = explode('/', $albumUrl);
+        $nsid    = self::getNsid($albumUrl);
+        $albumId = end($parts);
+
+        return [
+            'nsid' => $nsid,
+            'album' => $albumId,
+            'photos' => Factory::getServices('flickr')->flickrPhotoSetsGetAllPhotos($albumId, $nsid),
+        ];
     }
 }

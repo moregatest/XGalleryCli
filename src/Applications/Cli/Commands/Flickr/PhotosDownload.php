@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -45,7 +45,10 @@ class PhotosDownload extends AbstractCommandFlickr
                 'description' => 'Fetch photos from specific NSID',
             ],
             'album' => [
-                'description' => 'Fetch photos from specific album. NSID is required to use Album',
+                'description' => 'Fetch photos from specific album',
+            ],
+            'gallery' => [
+                'description' => 'Fetch photos from specific gallery',
             ],
             'photo_ids' => [
                 'description' => 'Fetch photo from specific ids',
@@ -70,11 +73,7 @@ class PhotosDownload extends AbstractCommandFlickr
     {
         $this->nsid = FlickrHelper::getNsid($this->getOption('nsid'));
 
-        if ($this->getOption('album') && !$this->nsid) {
-            $this->log('Missing NSID for album', 'notice');
-
-            return false;
-        }
+        return self::NEXT_PREPARE;
     }
 
     /**
@@ -88,20 +87,47 @@ class PhotosDownload extends AbstractCommandFlickr
 
         // Skip
         if (!$album) {
-            return -1;
+            return self::NEXT_PREPARE;
         }
 
-        $photos = $this->flickr->flickrPhotoSetsGetPhotos($album, $this->nsid);
+        $photos = FlickrHelper::getAlbumPhotos($album);
 
-        if (!$photos) {
-            return false;
+        if (!$photos || !$photos['photos']) {
+            return self::NEXT_PREPARE;
         }
 
-        foreach ($photos->photoset->photo as $photo) {
+        foreach ($photos['photos'] as $photo) {
             $this->photos[] = $photo->id;
         }
 
-        return 1;
+        return self::SKIP_PREPARE;
+    }
+
+    /**
+     * Get photo IDs from gallery
+     *
+     * @return boolean|integer
+     */
+    protected function preparePhotosFromGallery()
+    {
+        $gallery = $this->getOption('gallery');
+
+        // Skip
+        if (!$gallery) {
+            return self::NEXT_PREPARE;
+        }
+
+        $photos = $this->flickr->flickrGalleriesGetAllPhotos($gallery);
+
+        if (!$photos) {
+            return self::NEXT_PREPARE;
+        }
+
+        foreach ($photos as $photo) {
+            $this->photos[] = $photo->id;
+        }
+
+        return self::SKIP_PREPARE;
     }
 
     /**
@@ -115,14 +141,14 @@ class PhotosDownload extends AbstractCommandFlickr
         $photoIds = $this->getOption('photo_ids');
 
         if (!$photoIds) {
-            return -1;
+            return self::NEXT_PREPARE;
         }
 
         SystemHelper::getProcess(['php', XGALLERY_ROOT.'/cli.php', 'flickr:photos', '--photo_ids='.$photoIds])->run();
 
         $this->photos = explode(',', $photoIds);
 
-        return 1;
+        return self::SKIP_PREPARE;
     }
 
     /**
@@ -141,10 +167,10 @@ class PhotosDownload extends AbstractCommandFlickr
         if (!$this->photos || empty($this->photos)) {
             $this->log('There are no photos', 'notice', $this->model->getErrors());
 
-            return false;
+            return self::PREPARE_FAILED;
         }
 
-        return true;
+        return self::NEXT_PREPARE;
     }
 
     /**

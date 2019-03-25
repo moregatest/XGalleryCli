@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -9,7 +9,6 @@
 namespace XGallery\Webservices\Services;
 
 use GuzzleHttp\Exception\GuzzleException;
-use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\DomCrawler\Crawler;
 use XGallery\Webservices\Restful;
 
@@ -22,10 +21,9 @@ class Nct extends Restful
     private $endpoint = 'https://www.nhaccuatui.com';
 
     /**
-     * @param $conditions
-     * @return array|bool
+     * @param array $conditions
+     * @return array|boolean
      * @throws GuzzleException
-     * @throws InvalidArgumentException
      */
     public function search($conditions)
     {

@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -9,11 +9,11 @@
 namespace XGallery\Webservices\Services;
 
 use GuzzleHttp\Exception\GuzzleException;
-use Psr\Cache\InvalidArgumentException;
 use SimpleXMLElement;
 use XGallery\Webservices\Oauth\Oauth1\Client;
 use XGallery\Webservices\Services\Flickr\Traits\HasActivity;
 use XGallery\Webservices\Services\Flickr\Traits\HasContacts;
+use XGallery\Webservices\Services\Flickr\Traits\HasGalleries;
 use XGallery\Webservices\Services\Flickr\Traits\HasPeople;
 use XGallery\Webservices\Services\Flickr\Traits\HasPhotos;
 use XGallery\Webservices\Services\Flickr\Traits\HasPhotoSets;
@@ -33,6 +33,7 @@ class Flickr extends Client
     use HasPeople;
     use HasPhotos;
     use HasPhotoSets;
+    use HasGalleries;
     use HasContacts;
 
     const OAUTH_REQUEST_TOKEN_ENDPOINT = 'https://www.flickr.com/services/oauth/request_token';
@@ -70,10 +71,8 @@ class Flickr extends Client
     /**
      * @param       $parameters
      * @param array $options
-     *
-     * @return boolean|mixed
+     * @return boolean|mixed|string
      * @throws GuzzleException
-     * @throws InvalidArgumentException
      */
     public function rest($parameters, $options = [])
     {
@@ -110,10 +109,8 @@ class Flickr extends Client
     /**
      * @param       $imageFile
      * @param array $options
-     *
-     * @return bool|SimpleXMLElement
+     * @return boolean|SimpleXMLElement
      * @throws GuzzleException
-     * @throws InvalidArgumentException
      */
     public function upload($imageFile, $options = [])
     {
@@ -146,9 +143,8 @@ class Flickr extends Client
      * @param       $imageFile
      * @param       $photoId
      * @param array $options
-     * @return bool|SimpleXMLElement
+     * @return boolean|SimpleXMLElement
      * @throws GuzzleException
-     * @throws InvalidArgumentException
      */
     public function replace($imageFile, $photoId, $options = [])
     {

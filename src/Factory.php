@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -136,6 +136,8 @@ class Factory
     }
 
     /**
+     * Get dispatcher instance
+     *
      * @return EventDispatcher
      */
     public static function getDispatcher()
@@ -152,6 +154,8 @@ class Factory
     }
 
     /**
+     * Get template
+     *
      * @param string $dirPattern
      * @return PhpEngine
      */

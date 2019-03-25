@@ -1,7 +1,7 @@
 <?php
 /**
  * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
+ * @author  Viet Vu <jooservices@gmail.com>
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
@@ -31,6 +31,11 @@ abstract class AbstractCommandFlickr extends AbstractCommand
     protected $model;
 
     /**
+     * @var \XGallery\Events\Cli\Flickr
+     */
+    protected $event;
+
+    /**
      * @throws ReflectionException
      */
     protected function configure()
@@ -38,6 +43,7 @@ abstract class AbstractCommandFlickr extends AbstractCommand
         $this->setName('flickr:'.strtolower($this->getClassName()));
         $this->flickr = Factory::getServices('flickr');
         $this->model  = ModelFlickr::getInstance();
+        $this->event  = new \XGallery\Events\Cli\Flickr;
 
         parent::configure();
     }
