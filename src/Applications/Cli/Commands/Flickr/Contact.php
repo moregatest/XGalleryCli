@@ -15,6 +15,8 @@ use XGallery\Utilities\FlickrHelper;
 
 /**
  * Class Contact
+ * Insert a contact into database
+ *
  * @package XGallery\Applications\Cli\Commands\Flickr
  */
 final class Contact extends AbstractCommandFlickr
@@ -25,6 +27,8 @@ final class Contact extends AbstractCommandFlickr
     private $contact;
 
     /**
+     * Configures the current command.
+     *
      * @throws ReflectionException
      */
     protected function configure()
@@ -46,10 +50,16 @@ final class Contact extends AbstractCommandFlickr
      */
     protected function prepareContact()
     {
-        $this->contact = $this->flickr->flickrPeopleGetInfo(FlickrHelper::getNsid($this->getOption('nsid')));
+        $nsid = $this->getOption('nsid');
+
+        if ($nsid === null) {
+            return false;
+        }
+
+        $this->contact = $this->flickr->flickrPeopleGetInfo(FlickrHelper::getNsid($nsid));
 
         if (!$this->contact) {
-            $this->log('Can not get contact or empty', 'notice');
+            $this->log('Can not get contact', 'notice');
 
             return false;
         }
