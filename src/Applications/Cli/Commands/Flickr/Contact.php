@@ -61,10 +61,10 @@ final class Contact extends AbstractCommandFlickr
         if (!$this->contact) {
             $this->log('Can not get contact', 'notice');
 
-            return false;
+            return self::PREPARE_FAILED;
         }
 
-        return true;
+        return self::SKIP_PREPARE;
     }
 
     /**
