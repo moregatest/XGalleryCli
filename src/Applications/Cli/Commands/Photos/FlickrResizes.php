@@ -11,11 +11,10 @@ namespace XGallery\Applications\Cli\Commands\Photos;
 use Gumlet\ImageResize;
 use ReflectionException;
 use Symfony\Component\Process\Exception\RuntimeException;
-use Symfony\Component\Process\Process;
 use XGallery\Applications\Cli\Commands\AbstractCommandPhotos;
-use XGallery\Defines\DefinesCore;
 use XGallery\Defines\DefinesFlickr;
 use XGallery\Utilities\FlickrHelper;
+use XGallery\Utilities\SystemHelper;
 
 /**
  * Class FlickrResizes
@@ -43,7 +42,10 @@ class FlickrResizes extends AbstractCommandPhotos
                 'description' => 'Resize photos from specific NSID',
             ],
             'album' => [
-                'description' => 'Resize photos from specific album. NSID is required to use Album',
+                'description' => 'Resize photos from specific album',
+            ],
+            'gallery' => [
+                'description' => 'Resize photos from specific gallery URL',
             ],
             'photo_ids' => [
                 'description' => 'Resize photo from specific ids',
@@ -92,20 +94,47 @@ class FlickrResizes extends AbstractCommandPhotos
         $album = $this->getOption('album');
 
         if (!$album) {
-            return -1;
+            return self::NEXT_PREPARE;
         }
 
         $photos = $this->flickr->flickrPhotoSetsGetPhotos($album, $this->nsid);
 
         if (!$photos) {
-            return false;
+            return self::PREPARE_FAILED;
         }
 
         foreach ($photos->photoset->photo as $photo) {
             $this->photos[] = $photo->id;
         }
 
-        return 1;
+        return self::NEXT_PREPARE;
+    }
+
+    /**
+     * Get photo IDs from gallery
+     *
+     * @return boolean|integer
+     */
+    protected function preparePhotosFromGallery()
+    {
+        $gallery = $this->getOption('gallery');
+
+        // Skip
+        if (!$gallery) {
+            return self::NEXT_PREPARE;
+        }
+
+        $photos = $this->flickr->flickrGalleriesGetAllPhotos($gallery);
+
+        if (!$photos) {
+            return self::NEXT_PREPARE;
+        }
+
+        foreach ($photos as $photo) {
+            $this->photos[] = $photo->id;
+        }
+
+        return self::SKIP_PREPARE;
     }
 
     /**
@@ -116,22 +145,14 @@ class FlickrResizes extends AbstractCommandPhotos
         $photoIds = $this->getOption('photo_ids');
 
         if (!$photoIds) {
-            return -1;
+            return self::SKIP_PREPARE;
         }
 
-        $process = new Process(
-            ['php', XGALLERY_ROOT.'/cli.php', 'flickr:photos', '--photo_ids='.$photoIds],
-            null,
-            null,
-            null,
-            DefinesCore::MAX_EXECUTE_TIME
-        );
-        $process->start();
-        $process->wait();
+        SystemHelper::getProcess(['php', XGALLERY_ROOT.'/cli.php', 'flickr:photos', '--photo_ids='.$photoIds])->run();
 
         $this->photos = explode(',', $photoIds);
 
-        return 1;
+        return self::NEXT_PREPARE;
     }
 
     /**
@@ -144,24 +165,23 @@ class FlickrResizes extends AbstractCommandPhotos
         }
 
         $this->log('Total photos: '.count($this->photos));
+        $limit = $this->getOption('limit');
 
-        if (count($this->photos) > $this->getOption('limit')) {
-            $this->log('Over LIMIT. Reduced to '.$this->getOption('limit'), 'notice');
-            $this->photos = array_slice($this->photos, 0, 1000);
+        if (count($this->photos) > $limit) {
+            $this->log('Over LIMIT. Reduced to '.$limit, 'notice');
+            $this->photos = array_slice($this->photos, 0, $limit);
         }
 
         foreach ($this->photos as $photoId) {
             $this->log('Sending request: '.$photoId);
 
             try {
-                $process = new Process(
-                    ['php', XGALLERY_ROOT.'/cli.php', 'photos:flickrresize', '--photo_id='.$photoId],
-                    null,
-                    null,
-                    null,
-                    DefinesCore::MAX_EXECUTE_TIME
-                );
-                $process->run();
+                SystemHelper::getProcess([
+                    'php',
+                    XGALLERY_ROOT.'/cli.php',
+                    'photos:flickrresize',
+                    '--photo_id='.$photoId,
+                ])->run();
                 $this->progressBar->advance();
                 $this->log('Process completed: '.$photoId);
             } catch (RuntimeException $exception) {

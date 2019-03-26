@@ -14,9 +14,8 @@ use Gumlet\ImageResizeException;
 use ReflectionException;
 use stdClass;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Process\Process;
 use XGallery\Applications\Cli\Commands\AbstractCommandPhotos;
-use XGallery\Defines\DefinesCore;
+use XGallery\Utilities\SystemHelper;
 
 /**
  * Class FlickrResize
@@ -24,22 +23,24 @@ use XGallery\Defines\DefinesCore;
  */
 class FlickrResize extends AbstractCommandPhotos
 {
-    /**
-     * @var integer
-     */
-    private $photoId;
 
     /**
+     * Photo object
+     *
      * @var stdClass
      */
     private $photo;
 
     /**
+     * Full path local file
+     *
      * @var string
      */
     private $localFile;
 
     /**
+     * Configures the current command.
+     *
      * @throws ReflectionException
      */
     protected function configure()
@@ -67,22 +68,24 @@ class FlickrResize extends AbstractCommandPhotos
     }
 
     /**
-     * @return bool|mixed
+     * Prepare photo before resize
+     *
+     * @return boolean|mixed
      * @throws DBALException
      */
     protected function preparePhoto()
     {
         static $retry = false;
 
-        $this->photoId = $this->getOption('photo_id');
+        $photoId = $this->getOption('photo_id');
 
-        if (!$this->photoId) {
+        if (!$photoId) {
             $this->log('No photo id provided', 'notice');
 
-            return false;
+            return self::PREPARE_FAILED;
         }
 
-        $this->log('Work on photo id: '.$this->photoId);
+        $this->log('Work on photo id: '.$photoId);
 
         if (!$retry) {
             $this->log('Try to download photo');
@@ -91,39 +94,38 @@ class FlickrResize extends AbstractCommandPhotos
             /**
              * @TODO Support skip re-download
              */
-            $process = new Process(
-                ['php', XGALLERY_ROOT.'/cli.php', 'flickr:photodownload', '--photo_id='.$this->photoId],
-                null,
-                null,
-                null,
-                DefinesCore::MAX_EXECUTE_TIME
-            );
-            $process->start();
-            $process->wait();
+            SystemHelper::getProcess([
+                'php',
+                XGALLERY_ROOT.'/cli.php',
+                'flickr:photodownload',
+                '--photo_id='.$photoId,
+            ])->run();
 
             return $this->preparePhoto();
         }
 
-        $this->photo = $this->model->getPhotoById($this->photoId);
+        $this->photo = $this->model->getPhotoById($photoId);
 
         if (!$this->photo) {
             $this->log('Can not get photo from database', 'notice', $this->model->getErrors());
 
-            return false;
+            return self::PREPARE_FAILED;
         }
 
         if ($this->photo->params === null && $retry === true) {
             $this->log('Photo have no params', 'notice');
 
-            return false;
+            return self::PREPARE_FAILED;
         }
 
         $this->photo->params = json_decode($this->photo->params);
 
-        return true;
+        return self::NEXT_PREPARE;
     }
 
     /**
+     * Verify media file
+     *
      * @return boolean
      */
     protected function prepareMediaFile()
@@ -139,11 +141,11 @@ class FlickrResize extends AbstractCommandPhotos
         $fileName        = basename($lastSize->source);
         $this->localFile = getenv('flickr_storage').'/'.$this->photo->owner.'/'.$fileName;
 
-        return true;
+        return self::PREPARE_SUCCEED;
     }
 
     /**
-     * @return bool
+     * @return boolean
      * @throws ImageResizeException
      */
     protected function processResize()

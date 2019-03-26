@@ -129,6 +129,7 @@ abstract class AbstractCommand extends Command
         $this->output = $output;
 
         // Can not prepare then exit execute
+
         if ($this->prepare() === self::PREPARE_FAILED) {
             $this->log('Prepare failed', 'notice', [], true);
 
@@ -159,7 +160,6 @@ abstract class AbstractCommand extends Command
             }
 
             $this->log($class.' ...');
-
             $return = call_user_func([$this, $class]);
 
             if ($return === self::PREPARE_FAILED) {

@@ -48,7 +48,7 @@ class ModelFlickr extends BaseModel
      */
     public function insertPhotos($photos)
     {
-        return $this->insertRows('xgallery_flickr_photos', $photos, ['is_primary', 'isprimary']);
+        return $this->insertRows('xgallery_flickr_photos', $photos, ['is_primary', 'isprimary','date_faved']);
     }
 
     /**
