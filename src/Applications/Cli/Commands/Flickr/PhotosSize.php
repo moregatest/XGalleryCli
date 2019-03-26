@@ -22,16 +22,22 @@ use XGallery\Utilities\SystemHelper;
 class PhotosSize extends AbstractCommandFlickr
 {
     /**
+     * User ID
+     *
      * @var string
      */
     private $nsid;
 
     /**
+     * Array of photo IDs
+     *
      * @var array
      */
     private $photos;
 
     /**
+     * Configures the current command.
+     *
      * @throws ReflectionException
      */
     protected function configure()
@@ -73,6 +79,8 @@ class PhotosSize extends AbstractCommandFlickr
     }
 
     /**
+     * Get photo IDs from Album
+     *
      * @return boolean|integer
      */
     protected function preparePhotosFromAlbum()
@@ -83,13 +91,13 @@ class PhotosSize extends AbstractCommandFlickr
             return self::NEXT_PREPARE;
         }
 
-        $photos = $this->flickr->flickrPhotoSetsGetPhotos($album, $this->nsid);
+        $photos = FlickrHelper::getAlbumPhotos($album);
 
         if (!$photos) {
             return self::NEXT_PREPARE;
         }
 
-        foreach ($photos->photoset->photo as $photo) {
+        foreach ($photos as $photo) {
             $this->photos[] = $photo->id;
         }
 
@@ -97,6 +105,8 @@ class PhotosSize extends AbstractCommandFlickr
     }
 
     /**
+     * Fetch photos from specific ids
+     *
      * @return boolean
      */
     protected function preparePhotosFromIds()
@@ -122,6 +132,8 @@ class PhotosSize extends AbstractCommandFlickr
     }
 
     /**
+     * Get photos from database
+     *
      * @return boolean
      */
     protected function preparePhotosFromDb()
@@ -143,7 +155,7 @@ class PhotosSize extends AbstractCommandFlickr
             return self::PREPARE_FAILED;
         }
 
-        return self::NEXT_PREPARE;
+        return self::PREPARE_SUCCEED;
     }
 
     /**
