@@ -23,16 +23,22 @@ use XGallery\Utilities\FlickrHelper;
 final class Photos extends AbstractCommandFlickr
 {
     /**
+     * User ID
+     *
      * @var string
      */
     private $nsid;
 
     /**
+     * Array photo ids
+     *
      * @var array
      */
     private $photos = [];
 
     /**
+     * Total photos
+     *
      * @var integer
      */
     private $totalPhotos = 0;
