@@ -25,11 +25,15 @@ class PhotosDownload extends AbstractCommandFlickr
 {
 
     /**
+     * User ID
+     *
      * @var string
      */
     private $nsid;
 
     /**
+     * Array of photo IDs
+     *
      * @var array
      */
     private $photos;
@@ -170,7 +174,7 @@ class PhotosDownload extends AbstractCommandFlickr
             return self::PREPARE_FAILED;
         }
 
-        return self::NEXT_PREPARE;
+        return self::PREPARE_SUCCEED;
     }
 
     /**
