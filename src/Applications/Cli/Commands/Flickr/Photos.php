@@ -210,6 +210,11 @@ final class Photos extends AbstractCommandFlickr
 
         $this->log('Working on NSID: '.$this->nsid);
         $this->photos = $this->flickr->flickrPeopleGetAllPhotos($this->nsid);
+        $favoritePhotos = FlickrHelper::getAllFavorities($this->nsid);
+
+        if ($favoritePhotos) {
+            $this->photos = array_merge($this->photos, $favoritePhotos);
+        }
 
         return self::NEXT_PREPARE;
     }
