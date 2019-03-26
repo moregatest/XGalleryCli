@@ -20,6 +20,8 @@ use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 final class Contacts extends AbstractCommandFlickr
 {
     /**
+     * Array of contact object
+     *
      * @var array
      */
     private $contacts;
@@ -53,7 +55,7 @@ final class Contacts extends AbstractCommandFlickr
 
         $this->log("Total contacts: ".count($this->contacts));
 
-        return self::SKIP_PREPARE;
+        return self::PREPARE_SUCCEED;
     }
 
     /**
