@@ -17,7 +17,9 @@ trait HasUrls
 {
 
     /**
-     * @param       $parameters
+     * Call RESTful
+     *
+     * @param array $parameters
      * @param array $options
      *
      * @return mixed
@@ -25,7 +27,7 @@ trait HasUrls
     abstract public function rest($parameters, $options = []);
 
     /**
-     * @param $groupId
+     * @param string $groupId
      *
      * @return mixed
      */
@@ -70,9 +72,10 @@ trait HasUrls
     }
 
     /**
-     * @param $url
+     * Get gallery info from URL
      *
-     * @return mixed
+     * @param string $url
+     * @return mixed|string
      */
     public function flickrUrlsLookupGallery($url)
     {
@@ -85,9 +88,10 @@ trait HasUrls
     }
 
     /**
-     * @param $url
+     * Get group NSID from URL
      *
-     * @return mixed
+     * @param string $url
+     * @return mixed|string
      */
     public function flickrUrlsLookupGroup($url)
     {
@@ -100,9 +104,10 @@ trait HasUrls
     }
 
     /**
-     * @param $url
+     * Get user NSID from URL
      *
-     * @return mixed
+     * @param string $url
+     * @return mixed|string
      */
     public function flickrUrlsLookupUser($url)
     {

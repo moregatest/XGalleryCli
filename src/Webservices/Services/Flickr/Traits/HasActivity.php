@@ -17,7 +17,9 @@ trait HasActivity
 {
 
     /**
-     * @param       $parameters
+     * Call RESTful
+     *
+     * @param array $parameters
      * @param array $options
      *
      * @return mixed
@@ -25,8 +27,7 @@ trait HasActivity
     abstract public function rest($parameters, $options = []);
 
     /**
-     * @param $params
-     *
+     * @param array $params
      * @return mixed
      * @see https://www.flickr.com/services/api/flickr.activity.userComments.html
      */
@@ -37,7 +38,6 @@ trait HasActivity
                 [
                     'method' => 'flickr.activity.userComments',
                     'per_page' => 50,
-                    'page' => 1,
                 ],
                 $params
             )
@@ -45,8 +45,7 @@ trait HasActivity
     }
 
     /**
-     * @param $params
-     *
+     * @param array $params
      * @return mixed
      * @see https://www.flickr.com/services/api/flickr.activity.userPhotos.html
      */
@@ -58,7 +57,6 @@ trait HasActivity
                 [
                     'method' => 'flickr.activity.userPhotos',
                     'per_page' => 50,
-                    'page' => 1,
                 ],
                 $params
             )

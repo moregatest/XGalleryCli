@@ -13,6 +13,7 @@ use SimpleXMLElement;
 use XGallery\Webservices\Oauth\Oauth1\Client;
 use XGallery\Webservices\Services\Flickr\Traits\HasActivity;
 use XGallery\Webservices\Services\Flickr\Traits\HasContacts;
+use XGallery\Webservices\Services\Flickr\Traits\HasFavorites;
 use XGallery\Webservices\Services\Flickr\Traits\HasGalleries;
 use XGallery\Webservices\Services\Flickr\Traits\HasPeople;
 use XGallery\Webservices\Services\Flickr\Traits\HasPhotos;
@@ -34,6 +35,7 @@ class Flickr extends Client
     use HasPhotos;
     use HasPhotoSets;
     use HasGalleries;
+    use HasFavorites;
     use HasContacts;
 
     const OAUTH_REQUEST_TOKEN_ENDPOINT = 'https://www.flickr.com/services/oauth/request_token';

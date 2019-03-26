@@ -16,6 +16,12 @@ use DateTime;
  */
 class DateTimeHelper
 {
+    /**
+     * Get datetime by MySQL format
+     *
+     * @return string
+     * @throws \Exception
+     */
     public static function toMySql()
     {
         return (new DateTime)->format('Y-m-d H:i:s');

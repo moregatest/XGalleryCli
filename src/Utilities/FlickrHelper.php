@@ -55,4 +55,13 @@ class FlickrHelper
             'photos' => Factory::getServices('flickr')->flickrPhotoSetsGetAllPhotos($albumId, $nsid),
         ];
     }
+
+    /**
+     * @param string $nsid
+     * @return mixed|array
+     */
+    public static function getAllFavorities($nsid)
+    {
+        return Factory::getServices('flickr')->flickrFavoritesGetAllList(self::getNsid($nsid));
+    }
 }

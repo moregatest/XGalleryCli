@@ -17,7 +17,9 @@ trait HasPhotos
 {
 
     /**
-     * @param       $parameters
+     * Call RESTful
+     *
+     * @param array $parameters
      * @param array $options
      *
      * @return mixed
@@ -25,6 +27,8 @@ trait HasPhotos
     abstract public function rest($parameters, $options = []);
 
     /**
+     * Search photos
+     *
      * @param string $keyword
      * @param array  $parameters
      *
@@ -40,7 +44,6 @@ trait HasPhotos
                     'text' => $keyword,
                     'safe_search' => 3,
                     'per_page' => 500,
-                    'page' => 1,
                 ],
                 $parameters
             )
@@ -48,8 +51,10 @@ trait HasPhotos
     }
 
     /**
-     * @param       $photoId
-     * @param array $parameters
+     * Get photo sizes
+     *
+     * @param string $photoId
+     * @param array  $parameters
      * @return mixed
      */
     public function flickrPhotosSizes($photoId, $parameters = [])
@@ -66,8 +71,10 @@ trait HasPhotos
     }
 
     /**
-     * @param       $photoId
-     * @param array $parameters
+     * Get photo information
+     *
+     * @param string $photoId
+     * @param array  $parameters
      * @return mixed
      */
     public function flickrPhotosGetInfo($photoId, $parameters = [])
