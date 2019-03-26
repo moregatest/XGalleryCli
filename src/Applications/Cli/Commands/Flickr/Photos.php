@@ -209,7 +209,7 @@ final class Photos extends AbstractCommandFlickr
         }
 
         $this->log('Working on NSID: '.$this->nsid);
-        $this->photos = $this->flickr->flickrPeopleGetAllPhotos($this->nsid);
+        $this->photos   = $this->flickr->flickrPeopleGetAllPhotos($this->nsid);
         $favoritePhotos = FlickrHelper::getAllFavorities($this->nsid);
 
         if ($favoritePhotos) {
@@ -223,6 +223,7 @@ final class Photos extends AbstractCommandFlickr
      * Update contact
      *
      * @return boolean|integer
+     * @throws \Exception
      */
     protected function prepareUpdateContact()
     {
