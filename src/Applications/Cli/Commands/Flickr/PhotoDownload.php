@@ -70,7 +70,7 @@ final class PhotoDownload extends AbstractCommandFlickr
      *
      * @return boolean
      */
-    protected function prepareGetPhoto()
+    protected function prepareGetPhotoFromDatabase()
     {
         static $retry = false;
 
@@ -78,51 +78,79 @@ final class PhotoDownload extends AbstractCommandFlickr
 
         $this->photo = $this->model->getPhotoForDownload($photoId);
 
-        // Specific photo not found
+        // Photo not found in database with specific id
         if ($photoId && !$this->photo) {
             $this->log('Photo not found in database', 'notice', $this->model->getErrors());
-            $this->log('Trying to fetch photo online');
-
-            $process = SystemHelper::getProcess([
-                'php',
-                XGALLERY_ROOT.'/cli.php',
-                'flickr:photossize',
-                '--photo_ids='.$photoId,
-            ]);
-            $process->run();
-
-            // Try to get it again
-            $this->photo = $this->model->getPhotoForDownload($photoId);
-
-            if (!$this->photo) {
-                return self::PREPARE_FAILED;
-            }
 
             return self::NEXT_PREPARE;
+        }
+
+        $this->log('Found photo in database: '.$this->photo->id);
+
+        if (!$photoId && !$this->photo) {
+            $this->log('Can not get photo in database', 'notice', $this->model->getErrors());
+
+            return self::PREPARE_FAILED;
         }
 
         if ($this->photo->params === null && $retry === true) {
             $this->log('Retried but not succeed', 'notice');
 
-            return false;
+            return self::PREPARE_FAILED;
         }
 
         // Get photo size if needed
         if ($this->photo->params === null) {
             $this->log('Trying get photo size');
-            $retry   = true;
-            $process = SystemHelper::getProcess([
+            $retry = true;
+            SystemHelper::getProcess([
                 'php',
                 XGALLERY_ROOT.'/cli.php',
                 'flickr:photossize',
                 '--photo_ids='.$this->photo->id,
-            ]);
-            $process->run();
+            ])->run();
 
-            return $this->prepareGetPhoto();
+            // Try to check this photo again
+            return $this->prepareGetPhotoFromDatabase();
         }
 
-        return self::NEXT_PREPARE;
+        return self::PREPARE_SUCCEED;
+    }
+
+    /**
+     * Fetch photo online
+     *
+     * @return boolean|integer
+     */
+    protected function prepareGetPhotoOnline()
+    {
+        $photoId = $this->getOption('photo_id');
+
+        if (!$photoId && !$this->photo) {
+            return self::PREPARE_FAILED;
+        }
+
+        if ($this->photo) {
+            return self::NEXT_PREPARE;
+        }
+
+        $this->log('Requesting photo size ...');
+
+        SystemHelper::getProcess([
+            'php',
+            XGALLERY_ROOT.'/cli.php',
+            'flickr:photossize',
+            '--photo_ids='.$photoId,
+        ])->run();
+
+        // Try to get it again
+        $this->photo = $this->model->getPhotoForDownload($photoId);
+
+        if (!$this->photo) {
+            return self::PREPARE_FAILED;
+        }
+
+        return self::PREPARE_SUCCEED;
     }
 
     /**
@@ -162,7 +190,7 @@ final class PhotoDownload extends AbstractCommandFlickr
 
         $this->log('Prepare photo succeed: '.$this->lastSize->source);
 
-        return self::NEXT_PREPARE;
+        return self::PREPARE_SUCCEED;
     }
 
     /**
@@ -264,7 +292,7 @@ final class PhotoDownload extends AbstractCommandFlickr
      */
     protected function updatePhotoStatus($photoId, $status)
     {
-        if ($this->model->updatePhoto($photoId, ['status' => $status])) {
+        if ($this->model->updatePhoto($photoId, ['status' => $status]) !== false) {
             $this->log('State updated: '.$status);
 
             return true;
