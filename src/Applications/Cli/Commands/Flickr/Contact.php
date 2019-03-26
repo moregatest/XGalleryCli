@@ -22,7 +22,9 @@ use XGallery\Utilities\FlickrHelper;
 final class Contact extends AbstractCommandFlickr
 {
     /**
-     * @var array
+     * Contact object
+     *
+     * @var stdClass
      */
     private $contact;
 
@@ -52,19 +54,19 @@ final class Contact extends AbstractCommandFlickr
     {
         $nsid = $this->getOption('nsid');
 
-        if ($nsid === null) {
-            return false;
+        if (!$nsid) {
+            return self::PREPARE_FAILED;
         }
 
         $this->contact = $this->flickr->flickrPeopleGetInfo(FlickrHelper::getNsid($nsid));
 
         if (!$this->contact) {
-            $this->log('Can not get contact', 'notice');
+            $this->log('Can not get contact or contact not found', 'notice');
 
             return self::PREPARE_FAILED;
         }
 
-        return self::SKIP_PREPARE;
+        return self::PREPARE_SUCCEED;
     }
 
     /**
