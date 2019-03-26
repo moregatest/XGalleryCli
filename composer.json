@@ -25,10 +25,14 @@
     "symfony/css-selector": "^4.2",
     "gumlet/php-image-resize": "^1.9",
     "ext-json": "^1.6",
-    "ext-SimpleXML": "^7.2"
+    "ext-SimpleXML": "^7.2",
+    "friendsofphp/php-cs-fixer": "^2.14",
+    "squizlabs/php_codesniffer": "*"
   },
   "require-dev": {
     "symfony/dotenv": "^4.2",
     "symfony/maker-bundle": "^1.11"
-  }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
