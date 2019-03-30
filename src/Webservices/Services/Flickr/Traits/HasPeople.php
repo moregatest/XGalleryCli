@@ -10,14 +10,15 @@ namespace XGallery\Webservices\Services\Flickr\Traits;
 
 /**
  * Trait HasPeople
- *
  * @package XGallery\Webservices\Services\Flickr\Traits
  */
 trait HasPeople
 {
 
     /**
-     * @param       $parameters
+     * Call RESTful
+     *
+     * @param array $parameters
      * @param array $options
      *
      * @return mixed
@@ -25,9 +26,10 @@ trait HasPeople
     abstract public function rest($parameters, $options = []);
 
     /**
-     * @param $email
+     * Search people by email
      *
-     * @return mixed
+     * @param string $email
+     * @return object|mixed
      */
     public function flickrPeopleFindByEmail($email)
     {
@@ -40,8 +42,10 @@ trait HasPeople
     }
 
     /**
-     * @param       $nsid
-     * @param array $params
+     * Get photos of request people
+     *
+     * @param string $nsid
+     * @param array  $params
      * @return mixed
      */
     public function flickrPeopleGetPhotos($nsid, $params = [])
@@ -59,8 +63,10 @@ trait HasPeople
     }
 
     /**
-     * @param $nsid
-     * @return array|bool
+     * Recursive to get all photos of people
+     *
+     * @param string $nsid
+     * @return array|boolean
      */
     public function flickrPeopleGetAllPhotos($nsid)
     {
@@ -94,6 +100,8 @@ trait HasPeople
     }
 
     /**
+     * Get people information
+     *
      * @param $nsid
      * @return mixed
      */

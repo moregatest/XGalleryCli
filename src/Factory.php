@@ -23,7 +23,6 @@ use Symfony\Component\Templating\TemplateNameParser;
 
 /**
  * Class Factory
- *
  * @package XGallery
  */
 class Factory
@@ -31,6 +30,8 @@ class Factory
     const APP_NAMESPACE = 'XGallery3';
 
     /**
+     * Get database connection
+     *
      * @return Connection
      * @throws DBALException
      */
@@ -52,6 +53,8 @@ class Factory
     }
 
     /**
+     * Get logger
+     *
      * @param $name
      * @return Logger
      * @throws Exception
@@ -61,7 +64,7 @@ class Factory
         static $loggers;
 
         if ($name === null) {
-            $name = get_called_class();
+            $name = static::class;
         }
 
         if (isset($loggers[$name])) {
@@ -72,13 +75,17 @@ class Factory
         $logFile        = str_replace('\\', DIRECTORY_SEPARATOR, strtolower($name));
 
         $loggers[$name]->pushHandler(
-            new StreamHandler(getenv('log_path').'/'.$logFile.'/'.date("Y-m-d").'_'.time().uniqid().'.log')
+            new StreamHandler(
+                getenv('log_path').'/'.uniqid($logFile.'_'.date('Y-m-d').'_'.time(), true).'.log'
+            )
         );
 
         return $loggers[$name];
     }
 
     /**
+     * Get cache instance
+     *
      * @param string      $namespace
      * @param int         $defaultLifetime
      * @param string|null $directory
@@ -89,7 +96,7 @@ class Factory
     {
         static $instances;
 
-        $id = md5(serialize(func_num_args()));
+        $id = md5(serialize(func_get_args()));
 
         if (isset($instances[$id])) {
             return $instances[$id];
@@ -105,6 +112,8 @@ class Factory
     }
 
     /**
+     * Get service instance
+     *
      * @param $service
      * @return boolean|mixed
      */

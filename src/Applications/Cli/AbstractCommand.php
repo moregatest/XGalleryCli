@@ -46,31 +46,43 @@ abstract class AbstractCommand extends Command
     const SKIP_PREPARE = 2;
 
     /**
+     * Array of options
+     *
      * @var array
      */
     protected $options = [];
 
     /**
+     * Array of args
+     *
      * @var array
      */
     protected $arguments = [];
 
     /**
+     * Input
+     *
      * @var InputInterface
      */
     protected $input;
 
     /**
+     * Output
+     *
      * @var OutputInterface
      */
     protected $output;
 
     /**
+     * Main progressBar
+     *
      * @var ProgressBar
      */
     protected $progressBar;
 
     /**
+     * Wrapped method to get input option
+     *
      * @param      $name
      * @param null $default
      * @return boolean|string|string[]|null
@@ -87,6 +99,8 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * Configures the current command.
+     *
      * @throws InvalidArgumentException
      */
     protected function configure()
@@ -169,6 +183,7 @@ abstract class AbstractCommand extends Command
                 continue;
             } elseif ($return === self::SKIP_PREPARE) {
                 $this->log('Skip prepare. Move to process');
+
                 return true;
             }
         }
@@ -177,6 +192,8 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * Process enpoint
+     *
      * @return boolean
      */
     protected function process()
@@ -214,8 +231,10 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * @param $status
-     * @return mixed
+     * Execute completed
+     *
+     * @param boolean $status
+     * @return mixed|integer
      */
     protected function executeComplete($status)
     {
@@ -229,6 +248,8 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * Wrapped method to display console output and log to file
+     *
      * @param         $message
      * @param string  $type
      * @param array   $context
@@ -237,8 +258,7 @@ abstract class AbstractCommand extends Command
     protected function log($message, $type = 'info', $context = [], $newLine = false)
     {
         $this->output->write("\n".$message);
-
-        call_user_func([$this, 'log'.ucfirst($type)], $message, $context);
+        $this->{'log'.ucfirst($type)}($message, $context);
 
         if ($newLine === false) {
             return;

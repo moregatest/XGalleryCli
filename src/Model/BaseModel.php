@@ -10,6 +10,7 @@ namespace XGallery\Model;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
+use Exception;
 use Monolog\Logger;
 use XGallery\Factory;
 
@@ -21,38 +22,51 @@ class BaseModel
 {
 
     /**
+     * Database connection
+     *
      * @var Connection
      */
     protected $connection;
 
     /**
+     * Array of errors
+     *
      * @var array
      */
     protected $errors = [];
 
     /**
+     * Logger
+     *
      * @var Logger
      */
     protected $logger;
 
     /**
-     * AbstractModel constructor.
+     * BaseModel constructor.
+     * @throws Exception
      */
     public function __construct()
     {
         try {
             $this->connection = Factory::getConnection();
-            $this->logger     = Factory::getLogger(get_called_class());
+            $this->logger     = Factory::getLogger(static::class);
         } catch (DBALException $exception) {
             $this->errors[] = $exception->getMessage();
         }
     }
 
+    /**
+     * Clean up while destructing
+     */
     public function __destruct()
     {
         $this->cleanup();
     }
 
+    /**
+     * Clean up
+     */
     protected function cleanup()
     {
         $this->connection->close();
@@ -62,6 +76,9 @@ class BaseModel
         }
     }
 
+    /**
+     * Reset everything for next request
+     */
     protected function reset()
     {
         $this->connection->close();
@@ -69,6 +86,8 @@ class BaseModel
     }
 
     /**
+     * Get errors
+     *
      * return array
      */
     public function getErrors()
@@ -77,6 +96,8 @@ class BaseModel
     }
 
     /**
+     * Insert multi rows
+     *
      * @param       $table
      * @param       $rows
      * @param array $excludeFields
@@ -111,7 +132,7 @@ class BaseModel
         foreach ($rows as $index => $row) {
             $query .= ' (';
             foreach ($columnNames as $columnName) {
-                $columnId                    = 'value_'.uniqid();
+                $columnId                    = 'value_'.uniqid($columnName, false);
                 $query                       .= ':'.$columnId.',';
                 $bindKeys[$index][$columnId] = isset($row->{$columnName}) ? $row->{$columnName} : null;
             }

@@ -41,13 +41,15 @@ class Restful extends Client
     {
         parent::__construct($config);
 
-        $this->logger = Factory::getLogger(get_called_class());
+        $this->logger = Factory::getLogger(static::class);
     }
 
     /**
-     * @param       $method
-     * @param       $uri
-     * @param array $options
+     * Wrapped method to send request
+     *
+     * @param string $method
+     * @param string $uri
+     * @param array  $options
      * @return boolean|string
      * @throws GuzzleException
      */

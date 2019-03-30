@@ -17,37 +17,32 @@ use XGallery\Webservices\Oauth\Common\Credential;
  */
 trait HasCredential
 {
-
     /**
+     * Credential class
+     *
      * @var Credential
      */
-    protected $credential = null;
+    protected $credential;
 
     /**
-     * @param        $consumerKey
-     * @param        $consumerSecretKey
+     * setCredential
+     *
+     * @param string $consumerKey
+     * @param string $consumerSecretKey
      * @param string $token
      * @param string $tokenSecret
-     *
      * @return $this
      */
-    public function setCredential(
-        $consumerKey,
-        $consumerSecretKey,
-        $token = '',
-        $tokenSecret = ''
-    ) {
-        $this->credential = new Credential(
-            $consumerKey,
-            $consumerSecretKey,
-            $token,
-            $tokenSecret
-        );
+    public function setCredential($consumerKey, $consumerSecretKey, $token = '', $tokenSecret = '')
+    {
+        $this->credential = new Credential($consumerKey, $consumerSecretKey, $token, $tokenSecret);
 
         return $this;
     }
 
     /**
+     * getCredential
+     *
      * @return Credential
      */
     public function getCredential()

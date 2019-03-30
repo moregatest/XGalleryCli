@@ -9,14 +9,11 @@
 namespace XGallery\Webservices\Oauth\Oauth1;
 
 use GuzzleHttp\Exception\GuzzleException;
-use Psr\Cache\InvalidArgumentException;
-use XGallery\Exceptions\Exception;
 use XGallery\Webservices\Oauth\Oauth1\Traits\HasAuthorize;
 use XGallery\Webservices\Restful;
 
 /**
  * Class Client
- *
  * @package XGallery\Webservices\Oauth\Oauth1
  */
 class Client extends Restful
@@ -40,10 +37,12 @@ class Client extends Restful
     const REST_ENDPOINT = '';
 
     /**
-     * @param       $method
-     * @param       $uri
-     * @param       $parameters
-     * @param array $options
+     * Request Oauth API
+     *
+     * @param string $method
+     * @param string $uri
+     * @param array  $parameters
+     * @param array  $options
      * @return boolean|string
      * @throws GuzzleException
      */
@@ -55,7 +54,7 @@ class Client extends Restful
             $parameters
         );
 
-        if ($method == 'GET') {
+        if ($method === 'GET') {
             $uri .= '?'.http_build_query($parameters);
         } else {
             $options['headers']['Authorization'] = $this->getOauthHeader();
@@ -71,6 +70,8 @@ class Client extends Restful
     }
 
     /**
+     * Call Oauth to get request token
+     *
      * @param $callback
      * @return boolean|string
      * @throws GuzzleException
@@ -88,29 +89,26 @@ class Client extends Restful
     }
 
     /**
+     * Build request token API
+     *
      * @param $callback
      * @return boolean|string
      * @throws GuzzleException
      */
     public function getRequestTokenUrl($callback)
     {
-        try {
-            parse_str($this->getRequestToken($callback), $query);
-        } catch (Exception $exception) {
-            return false;
-        }
+        parse_str($this->getRequestToken($callback), $query);
 
-        return static::OAUTH_AUTHORIZE_ENDPOINT.'?oauth_token='
-            .$query['oauth_token'];
+        return static::OAUTH_AUTHORIZE_ENDPOINT.'?oauth_token='.$query['oauth_token'];
     }
 
     /**
-     * @param $oauthToken
-     * @param $oauthVerifier
+     * Get Oauth access token
      *
-     * @return boolean
+     * @param string $oauthToken
+     * @param string $oauthVerifier
+     * @return boolean|string
      * @throws GuzzleException
-     * @throws InvalidArgumentException
      */
     public function getAccessToken($oauthToken, $oauthVerifier)
     {

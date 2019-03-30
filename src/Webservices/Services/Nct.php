@@ -18,9 +18,16 @@ use XGallery\Webservices\Restful;
  */
 class Nct extends Restful
 {
+    /**
+     * Endpoint
+     *
+     * @var string
+     */
     private $endpoint = 'https://www.nhaccuatui.com';
 
     /**
+     * Search songs by condition
+     *
      * @param array $conditions
      * @return array|boolean
      * @throws GuzzleException
@@ -51,6 +58,8 @@ class Nct extends Restful
     }
 
     /**
+     * Get songs
+     *
      * @param string $url
      * @param string $html
      * @return array
@@ -83,7 +92,9 @@ class Nct extends Restful
     }
 
     /**
-     * @param $url
+     * Get song URL for download
+     *
+     * @param string $url
      * @return array|boolean
      * @throws GuzzleException
      */

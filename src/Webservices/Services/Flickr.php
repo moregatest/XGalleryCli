@@ -55,11 +55,15 @@ class Flickr extends Client
     const UPLOAD_METHOD = 'POST';
 
     /**
+     * Flickr response format
+     *
      * @var string
      */
     private $responseFormat = 'json';
 
     /**
+     * Default parameters for all requests
+     *
      * @return array
      */
     private function getDefaultFlickrParameters()
@@ -71,14 +75,16 @@ class Flickr extends Client
     }
 
     /**
-     * @param       $parameters
+     * Execute restfull
+     *
+     * @param array $parameters
      * @param array $options
      * @return boolean|mixed|string
      * @throws GuzzleException
      */
     public function rest($parameters, $options = [])
     {
-        $response = parent::api(
+        $response = $this->api(
             static::REST_METHOD,
             static::REST_ENDPOINT,
             array_merge($this->getDefaultFlickrParameters(), $parameters),
@@ -92,14 +98,8 @@ class Flickr extends Client
         if ($this->responseFormat === 'json') {
             $response = json_decode($response);
 
-            if (isset($response->stat) && $response->stat == 'fail') {
-                $this->logger->notice(
-                    $response->message,
-                    [
-                        $parameters,
-                        get_object_vars($response),
-                    ]
-                );
+            if (isset($response->stat) && $response->stat === 'fail') {
+                $this->logger->notice($response->message, [$parameters, get_object_vars($response)]);
 
                 return false;
             }
@@ -109,8 +109,10 @@ class Flickr extends Client
     }
 
     /**
-     * @param       $imageFile
-     * @param array $options
+     * Upload image file
+     *
+     * @param string $imageFile
+     * @param array  $options
      * @return boolean|SimpleXMLElement
      * @throws GuzzleException
      */
@@ -120,7 +122,7 @@ class Flickr extends Client
             return false;
         }
 
-        $response = parent::api(
+        $response = $this->api(
             static::UPLOAD_METHOD,
             static::UPLOAD_ENDPOINT,
             $options,
@@ -142,9 +144,11 @@ class Flickr extends Client
     }
 
     /**
-     * @param       $imageFile
-     * @param       $photoId
-     * @param array $options
+     * Replace image file on Flickr
+     *
+     * @param string $imageFile
+     * @param string $photoId
+     * @param array  $options
      * @return boolean|SimpleXMLElement
      * @throws GuzzleException
      */
@@ -154,7 +158,7 @@ class Flickr extends Client
             return false;
         }
 
-        $response = parent::api(
+        $response = $this->api(
             static::UPLOAD_METHOD,
             static::UPLOAD_REPLACE_ENDPOINT,
             array_merge(['photo_id' => $photoId], $options),

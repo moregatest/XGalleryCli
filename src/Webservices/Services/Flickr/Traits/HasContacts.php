@@ -10,14 +10,14 @@ namespace XGallery\Webservices\Services\Flickr\Traits;
 
 /**
  * Trait HasContacts
- *
  * @package XGallery\Webservices\Services\Flickr\Traits
  */
 trait HasContacts
 {
-
     /**
-     * @param       $parameters
+     * Call RESTful
+     *
+     * @param array $parameters
      * @param array $options
      *
      * @return mixed
@@ -25,12 +25,13 @@ trait HasContacts
     abstract public function rest($parameters, $options = []);
 
     /**
-     * @param $params
+     * flickrContactsGetListRecentlyUploaded
      *
+     * @param array $params
      * @return mixed
      * @see https://www.flickr.com/services/api/flickr.contacts.getListRecentlyUploaded.html
      */
-    public function flickrContactsGetListRecentlyUploaded($params = [])
+    public function flickrContactsGetListRecentlyUploaded(array $params = [])
     {
         return $this->rest(
             array_merge(
@@ -43,12 +44,13 @@ trait HasContacts
     }
 
     /**
-     * @param $params
+     * flickrContactsGetList
      *
+     * @param array $params
      * @return mixed
      * @see https://www.flickr.com/services/api/flickr.contacts.getList.html
      */
-    public function flickrContactsGetList($params = [])
+    public function flickrContactsGetList(array $params = [])
     {
         return $this->rest(
             array_merge(
@@ -63,6 +65,8 @@ trait HasContacts
     }
 
     /**
+     * flickrContactsGetAll
+     *
      * @return array|boolean
      */
     public function flickrContactsGetAll()

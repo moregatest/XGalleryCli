@@ -10,28 +10,35 @@ namespace XGallery\Webservices\Oauth\Common;
 
 /**
  * Class Credential
- *
  * @package XGallery\Webservices\Oauth\Common
  */
 class Credential
 {
 
     /**
+     * Consumer key
+     *
      * @var string
      */
     protected $consumerKey = '';
 
     /**
+     * Consumer secret key
+     *
      * @var string
      */
     protected $consumerSecretKey = '';
 
     /**
+     * Token
+     *
      * @var string
      */
     protected $token = '';
 
     /**
+     * Secret token
+     *
      * @var string
      */
     protected $tokenSecret = '';
@@ -39,17 +46,13 @@ class Credential
     /**
      * Credential constructor.
      *
-     * @param        $consumerKey
-     * @param        $consumerSecretKey
+     * @param string $consumerKey
+     * @param string $consumerSecretKey
      * @param string $token
      * @param string $tokenSecret
      */
-    public function __construct(
-        $consumerKey,
-        $consumerSecretKey,
-        $token = '',
-        $tokenSecret = ''
-    ) {
+    public function __construct($consumerKey, $consumerSecretKey, $token = '', $tokenSecret = '')
+    {
         $this->consumerKey       = $consumerKey;
         $this->consumerSecretKey = $consumerSecretKey;
         $this->token             = $token;
@@ -57,6 +60,8 @@ class Credential
     }
 
     /**
+     * Magic method to get object property
+     *
      * @param $name
      *
      * @return string
@@ -71,6 +76,8 @@ class Credential
     }
 
     /**
+     * Magic method to set object property
+     *
      * @param $name
      * @param $value
      */
@@ -80,6 +87,8 @@ class Credential
     }
 
     /**
+     * Get consumer key
+     *
      * @return string
      */
     public function getConsumerKey()
@@ -88,6 +97,8 @@ class Credential
     }
 
     /**
+     * Get consumer secret
+     *
      * @return string
      */
     public function getConsumerSecretKey()
@@ -96,6 +107,8 @@ class Credential
     }
 
     /**
+     * Get token
+     *
      * @return string
      */
     public function getToken()
@@ -104,6 +117,8 @@ class Credential
     }
 
     /**
+     * Get token secret
+     *
      * @return string
      */
     public function getTokenSecret()

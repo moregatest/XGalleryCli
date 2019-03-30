@@ -20,6 +20,8 @@ trait HasLogger
 {
 
     /**
+     * Get instance of logger
+     *
      * @return mixed|Logger
      * @throws Exception
      */
@@ -27,18 +29,20 @@ trait HasLogger
     {
         static $loggers;
 
-        $id = md5(get_called_class());
+        $id = md5(static::class);
 
         if (isset($loggers[$id])) {
             return $loggers[$id];
         }
 
-        $loggers[$id] = Factory::getLogger(get_called_class());
+        $loggers[$id] = Factory::getLogger(static::class);
 
         return $loggers[$id];
     }
 
     /**
+     * Log with debug level
+     *
      * @param string $message
      * @param array  $context
      * @throws Exception
@@ -49,6 +53,8 @@ trait HasLogger
     }
 
     /**
+     * Log with info level
+     *
      * @param string $message
      * @param array  $context
      * @throws Exception
@@ -59,6 +65,8 @@ trait HasLogger
     }
 
     /**
+     * Log with notice level
+     *
      * @param string $message
      * @param array  $context
      * @throws Exception
@@ -69,6 +77,8 @@ trait HasLogger
     }
 
     /**
+     * Log with warning level
+     *
      * @param string $message
      * @param array  $context
      * @throws Exception
@@ -79,6 +89,8 @@ trait HasLogger
     }
 
     /**
+     * Log with error level
+     *
      * @param string $message
      * @param array  $context
      * @throws Exception
@@ -89,6 +101,8 @@ trait HasLogger
     }
 
     /**
+     * Log with critical level
+     *
      * @param string $message
      * @param array  $context
      * @throws Exception
@@ -99,6 +113,8 @@ trait HasLogger
     }
 
     /**
+     * Log with alert level
+     *
      * @param string $message
      * @param array  $context
      * @throws Exception
@@ -109,6 +125,8 @@ trait HasLogger
     }
 
     /**
+     * Log with emergency level
+     *
      * @param string $message
      * @param array  $context
      * @throws Exception

@@ -20,18 +20,23 @@ use XGallery\Webservices\Services\Flickr;
  */
 abstract class AbstractCommandPhotos extends AbstractCommand
 {
-
     /**
+     * Flickr service class
+     *
      * @var Flickr
      */
     protected $flickr;
 
     /**
+     * Flickr model
+     *
      * @var ModelFlickr
      */
     protected $model;
 
     /**
+     * Configures the current command.
+     *
      * @throws ReflectionException
      */
     protected function configure()
@@ -44,15 +49,8 @@ abstract class AbstractCommandPhotos extends AbstractCommand
     }
 
     /**
-     * @param $status
-     * @return mixed|void
-     */
-    protected function executeComplete($status)
-    {
-        parent::executeComplete($status);
-    }
-
-    /**
+     * prepare
+     *
      * @return boolean
      */
     protected function prepare()
@@ -65,7 +63,9 @@ abstract class AbstractCommandPhotos extends AbstractCommand
     }
 
     /**
-     * @return bool|string|string[]|null
+     * getNsid
+     *
+     * @return boolean|string|string[]|null
      */
     protected function getNsid()
     {

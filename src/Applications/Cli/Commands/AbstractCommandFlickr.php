@@ -21,21 +21,29 @@ use XGallery\Webservices\Services\Flickr;
 abstract class AbstractCommandFlickr extends AbstractCommand
 {
     /**
+     * Flickr service class
+     *
      * @var Flickr
      */
     protected $flickr;
 
     /**
+     * Flickr model
+     *
      * @var ModelFlickr
      */
     protected $model;
 
     /**
+     * Event class
+     *
      * @var \XGallery\Events\Cli\Flickr
      */
     protected $event;
 
     /**
+     * Configures the current command.
+     *
      * @throws ReflectionException
      */
     protected function configure()

@@ -15,7 +15,6 @@ namespace XGallery\Webservices\Services\Flickr\Traits;
  */
 trait HasActivity
 {
-
     /**
      * Call RESTful
      *
@@ -27,11 +26,13 @@ trait HasActivity
     abstract public function rest($parameters, $options = []);
 
     /**
+     * flickrActivityUserComments
+     *
      * @param array $params
      * @return mixed
-     * @see https://www.flickr.com/services/api/flickr.activity.userComments.html
+     * @see   https://www.flickr.com/services/api/flickr.activity.userComments.html
      */
-    public function flickrActivityUserComments($params = [])
+    public function flickrActivityUserComments(array $params = [])
     {
         return $this->rest(
             array_merge(
@@ -45,11 +46,13 @@ trait HasActivity
     }
 
     /**
+     * flickrActivityUserPhotos
+     *
      * @param array $params
      * @return mixed
      * @see https://www.flickr.com/services/api/flickr.activity.userPhotos.html
      */
-    public function flickrActivityUserPhotos($params = [])
+    public function flickrActivityUserPhotos(array $params = [])
     {
         return $this->rest(
             'GET',

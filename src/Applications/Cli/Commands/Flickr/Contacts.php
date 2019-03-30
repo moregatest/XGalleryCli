@@ -53,7 +53,7 @@ final class Contacts extends AbstractCommandFlickr
             return self::PREPARE_FAILED;
         }
 
-        $this->log("Total contacts: ".count($this->contacts));
+        $this->log('Total contacts: '.count($this->contacts));
 
         return self::PREPARE_SUCCEED;
     }
@@ -73,7 +73,7 @@ final class Contacts extends AbstractCommandFlickr
             return false;
         }
 
-        $this->log("Affected rows: ".(int)$rows);
+        $this->log('Affected rows: '.(int)$rows);
 
         return true;
     }

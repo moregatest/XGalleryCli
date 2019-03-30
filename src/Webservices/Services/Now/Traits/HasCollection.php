@@ -18,9 +18,11 @@ use Psr\Cache\InvalidArgumentException;
 trait HasCollection
 {
     /**
-     * @param       $method
-     * @param       $uri
-     * @param array $options
+     * Wrapped method to send request
+     *
+     * @param string $method
+     * @param string $uri
+     * @param array  $options
      *
      * @return boolean|mixed
      * @throws GuzzleException
@@ -32,7 +34,7 @@ trait HasCollection
      * Return collections
      *
      * @param array $collectionIds
-     * @return bool
+     * @return boolean
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */

@@ -10,6 +10,7 @@ namespace XGallery\Model;
 
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\FetchMode;
+use Exception;
 
 /**
  * Class ModelFlickr
@@ -18,7 +19,10 @@ use Doctrine\DBAL\FetchMode;
 class ModelFlickr extends BaseModel
 {
     /**
+     * Get class instance
+     *
      * @return ModelFlickr
+     * @throws Exception
      */
     public static function getInstance()
     {
@@ -34,6 +38,8 @@ class ModelFlickr extends BaseModel
     }
 
     /**
+     * Insert multi contacts
+     *
      * @param $contacts
      * @return boolean|integer
      */
@@ -43,15 +49,19 @@ class ModelFlickr extends BaseModel
     }
 
     /**
+     * Insert multi photos
+     *
      * @param $photos
      * @return boolean|integer
      */
     public function insertPhotos($photos)
     {
-        return $this->insertRows('xgallery_flickr_photos', $photos, ['is_primary', 'isprimary','date_faved']);
+        return $this->insertRows('xgallery_flickr_photos', $photos, ['is_primary', 'isprimary', 'date_faved']);
     }
 
     /**
+     * Update photo record
+     *
      * @param integer $id
      * @param array   $data
      * @return boolean|integer
@@ -70,6 +80,8 @@ class ModelFlickr extends BaseModel
     }
 
     /**
+     * Get photo ids by status
+     *
      * @param      $status
      * @param null $nsid
      * @param null $limit
@@ -103,6 +115,8 @@ class ModelFlickr extends BaseModel
     }
 
     /**
+     * Get unsized photo ids
+     *
      * @param null $nsid
      * @param null $limit
      * @return bool|mixed[]
@@ -165,6 +179,8 @@ class ModelFlickr extends BaseModel
     }
 
     /**
+     * Get NSID
+     *
      * @return boolean|string
      */
     public function getContactNsid()
@@ -183,6 +199,8 @@ class ModelFlickr extends BaseModel
     }
 
     /**
+     * Update contact record
+     *
      * @param integer $nsid
      * @param array   $data
      * @return boolean|integer
@@ -201,6 +219,8 @@ class ModelFlickr extends BaseModel
     }
 
     /**
+     * Get photo by ID
+     *
      * @param $id
      * @return mixed
      */

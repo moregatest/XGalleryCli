@@ -15,7 +15,6 @@ namespace XGallery\Webservices\Services\Flickr\Traits;
  */
 trait HasUrls
 {
-
     /**
      * Call RESTful
      *
@@ -27,48 +26,36 @@ trait HasUrls
     abstract public function rest($parameters, $options = []);
 
     /**
-     * @param string $groupId
+     * flickrUrlsGetGroup
      *
+     * @param string $groupId
      * @return mixed
      */
     public function flickrUrlsGetGroup($groupId)
     {
-        return $this->rest(
-            [
-                'method' => 'flickr.urls.getGroup',
-                'group_id' => $groupId,
-            ]
-        );
+        return $this->rest(['method' => 'flickr.urls.getGroup', 'group_id' => $groupId]);
     }
 
     /**
-     * @param $userId
+     * flickrUrlsGetUserPhotos
      *
+     * @param string $userId
      * @return mixed
      */
     public function flickrUrlsGetUserPhotos($userId)
     {
-        return $this->rest(
-            [
-                'method' => 'flickr.urls.getUserPhotos',
-                'user_id' => $userId,
-            ]
-        );
+        return $this->rest(['method' => 'flickr.urls.getUserPhotos', 'user_id' => $userId]);
     }
 
     /**
-     * @param null $userId
+     * flickrUrlsGetUserProfile
      *
+     * @param null|string $userId
      * @return mixed
      */
     public function flickrUrlsGetUserProfile($userId = null)
     {
-        return $this->rest(
-            [
-                'method' => 'flickr.urls.getUserProfile',
-                'user_id' => $userId,
-            ]
-        );
+        return $this->rest(['method' => 'flickr.urls.getUserProfile', 'user_id' => $userId]);
     }
 
     /**
@@ -79,12 +66,7 @@ trait HasUrls
      */
     public function flickrUrlsLookupGallery($url)
     {
-        return $this->rest(
-            [
-                'method' => 'flickr.urls.lookupGallery',
-                'url' => $url,
-            ]
-        );
+        return $this->rest(['method' => 'flickr.urls.lookupGallery', 'url' => $url]);
     }
 
     /**
@@ -95,12 +77,7 @@ trait HasUrls
      */
     public function flickrUrlsLookupGroup($url)
     {
-        return $this->rest(
-            [
-                'method' => 'flickr.urls.lookupGroup',
-                'url' => $url,
-            ]
-        );
+        return $this->rest(['method' => 'flickr.urls.lookupGroup', 'url' => $url]);
     }
 
     /**
@@ -111,11 +88,6 @@ trait HasUrls
      */
     public function flickrUrlsLookupUser($url)
     {
-        return $this->rest(
-            [
-                'method' => 'flickr.urls.lookupUser',
-                'url' => $url,
-            ]
-        );
+        return $this->rest(['method' => 'flickr.urls.lookupUser', 'url' => $url]);
     }
 }

@@ -14,9 +14,10 @@ namespace XGallery\Webservices\Services\Flickr\Traits;
  */
 trait HasGalleries
 {
-
     /**
-     * @param       $parameters
+     * Call RESTful
+     *
+     * @param array $parameters
      * @param array $options
      *
      * @return mixed
@@ -24,8 +25,10 @@ trait HasGalleries
     abstract public function rest($parameters, $options = []);
 
     /**
-     * @param       $galleryId
-     * @param array $parameters
+     * flickrGalleriesGetPhotos
+     *
+     * @param string $galleryId
+     * @param array  $parameters
      * @return mixed
      */
     public function flickrGalleriesGetPhotos($galleryId, $parameters = [])
@@ -43,7 +46,9 @@ trait HasGalleries
     }
 
     /**
-     * @param $galleryId
+     * flickrGalleriesGetAllPhotos
+     *
+     * @param string $galleryId
      * @return array|boolean
      */
     public function flickrGalleriesGetAllPhotos($galleryId)
@@ -60,12 +65,7 @@ trait HasGalleries
         }
 
         for ($page = 2; $page <= $pages; $page++) {
-            $response = $this->flickrGalleriesGetPhotos(
-                $galleryId,
-                [
-                    'page' => $page,
-                ]
-            );
+            $response = $this->flickrGalleriesGetPhotos($galleryId, ['page' => $page]);
 
             if (!$response) {
                 continue;

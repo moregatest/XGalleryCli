@@ -14,9 +14,10 @@ namespace XGallery\Webservices\Services\Flickr\Traits;
  */
 trait HasPhotoSets
 {
-
     /**
-     * @param       $parameters
+     * Call RESTful
+     *
+     * @param array $parameters
      * @param array $options
      *
      * @return mixed
@@ -49,9 +50,9 @@ trait HasPhotoSets
     /**
      * Get all photos in an album
      *
-     * @param $photoSetId
-     * @param $userId
-     * @return array|bool
+     * @param string $photoSetId
+     * @param string $userId
+     * @return array|boolean
      */
     public function flickrPhotoSetsGetAllPhotos($photoSetId, $userId)
     {
@@ -67,13 +68,7 @@ trait HasPhotoSets
         }
 
         for ($page = 2; $page <= $pages; $page++) {
-            $response = $this->flickrPhotoSetsGetPhotos(
-                $photoSetId,
-                $userId,
-                [
-                    'page' => $page,
-                ]
-            );
+            $response = $this->flickrPhotoSetsGetPhotos($photoSetId, $userId, ['page' => $page]);
 
             if (!$response) {
                 continue;

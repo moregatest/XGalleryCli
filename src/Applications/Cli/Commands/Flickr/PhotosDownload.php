@@ -23,7 +23,6 @@ use XGallery\Utilities\SystemHelper;
  */
 class PhotosDownload extends AbstractCommandFlickr
 {
-
     /**
      * User ID
      *
@@ -39,6 +38,8 @@ class PhotosDownload extends AbstractCommandFlickr
     private $photos;
 
     /**
+     * Configures the current command.
+     *
      * @throws ReflectionException
      */
     protected function configure()
@@ -71,6 +72,8 @@ class PhotosDownload extends AbstractCommandFlickr
     }
 
     /**
+     * Validate options
+     *
      * @return boolean|integer
      */
     protected function prepareOptions()
@@ -178,6 +181,8 @@ class PhotosDownload extends AbstractCommandFlickr
     }
 
     /**
+     * Process download
+     *
      * @return boolean
      */
     protected function processDownload()

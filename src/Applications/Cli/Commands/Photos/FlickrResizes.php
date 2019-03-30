@@ -23,16 +23,22 @@ use XGallery\Utilities\SystemHelper;
 class FlickrResizes extends AbstractCommandPhotos
 {
     /**
+     * NSID
+     *
      * @var string
      */
     private $nsid;
 
     /**
+     * Array of photo id
+     *
      * @var array
      */
     protected $photos;
 
     /**
+     * Configures the current command.
+     *
      * @throws ReflectionException
      */
     protected function configure()
@@ -71,6 +77,8 @@ class FlickrResizes extends AbstractCommandPhotos
     }
 
     /**
+     * Validate input options
+     *
      * @return boolean|integer
      */
     protected function prepareOptions()
@@ -87,6 +95,8 @@ class FlickrResizes extends AbstractCommandPhotos
     }
 
     /**
+     * Fetch photos from album
+     *
      * @return boolean|integer
      */
     protected function preparePhotosFromAlbum()
@@ -138,6 +148,8 @@ class FlickrResizes extends AbstractCommandPhotos
     }
 
     /**
+     * Fetch photos from specific ids
+     *
      * @return boolean
      */
     protected function preparePhotosFromIds()
@@ -156,6 +168,8 @@ class FlickrResizes extends AbstractCommandPhotos
     }
 
     /**
+     * Process resizes
+     *
      * @return boolean
      */
     protected function processResize()

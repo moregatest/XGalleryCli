@@ -10,14 +10,14 @@ namespace XGallery\Webservices\Services\Flickr\Traits;
 
 /**
  * Trait HasProfile
- *
  * @package XGallery\Webservices\Services\Flickr\Traits
  */
 trait HasProfile
 {
-
     /**
-     * @param       $parameters
+     * Call RESTful
+     *
+     * @param array $parameters
      * @param array $options
      *
      * @return mixed
@@ -25,8 +25,9 @@ trait HasProfile
     abstract public function rest($parameters, $options = []);
 
     /**
-     * @param $userId
+     * flickrProfileGetProfile
      *
+     * @param string $userId
      * @return mixed
      */
     public function flickrProfileGetProfile($userId)

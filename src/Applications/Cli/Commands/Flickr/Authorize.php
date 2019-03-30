@@ -9,7 +9,6 @@
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
 use GuzzleHttp\Exception\GuzzleException;
-use Psr\Cache\InvalidArgumentException;
 use ReflectionException;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 
@@ -20,6 +19,8 @@ use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 class Authorize extends AbstractCommandFlickr
 {
     /**
+     * Configures the current command.
+     *
      * @throws ReflectionException
      */
     protected function configure()
@@ -36,9 +37,10 @@ class Authorize extends AbstractCommandFlickr
     }
 
     /**
+     * process
+     *
      * @return boolean
      * @throws GuzzleException
-     * @throws InvalidArgumentException
      */
     protected function process()
     {

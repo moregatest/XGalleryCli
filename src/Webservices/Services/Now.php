@@ -29,10 +29,12 @@ class Now extends Restful
     use HasReservation;
 
     /**
-     * @param       $method
-     * @param       $uri
-     * @param array $options
-     * @return bool|mixed
+     * Wrapped method to send request
+     *
+     * @param string $method
+     * @param string $uri
+     * @param array  $options
+     * @return boolean|mixed
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
@@ -69,7 +71,7 @@ class Now extends Restful
             return false;
         }
 
-        if ($response->result != 'success') {
+        if ($response->result !== 'success') {
             return false;
         }
 

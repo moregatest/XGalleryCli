@@ -18,9 +18,11 @@ use Psr\Cache\InvalidArgumentException;
 trait HasMerchant
 {
     /**
-     * @param       $method
-     * @param       $uri
-     * @param array $options
+     * Wrapped method to send request
+     *
+     * @param string $method
+     * @param string $uri
+     * @param array  $options
      *
      * @return boolean|mixed
      * @throws GuzzleException

@@ -8,6 +8,7 @@
 
 namespace XGallery\Events\Cli;
 
+use stdClass;
 use XGallery\Events\CliEvent;
 
 /**
@@ -17,10 +18,17 @@ use XGallery\Events\CliEvent;
 class Flickr extends CliEvent
 {
     /**
-     * @var \stdClass
+     * Photo object
+     *
+     * @var stdClass
      */
     private $photo;
 
+    /**
+     * addPhoto
+     *
+     * @param object $photo
+     */
     public function addPhoto($photo)
     {
         $this->photo = $photo;

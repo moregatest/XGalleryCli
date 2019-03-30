@@ -18,9 +18,11 @@ use Psr\Cache\InvalidArgumentException;
 trait HasDelivery
 {
     /**
-     * @param       $method
-     * @param       $uri
-     * @param array $options
+     * Wrapped method to send request
+     *
+     * @param string $method
+     * @param string $uri
+     * @param array  $options
      *
      * @return boolean|mixed
      * @throws GuzzleException
@@ -29,6 +31,8 @@ trait HasDelivery
     abstract public function fetch($method, $uri, array $options = []);
 
     /**
+     * Search delivery ids
+     *
      * @param $conditions
      * @return boolean|array
      * @throws GuzzleException
@@ -52,8 +56,10 @@ trait HasDelivery
     }
 
     /**
-     * @param $ids
-     * @return bool
+     * Get infos by ids
+     *
+     * @param string $ids
+     * @return boolean
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
@@ -77,8 +83,10 @@ trait HasDelivery
     }
 
     /**
+     * Get delivery detail
+     *
      * @param $id
-     * @return bool
+     * @return boolean
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
@@ -97,7 +105,9 @@ trait HasDelivery
     }
 
     /**
-     * @param $conditions
+     * Search deliveries
+     *
+     * @param array $conditions
      * @return array
      * @throws GuzzleException
      * @throws InvalidArgumentException
@@ -121,7 +131,9 @@ trait HasDelivery
     }
 
     /**
-     * @param $conditions
+     * Search detail deliveries
+     *
+     * @param array $conditions
      * @return array
      * @throws GuzzleException
      * @throws InvalidArgumentException

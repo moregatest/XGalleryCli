@@ -57,6 +57,8 @@ class FlickrHelper
     }
 
     /**
+     * Get all favorite photos
+     *
      * @param string $nsid
      * @return mixed|array
      */

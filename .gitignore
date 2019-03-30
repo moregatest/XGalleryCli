@@ -1,7 +1,9 @@
-/composer.lock
-/config.json
 /php-cs-fixer
 /.php_cs.cache
+/cs.sh
+
+/composer.lock
+/.gitignore
 
 /.idea/*
 /cache/*
@@ -9,4 +11,5 @@
 /media/*
 /vendor/*
 
-/config/.prod.env
+/.prod.env
+/.scruntinizer.yml

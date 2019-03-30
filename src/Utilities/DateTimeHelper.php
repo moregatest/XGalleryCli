@@ -9,6 +9,7 @@
 namespace XGallery\Utilities;
 
 use DateTime;
+use Exception;
 
 /**
  * Class DateTimeHelper
@@ -20,7 +21,7 @@ class DateTimeHelper
      * Get datetime by MySQL format
      *
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     public static function toMySql()
     {

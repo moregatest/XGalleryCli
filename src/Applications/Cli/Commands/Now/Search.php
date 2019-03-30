@@ -25,13 +25,16 @@ use XGallery\Defines\DefinesNow;
  */
 class Search extends AbstractCommandNow
 {
-
     /**
+     * Array of deliveries
+     *
      * @var array
      */
     protected $deliveries;
 
     /**
+     * Configures the current command.
+     *
      * @throws ReflectionException
      */
     protected function configure()
@@ -56,6 +59,8 @@ class Search extends AbstractCommandNow
     }
 
     /**
+     * prepareDeliveries
+     *
      * @return boolean
      * @throws GuzzleException
      * @throws InvalidArgumentException
@@ -81,7 +86,9 @@ class Search extends AbstractCommandNow
     }
 
     /**
-     * @return bool
+     * processSearech
+     *
+     * @return boolean
      * @throws ConditionNotAllowedException
      * @throws FileNotFoundException
      * @throws InvalidJsonException

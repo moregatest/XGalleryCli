@@ -16,7 +16,9 @@ namespace XGallery\Webservices\Services\Flickr\Traits;
 trait HasFavorites
 {
     /**
-     * @param       $parameters
+     * Call RESTful
+     *
+     * @param array $parameters
      * @param array $options
      *
      * @return mixed
@@ -48,7 +50,7 @@ trait HasFavorites
     /**
      * Get all photos in favorites
      *
-     * @param $userId
+     * @param string $userId
      * @return array|boolean
      */
     public function flickrFavoritesGetAllList($userId)
@@ -65,12 +67,7 @@ trait HasFavorites
         }
 
         for ($page = 2; $page <= $pages; $page++) {
-            $response = $this->flickrFavoritesGetList(
-                $userId,
-                [
-                    'page' => $page,
-                ]
-            );
+            $response = $this->flickrFavoritesGetList($userId, ['page' => $page]);
 
             if (!$response) {
                 continue;

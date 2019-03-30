@@ -8,6 +8,7 @@
 
 namespace XGallery\Applications\Cli\Commands\Flickr;
 
+use Exception;
 use ReflectionException;
 use stdClass;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
@@ -223,7 +224,7 @@ final class Photos extends AbstractCommandFlickr
      * Update contact
      *
      * @return boolean|integer
-     * @throws \Exception
+     * @throws Exception
      */
     protected function prepareUpdateContact()
     {

@@ -1,4 +1,19 @@
 {
+  "authors": [
+    {
+      "name": "Viet Vu",
+      "email": "jooservices@gmail.com",
+      "homepage": "https://soulevil.com",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "email": "jooservices@gmail.com"
+  },
+  "license": [
+    "LGPL-2.1-only",
+    "GPL-3.0-or-later"
+  ],
   "autoload": {
     "psr-4": {
       "XGallery\\": "src/"
@@ -31,7 +46,9 @@
   },
   "require-dev": {
     "symfony/dotenv": "^4.2",
-    "symfony/maker-bundle": "^1.11"
+    "symfony/maker-bundle": "^1.11",
+    "phpunit/phpunit": "6.5",
+    "phpstan/phpstan": "^0.11.5"
   },
   "minimum-stability": "dev",
   "prefer-stable": true

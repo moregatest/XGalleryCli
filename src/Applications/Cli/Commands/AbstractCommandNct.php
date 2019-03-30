@@ -20,11 +20,15 @@ use XGallery\Webservices\Services\Nct;
 abstract class AbstractCommandNct extends AbstractCommand
 {
     /**
+     * NCT service class
+     *
      * @var Nct
      */
     protected $nct;
 
     /**
+     * Configures the current command.
+     *
      * @throws ReflectionException
      */
     protected function configure()
@@ -35,6 +39,8 @@ abstract class AbstractCommandNct extends AbstractCommand
     }
 
     /**
+     * Prepare init
+     *
      * @return boolean
      * @throws Exception
      */

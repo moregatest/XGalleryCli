@@ -30,7 +30,7 @@ class DownloadHelper
      */
     public static function download($url, $saveTo)
     {
-        $logger = Factory::getLogger(get_called_class());
+        $logger = Factory::getLogger(static::class);
 
         if ((new Filesystem())->exists($saveTo)) {
             chmod($saveTo, 644);
@@ -48,7 +48,7 @@ class DownloadHelper
         $orgFileSize        = $response->getHeader('Content-Length')[0];
         $downloadedFileSize = filesize($saveTo);
 
-        if ($orgFileSize != $downloadedFileSize) {
+        if ($orgFileSize !== $downloadedFileSize) {
             $logger->notice('Download file error: Filesize does not match');
 
             return false;
@@ -64,6 +64,8 @@ class DownloadHelper
     }
 
     /**
+     * Get remote file size
+     *
      * @param $url
      * @return int
      */

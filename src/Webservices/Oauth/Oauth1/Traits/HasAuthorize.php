@@ -12,7 +12,6 @@ use XGallery\Webservices\Oauth\Common\OauthHelper;
 
 /**
  * Trait HasAuthorize
- *
  * @package XGallery\Webservices\Oauth\Oauth1\Traits
  */
 trait HasAuthorize
@@ -20,14 +19,18 @@ trait HasAuthorize
     use HasCredential;
 
     /**
+     * Array of oauth parameters
+     *
      * @var array
      */
     protected $oauthParameters = [];
 
     /**
-     * @param $method
-     * @param $uri
-     * @param $parameters
+     * Oauth signature
+     *
+     * @param string $method
+     * @param string $uri
+     * @param array  $parameters
      *
      * @return mixed
      */
@@ -48,8 +51,7 @@ trait HasAuthorize
             /**
              * @uses Both $key and $value MUST BE encoded
              */
-            $parametersString[] = OauthHelper::encode($key)
-                .'='.OauthHelper::encode($value);
+            $parametersString[] = OauthHelper::encode($key).'='.OauthHelper::encode($value);
         }
 
         $baseSignature = OauthHelper::encode(strtoupper($method))
@@ -62,26 +64,26 @@ trait HasAuthorize
 
         // For header we'll use encode for signature
         $this->oauthParameters                    = $parameters;
-        $this->oauthParameters['oauth_signature'] = OauthHelper::encode(
-            $parameters['oauth_signature']
-        );
+        $this->oauthParameters['oauth_signature'] = OauthHelper::encode($parameters['oauth_signature']);
 
         return $parameters;
     }
 
     /**
-     * @param $baseSignature
+     * Get encrypted signature
+     *
+     * @param string $baseSignature
      *
      * @return string
      */
     protected function getSignature($baseSignature)
     {
-        return base64_encode(
-            hash_hmac('SHA1', $baseSignature, $this->getKey(), true)
-        );
+        return base64_encode(hash_hmac('SHA1', $baseSignature, $this->getKey(), true));
     }
 
     /**
+     * Get oauth header
+     *
      * @return string
      */
     protected function getOauthHeader()
@@ -96,6 +98,8 @@ trait HasAuthorize
     }
 
     /**
+     * Get oauth parameters
+     *
      * @return array
      */
     protected function getOauthParameters()
@@ -111,6 +115,8 @@ trait HasAuthorize
     }
 
     /**
+     * Get key
+     *
      * @return string
      */
     private function getKey()

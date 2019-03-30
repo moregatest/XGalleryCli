@@ -145,6 +145,8 @@ class FlickrResize extends AbstractCommandPhotos
     }
 
     /**
+     * processResize
+     *
      * @return boolean
      * @throws ImageResizeException
      */

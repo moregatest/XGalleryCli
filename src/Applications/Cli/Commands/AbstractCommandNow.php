@@ -20,11 +20,15 @@ use XGallery\Webservices\Services\Now;
 abstract class AbstractCommandNow extends AbstractCommand
 {
     /**
+     * Now service
+     *
      * @var Now
      */
     protected $now;
 
     /**
+     * Configures the current command.
+     *
      * @throws ReflectionException
      */
     protected function configure()
@@ -35,7 +39,9 @@ abstract class AbstractCommandNow extends AbstractCommand
     }
 
     /**
-     * @return bool
+     * prepare
+     *
+     * @return boolean
      * @throws Exception
      */
     protected function prepare()

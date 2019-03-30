@@ -61,7 +61,7 @@ abstract class AbstractApplicationCli extends Application
     /**
      * Trigger after application run completed
      *
-     * @param $status
+     * @param integer $status
      * @return integer
      */
     abstract protected function complete($status = 0);

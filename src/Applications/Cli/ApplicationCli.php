@@ -38,7 +38,7 @@ class ApplicationCli extends AbstractApplicationCli
                  */
                 $class = '\\XGallery\\Applications\\Cli\\Commands\\'.$dirName.'\\'
                     .ucfirst(basename($file->getFilename(), '.php'));
-                $this->add((new $class));
+                $this->add(new $class);
             }
         }
     }
