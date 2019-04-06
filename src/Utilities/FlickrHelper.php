@@ -40,7 +40,7 @@ class FlickrHelper
     /**
      * Get all photos in Album via URL
      *
-     * @param $albumUrl
+     * @param string $albumUrl
      * @return array
      */
     public static function getAlbumPhotos($albumUrl)

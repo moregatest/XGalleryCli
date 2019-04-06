@@ -23,7 +23,6 @@ use XGallery\Webservices\Services\Flickr\Traits\HasUrls;
 
 /**
  * Class Flickr
- *
  * @package XGallery\Webservices\Services
  */
 class Flickr extends Client
@@ -127,12 +126,7 @@ class Flickr extends Client
             static::UPLOAD_ENDPOINT,
             $options,
             [
-                'multipart' => [
-                    [
-                        'name' => 'photo',
-                        'contents' => fopen($imageFile, 'r'),
-                    ],
-                ],
+                'multipart' => [['name' => 'photo', 'contents' => fopen($imageFile, 'r')]],
             ]
         );
 
@@ -163,12 +157,7 @@ class Flickr extends Client
             static::UPLOAD_REPLACE_ENDPOINT,
             array_merge(['photo_id' => $photoId], $options),
             [
-                'multipart' => [
-                    [
-                        'name' => 'photo',
-                        'contents' => fopen($imageFile, 'r'),
-                    ],
-                ],
+                'multipart' => [['name' => 'photo', 'contents' => fopen($imageFile, 'r')]],
             ]
         );
 

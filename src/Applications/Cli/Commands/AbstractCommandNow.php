@@ -8,9 +8,10 @@
 
 namespace XGallery\Applications\Cli\Commands;
 
-use Exception;
+
 use ReflectionException;
 use XGallery\Applications\Cli\AbstractCommand;
+use XGallery\Model\ModelNow;
 use XGallery\Webservices\Services\Now;
 
 /**
@@ -27,6 +28,11 @@ abstract class AbstractCommandNow extends AbstractCommand
     protected $now;
 
     /**
+     * @var ModelNow $model
+     */
+    protected $model;
+
+    /**
      * Configures the current command.
      *
      * @throws ReflectionException
@@ -34,20 +40,9 @@ abstract class AbstractCommandNow extends AbstractCommand
     protected function configure()
     {
         $this->setName('now:'.strtolower($this->getClassName()));
+        $this->now   = new Now;
+        $this->model = ModelNow::getInstance();
 
         parent::configure();
-    }
-
-    /**
-     * prepare
-     *
-     * @return boolean
-     * @throws Exception
-     */
-    protected function prepare()
-    {
-        $this->now = new Now;
-
-        return true;
     }
 }

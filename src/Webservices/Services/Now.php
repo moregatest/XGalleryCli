@@ -10,11 +10,13 @@ namespace XGallery\Webservices\Services;
 
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
+use XGallery\Defines\DefinesCore;
 use XGallery\Factory;
 use XGallery\Webservices\Restful;
 use XGallery\Webservices\Services\Now\Traits\HasCollection;
 use XGallery\Webservices\Services\Now\Traits\HasDelivery;
 use XGallery\Webservices\Services\Now\Traits\HasMerchant;
+use XGallery\Webservices\Services\Now\Traits\HasMetadata;
 use XGallery\Webservices\Services\Now\Traits\HasReservation;
 
 /**
@@ -27,6 +29,9 @@ class Now extends Restful
     use HasDelivery;
     use HasMerchant;
     use HasReservation;
+    use HasMetadata;
+
+    const API_VERSION = 1;
 
     /**
      * Wrapped method to send request
@@ -49,9 +54,10 @@ class Now extends Restful
             'x-foody-client-version' => '3.0.0',
         ];
 
-        $id    = md5(serialize(func_get_args()));
-        $cache = Factory::getCache();
-        $item  = $cache->getItem($id);
+        $id      = md5(serialize(func_get_args()));
+        $expires = 86400; // 24 hours
+        $cache   = Factory::getCache(DefinesCore::APPLICATION, $expires);
+        $item    = $cache->getItem($id);
 
         if ($item->isHit()) {
             $this->logger->notice('Request have cached', func_get_args());
@@ -62,6 +68,8 @@ class Now extends Restful
         $response = parent::fetch($method, $uri, $options);
 
         if (!$response) {
+            $this->logger->notice('Fetch failed: '.$response);
+
             return false;
         }
 

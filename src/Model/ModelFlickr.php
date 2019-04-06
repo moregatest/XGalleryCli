@@ -40,22 +40,30 @@ class ModelFlickr extends BaseModel
     /**
      * Insert multi contacts
      *
-     * @param $contacts
+     * @param array $contacts
      * @return boolean|integer
      */
     public function insertContacts($contacts)
     {
+        if (empty($contacts)) {
+            return false;
+        }
+
         return $this->insertRows('xgallery_flickr_contacts', $contacts);
     }
 
     /**
      * Insert multi photos
      *
-     * @param $photos
+     * @param array $photos
      * @return boolean|integer
      */
     public function insertPhotos($photos)
     {
+        if (empty($photos)) {
+            return false;
+        }
+
         return $this->insertRows('xgallery_flickr_photos', $photos, ['is_primary', 'isprimary', 'date_faved']);
     }
 

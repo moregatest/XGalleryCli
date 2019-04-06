@@ -57,6 +57,24 @@ class BaseModel
     }
 
     /**
+     * Get class instance
+     *
+     * @throws Exception
+     */
+    public static function getInstance()
+    {
+        static $instance;
+
+        if (isset($instance)) {
+            return $instance;
+        }
+
+        $instance = new static;
+
+        return $instance;
+    }
+
+    /**
      * Clean up while destructing
      */
     public function __destruct()
@@ -96,11 +114,23 @@ class BaseModel
     }
 
     /**
+     * Truncate table data
+     *
+     * @param string $table
+     * @return \Doctrine\DBAL\Driver\ResultStatement
+     * @throws DBALException
+     */
+    public function truncate($table)
+    {
+        return $this->connection->executeQuery('TRUNCATE `'.$table.'`');
+    }
+
+    /**
      * Insert multi rows
      *
-     * @param       $table
-     * @param       $rows
-     * @param array $excludeFields
+     * @param string $table
+     * @param array  $rows
+     * @param array  $excludeFields
      * @return boolean|integer
      */
     public function insertRows($table, $rows, $excludeFields = [])
@@ -111,7 +141,7 @@ class BaseModel
         // Columns
         $query            .= '(';
         $onDuplicateQuery = [];
-        $columnNames      = array_keys(get_object_vars($rows[0]));
+        $columnNames      = array_keys(get_object_vars(reset($rows)));
 
         // Bind column names
         foreach ($columnNames as $index => $columnName) {

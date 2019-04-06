@@ -15,6 +15,7 @@ use Doctrine\DBAL\DriverManager;
 use Exception;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use PHPMailer\PHPMailer\PHPMailer;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Templating\Loader\FilesystemLoader;
@@ -160,6 +161,30 @@ class Factory
         $dispatcher = new EventDispatcher;
 
         return $dispatcher;
+    }
+
+    /**
+     * getMailer
+     * @return PHPMailer
+     * @throws \PHPMailer\PHPMailer\Exception
+     */
+    public static function getMailer()
+    {
+        $mail = new PHPMailer;
+        $mail->IsSMTP();
+        $mail->SMTPDebug  = 0;
+        $mail->SMTPAuth   = true;
+        $mail->SMTPSecure = getenv('smtp_secure');
+        $mail->Host       = getenv('smtp_host');
+        $mail->Port       = getenv('smtp_port');
+        $mail->IsHTML(true);
+        $mail->Username = getenv('smtp_username');
+        $mail->Password = getenv('smtp_password');
+        $mail->SetFrom(getenv('smtp_username'));
+        $mail->CharSet  = 'UTF-8';
+        $mail->Encoding = 'base64';
+
+        return $mail;
     }
 
     /**

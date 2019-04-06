@@ -31,6 +31,16 @@ trait HasDelivery
     abstract public function fetch($method, $uri, array $options = []);
 
     /**
+     * getBrowsingInfo
+     * @uses https://www.now.vn/ Gợi ý
+     *
+     */
+    public function getBrowsingInfo($deliveryIds = [], $position = [])
+    {
+
+    }
+
+    /**
      * Search delivery ids
      *
      * @param $conditions
@@ -40,8 +50,6 @@ trait HasDelivery
      */
     public function searchDeliveryIds($conditions)
     {
-        $conditions = array_merge($conditions, ['keyword' => '']);
-
         $respond = $this->fetch(
             'POST',
             'https://gappapi.deliverynow.vn/api/delivery/search_delivery_ids',
@@ -90,7 +98,7 @@ trait HasDelivery
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
-    public function getDetail($id)
+    public function getDeliveryDetail($id)
     {
         $respond = $this->fetch(
             'GET',

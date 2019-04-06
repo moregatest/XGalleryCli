@@ -15,7 +15,7 @@ use Psr\Cache\InvalidArgumentException;
  * Trait HasCollection
  * @package XGallery\Webservices\Services\Now\Traits
  */
-trait HasCollection
+trait HasMetadata
 {
     /**
      * Wrapped method to send request
@@ -30,35 +30,25 @@ trait HasCollection
      */
     abstract public function fetch($method, $uri, array $options = []);
 
-    /**
-     * Return collections
-     * @uses https://www.now.vn/ Bộ sưu tập
-     *
-     * @param array $collectionIds
-     * @return boolean
-     * @throws GuzzleException
-     * @throws InvalidArgumentException
-     */
-    public function getCollectionInfos($collectionIds = [])
+    public function getMetadata()
     {
-        if (empty($collectionIds)) {
-            return false;
-        }
-
-        $respond = $this->fetch(
-            'POST',
-            'https://gappapi.tablenow.vn/api/collection/get_infos',
-            [
-                'json' => [
-                    'collection_ids' => $collectionIds,
-                ],
-            ]
-        );
+        $respond = $this->fetch('POST', 'https://gappapi.tablenow.vn/api/metadata/get_metadata');
 
         if (!$respond) {
             return false;
         }
 
-        return $respond->collections;
+        return $respond->metadata;
+    }
+
+    public function getDeliveryNowMetadata()
+    {
+        $respond = $this->fetch('GET', 'https://gappapi.deliverynow.vn/api/meta/get_metadata');
+
+        if (!$respond) {
+            return false;
+        }
+
+        return $respond;
     }
 }

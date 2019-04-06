@@ -143,7 +143,6 @@ abstract class AbstractCommand extends Command
         $this->output = $output;
 
         // Can not prepare then exit execute
-
         if ($this->prepare() === self::PREPARE_FAILED) {
             $this->log('Prepare failed', 'notice', [], true);
 
@@ -173,7 +172,7 @@ abstract class AbstractCommand extends Command
                 continue;
             }
 
-            $this->log($class.' ...');
+            $this->log($class.' ...', 'stage');
             $return = call_user_func([$this, $class]);
 
             if ($return === self::PREPARE_FAILED) {
@@ -210,7 +209,7 @@ abstract class AbstractCommand extends Command
         }
 
         if (!empty($steps)) {
-            $this->log('Steps: '.implode(',', $steps), 'info', [], true);
+            $this->log('Steps: '.implode(',', $steps), 'stage', [], true);
             $this->progressBar->start(count($steps));
 
             foreach ($steps as $step) {
@@ -257,7 +256,19 @@ abstract class AbstractCommand extends Command
      */
     protected function log($message, $type = 'info', $context = [], $newLine = false)
     {
-        $this->output->write("\n".$message);
+        switch ($type) {
+            case 'stage':
+                $this->output->write("\n<info>".$message.'</info>');
+                $type = 'info';
+                break;
+            case 'notice':
+                $this->output->write("\n<error>".$message.'</error>');
+                break;
+            default:
+                $this->output->write("\n".$message);
+                break;
+        }
+
         $this->{'log'.ucfirst($type)}($message, $context);
 
         if ($newLine === false) {
