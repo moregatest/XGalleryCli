@@ -47,16 +47,16 @@ class PhotosDownload extends AbstractCommandFlickr
         $this->setDescription('Mass download all photos');
         $this->options = [
             'nsid' => [
-                'description' => 'Fetch photos from specific NSID',
+                'description' => 'Download photos from specific NSID',
             ],
             'album' => [
-                'description' => 'Fetch photos from specific album',
+                'description' => 'Download photos from specific album',
             ],
             'gallery' => [
-                'description' => 'Fetch photos from specific gallery',
+                'description' => 'Download photos from specific gallery',
             ],
             'photo_ids' => [
-                'description' => 'Fetch photo from specific ids',
+                'description' => 'Download photo from specific ids',
             ],
             'limit' => [
                 'description' => 'Limit number of download',
@@ -80,7 +80,7 @@ class PhotosDownload extends AbstractCommandFlickr
     {
         $this->nsid = FlickrHelper::getNsid($this->getOption('nsid'));
 
-        return self::NEXT_PREPARE;
+        return self::PREPARE_SUCCEED;
     }
 
     /**
@@ -102,6 +102,8 @@ class PhotosDownload extends AbstractCommandFlickr
         if (!$photos || !$photos['photos']) {
             return self::NEXT_PREPARE;
         }
+
+        $this->log('Working on NSID: '.$photos['nsid']);
 
         foreach ($photos['photos'] as $photo) {
             $this->photos[] = $photo->id;

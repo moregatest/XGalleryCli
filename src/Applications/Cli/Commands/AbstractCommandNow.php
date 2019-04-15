@@ -8,7 +8,6 @@
 
 namespace XGallery\Applications\Cli\Commands;
 
-
 use ReflectionException;
 use XGallery\Applications\Cli\AbstractCommand;
 use XGallery\Model\ModelNow;

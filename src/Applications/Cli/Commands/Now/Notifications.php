@@ -39,17 +39,13 @@ class Notifications extends AbstractCommandNow
 
         if (empty($categoryIds)) {
             return false;
-        }
-
-        list($list, $categories, $query) = $this->model->getDeliveriesWithPromotion($categoryIds);
-
-        if (empty($list)) {
-            return false;
-        }
+        };
 
         $template = Factory::getTemplate(XGALLERY_ROOT.'/templates/email/%name%');
-        $html     = $template->render('now.php',
-            ['list' => $list, 'category' => implode(', ', $categories), 'query' => $query]);
+        $html     = $template->render(
+            'now.php',
+            ['data' => $this->model->getDeliveriesWithPromotion($categoryIds)]
+        );
 
         return $this->sendMail($html);
     }
@@ -65,8 +61,8 @@ class Notifications extends AbstractCommandNow
         $mail          = Factory::getMailer();
         $mail->Subject = "Now - Daily promotions";
         $mail->AddAddress("soulevilx@gmail.com", 'Viet Vu');
-        $mail->AddAddress('trandieuvi.cseiu@gmail.com');
-        $mail->AddAddress('lelinh42@gmail.com');
+        //$mail->AddAddress('trandieuvi.cseiu@gmail.com');
+        //$mail->AddAddress('lelinh42@gmail.com');
         $mail->Body = $html;
 
         return $mail->Send();

@@ -9,10 +9,11 @@
 namespace XGallery\Applications\Cli\Commands\Now;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
 use Symfony\Component\Console\Helper\ProgressBar;
 use XGallery\Applications\Cli\Commands\AbstractCommandNow;
+use XGallery\Entities\Now\Delivery;
 use XGallery\Factory;
-use XGallery\Model\BaseModel;
 
 /**
  * Class Search
@@ -23,6 +24,9 @@ class Deliveries extends AbstractCommandNow
     protected $districts = [];
     protected $cuisines = [];
     protected $deliveryIds = [];
+    /**
+     * @var array
+     */
     protected $deliveryData = ['deliveries' => [], 'categories_xref' => [], 'branchs' => [], 'promotions' => []];
 
     const SG_CITY_ID = 217;
@@ -35,7 +39,7 @@ class Deliveries extends AbstractCommandNow
     /**
      * configure
      *
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      * @throws \ReflectionException
      */
     protected function configure()
@@ -49,7 +53,7 @@ class Deliveries extends AbstractCommandNow
      * Get districts & cuisines
      *
      * @return boolean
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     protected function prepareGetDatabase()
     {
@@ -74,7 +78,7 @@ class Deliveries extends AbstractCommandNow
      * Try to get as much as possible delivery ids
      *
      * @return bool
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Psr\Cache\InvalidArgumentException
      */
@@ -114,32 +118,9 @@ class Deliveries extends AbstractCommandNow
     }
 
     /**
-     * prepareCleanupTables
-     *
-     * @return boolean
-     * @throws \Doctrine\DBAL\DBALException
-     */
-    protected function prepareCleanupTables()
-    {
-        $tables = [
-            '`xgallery_now_deliveries`',
-            '`xgallery_now_brands`',
-            '`xgallery_now_categories_xref`',
-            '`xgallery_now_cuisines_xref`',
-            '`xgallery_now_promotions`',
-        ];
-
-        foreach ($tables as $table) {
-            $this->connection->executeQuery('TRUNCATE `soulevil_xgallery3`.'.$table);
-        }
-
-        return self::PREPARE_SUCCEED;
-    }
-
-    /**
      * prepareGetDelieveryDetail
      * @return boolean
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Psr\Cache\InvalidArgumentException
      */
@@ -152,6 +133,7 @@ class Deliveries extends AbstractCommandNow
 
         foreach ($this->deliveryIds as $index => $deliveryId) {
             $deliveryDetail = $this->now->getDeliveryDetail($deliveryId);
+            $dish           = $this->now->getDeliveryDishes($deliveryId);
 
             if (!$deliveryDetail) {
                 $this->log('Can not get delivery detail id: '.$deliveryId, 'notice');
@@ -160,31 +142,7 @@ class Deliveries extends AbstractCommandNow
             }
 
             // Prepare delivery data for inserting
-            $row                      = new \stdClass;
-            $row->name                = $deliveryDetail->name;
-            $row->address             = $deliveryDetail->address;
-            $row->restaurant_id       = $deliveryDetail->restaurant_id;
-            $row->restaurant_url      = $deliveryDetail->restaurant_url;
-            $row->delivery_id         = $deliveryDetail->delivery_id;
-            $row->city_id             = $deliveryDetail->city_id;
-            $row->district_id         = $deliveryDetail->district_id;
-            $row->foody_service_id    = isset($deliveryDetail->foody_service_id) ? (int)$deliveryDetail->foody_service_id : 0;
-            $row->is_city_alert       = isset($deliveryDetail->is_city_alert) ? (int)$deliveryDetail->is_city_alert : 0;
-            $row->is_favorite         = isset($deliveryDetail->is_favorite) ? (int)$deliveryDetail->is_favorite : 0;
-            $row->is_now_delivery     = isset($deliveryDetail->is_now_delivery) ? (int)$deliveryDetail->is_now_delivery : 0;
-            $row->is_quality_merchant = isset($deliveryDetail->is_quality_merchant) ? (int)$deliveryDetail->is_quality_merchant : 0;
-            $row->position            = json_encode($deliveryDetail->position);
-
-            if (isset($deliveryDetail->price_range)) {
-                $row->min_price = $deliveryDetail->price_range->min_price;
-                $row->max_price = $deliveryDetail->price_range->max_price;
-            }
-
-            if (isset($deliveryDetail->brand)) {
-                $row->brand_id = $deliveryDetail->brand->brand_id;
-            }
-
-            $this->deliveryData['deliveries'][] = $row;
+            $this->deliveryData['deliveries'][] = new Delivery($deliveryDetail);
 
             // Brand
             if (isset($deliveryDetail->brand) && !isset($this->deliveryData['branchs'][$deliveryDetail->brand->brand_id])) {
@@ -198,22 +156,27 @@ class Deliveries extends AbstractCommandNow
             if (isset($deliveryDetail->delivery, $deliveryDetail->delivery->promotions)) {
                 foreach ($deliveryDetail->delivery->promotions as $promotion) {
                     $promotionObj                       = new \stdClass;
+                    $promotionObj->id                   = $promotion->promotion_id;
                     $promotionObj->delivery_id          = $deliveryId;
                     $promotionObj->discount             = $promotion->discount;
                     $promotionObj->discount_amount      = $promotion->discount_amount;
                     $promotionObj->discount_on_type     = $promotion->discount_on_type;
                     $promotionObj->discount_type        = $promotion->discount_type;
                     $promotionObj->discount_value_type  = $promotion->discount_value_type;
+                    $promotionObj->expired              = isset($promotion->expired) ? date(
+                        'Y-m-d H:i:s',
+                        strtotime($promotion->expired)
+                    ) : null;
                     $promotionObj->max_discount_amount  = $promotion->max_discount_amount;
                     $promotionObj->max_discount_value   = $promotion->max_discount_value;
                     $promotionObj->min_order_amount     = $promotion->min_order_amount;
                     $promotionObj->min_order_value      = $promotion->min_order_value;
                     $promotionObj->promo_code           = $promotion->promo_code;
-                    $promotionObj->id                   = $promotion->promotion_id;
                     $this->deliveryData['promotions'][] = $promotionObj;
                 }
             }
 
+            // Category
             if (isset($deliveryDetail->delivery_categories)) {
                 foreach ($deliveryDetail->delivery_categories as $deliveryCategory) {
                     $categoryXref                            = new \stdClass;
@@ -223,13 +186,23 @@ class Deliveries extends AbstractCommandNow
                 }
             }
 
-            //
+            // Cuisines
             if (isset($deliveryDetail->cuisines)) {
                 foreach ($deliveryDetail->cuisines as $cuisine) {
                     if (!isset($this->cuisines[$cuisine])) {
                         continue;
                     }
-                    $this->model->insertCuisineXref($this->cuisines[$cuisine]->id, $deliveryId);
+                    $cuisineXref                           = new \stdClass;
+                    $cuisineXref->cuisine_id               = $this->cuisines[$cuisine]->id;
+                    $cuisineXref->delivery_id              = $deliveryId;
+                    $this->deliveryData['cuisines_xref'][] = $cuisineXref;
+                }
+            }
+
+            // Menu items
+            foreach ($dish->menu_infos as $dishes) {
+                foreach ($dishes->dishes as $dish) {
+                    $this->model->insertMenuItem($deliveryId, $dish);
                 }
             }
 
@@ -239,24 +212,32 @@ class Deliveries extends AbstractCommandNow
         return self::PREPARE_SUCCEED;
     }
 
+    /**
+     * processInsertDatabase
+     *
+     * @return boolean
+     * @throws \Exception
+     */
     protected function processInsertDatabase()
     {
-        $baseModel = new BaseModel;
-
         if (!empty($this->deliveryData['deliveries'])) {
-            $baseModel->insertRows('xgallery_now_deliveries', $this->deliveryData['deliveries']);
+            $this->model->insertRows('xgallery_now_deliveries', $this->deliveryData['deliveries']);
         }
 
         if (!empty($this->deliveryData['categories_xref'])) {
-            $baseModel->insertRows('xgallery_now_categories_xref', $this->deliveryData['categories_xref']);
+            $this->model->insertRows('xgallery_now_categories_xref', $this->deliveryData['categories_xref']);
+        }
+
+        if (!empty($this->deliveryData['cuisines_xref'])) {
+            $this->model->insertRows('xgallery_now_cuisines_xref', $this->deliveryData['cuisines_xref']);
         }
 
         if (!empty($this->deliveryData['branchs'])) {
-            $baseModel->insertRows('xgallery_now_brands', $this->deliveryData['branchs']);
+            $this->model->insertRows('xgallery_now_brands', $this->deliveryData['branchs']);
         }
 
         if (!empty($this->deliveryData['promotions'])) {
-            $baseModel->insertRows('xgallery_now_promotions', $this->deliveryData['promotions']);
+            $this->model->insertRows('xgallery_now_promotions', $this->deliveryData['promotions']);
         }
 
         return true;

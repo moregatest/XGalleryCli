@@ -10,6 +10,7 @@ namespace XGallery\Model;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\ParameterType;
 use Exception;
 use Monolog\Logger;
 use XGallery\Factory;
@@ -114,18 +115,6 @@ class BaseModel
     }
 
     /**
-     * Truncate table data
-     *
-     * @param string $table
-     * @return \Doctrine\DBAL\Driver\ResultStatement
-     * @throws DBALException
-     */
-    public function truncate($table)
-    {
-        return $this->connection->executeQuery('TRUNCATE `'.$table.'`');
-    }
-
-    /**
      * Insert multi rows
      *
      * @param string $table
@@ -196,5 +185,48 @@ class BaseModel
         $this->connection->close();
 
         return $prepare->rowCount();
+    }
+
+    protected function insertIgnore($tableExpression, array $data, array $types = [])
+    {
+        if (empty($data)) {
+            return $this->connection->executeUpdate('INSERT IGNORE INTO '.$tableExpression.' () VALUES ()');
+        }
+
+        $columns = [];
+        $values  = [];
+        $set     = [];
+
+        foreach ($data as $columnName => $value) {
+            $columns[] = $columnName;
+            $values[]  = $value;
+            $set[]     = '?';
+        }
+
+        return $this->connection->executeUpdate(
+            'INSERT IGNORE INTO '.$tableExpression.' ('.implode(', ', $columns).')'.
+            ' VALUES ('.implode(', ', $set).')',
+            $values,
+            is_string(key($types)) ? $this->extractTypeValues($columns, $types) : $types
+        );
+    }
+
+    /**
+     * Extract ordered type list from an ordered column list and type map.
+     *
+     * @param string[]       $columnList
+     * @param int[]|string[] $types
+     *
+     * @return int[]|string[]
+     */
+    private function extractTypeValues(array $columnList, array $types)
+    {
+        $typeValues = [];
+
+        foreach ($columnList as $columnIndex => $columnName) {
+            $typeValues[] = $types[$columnName] ?? ParameterType::STRING;
+        }
+
+        return $typeValues;
     }
 }

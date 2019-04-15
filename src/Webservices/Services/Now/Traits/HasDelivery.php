@@ -37,7 +37,6 @@ trait HasDelivery
      */
     public function getBrowsingInfo($deliveryIds = [], $position = [])
     {
-
     }
 
     /**

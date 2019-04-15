@@ -41,6 +41,12 @@ trait HasMetadata
         return $respond->metadata;
     }
 
+    /**
+     * getDeliveryNowMetadata
+     * @return bool|mixed
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
     public function getDeliveryNowMetadata()
     {
         $respond = $this->fetch('GET', 'https://gappapi.deliverynow.vn/api/meta/get_metadata');

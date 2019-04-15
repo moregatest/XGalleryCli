@@ -2,6 +2,9 @@
 
 namespace XGallery\Applications\Cli\Commands\Now;
 
+use Doctrine\DBAL\DBALException;
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use XGallery\Applications\Cli\Commands\AbstractCommandNow;
 
 /**
@@ -35,6 +38,9 @@ final class Now extends AbstractCommandNow
     /**
      * prepareGetMetadata
      * @return boolean
+     *
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     protected function prepareGetMetadata()
     {
@@ -51,48 +57,14 @@ final class Now extends AbstractCommandNow
     }
 
     /**
-     * prepareCleanupTables
-     * @return boolean
-     * @throws \Doctrine\DBAL\DBALException
-     */
-    protected function prepareCleanupTables()
-    {
-        $tables = [
-            'xgallery_now_cities',
-            'xgallery_now_districts',
-            'xgallery_now_cuisines',
-            'xgallery_now_categories',
-            'xgallery_now_restaurant_sort_types',
-        ];
-
-        foreach ($tables as $table) {
-            $this->model->truncate($table);
-        }
-
-        return self::PREPARE_SUCCEED;
-    }
-
-    /**
      * processInsertDatabase
      *
      * @return boolean
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     protected function processTableNow()
     {
-        foreach ($this->metadata->province as $city) {
-
-            $this->log('Processing city: '.$city->name.' ...');
-            $this->model->insertCity($city);
-
-            foreach ($city->district as $district) {
-                $this->model->insertDistrict($district);
-            }
-        }
-
-        foreach ($this->metadata->cuisine as $cuisine) {
-            $this->model->insertCuisines($cuisine);
-        }
+        $this->model->insertTableNow($this->metadata);
 
         return true;
     }
@@ -104,17 +76,7 @@ final class Now extends AbstractCommandNow
      */
     protected function processDeliveryNow()
     {
-        foreach ($this->deliveryMetadata->country->delivery_categories as $category) {
-            $this->model->insertDeliveryCategory($category);
-        }
-
-        foreach ($this->deliveryMetadata->country->restaurant_sort_type as $sortType) {
-            $this->model->insertSortTypes($sortType);
-        }
-
-        foreach ($this->deliveryMetadata->country->delivery_sort_options as $sortType) {
-            $this->model->insertSortTypes($sortType);
-        }
+        $this->model->insertDeliveryNow($this->deliveryMetadata);
 
         return true;
     }

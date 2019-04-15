@@ -15,6 +15,7 @@ use XGallery\Factory;
 use XGallery\Webservices\Restful;
 use XGallery\Webservices\Services\Now\Traits\HasCollection;
 use XGallery\Webservices\Services\Now\Traits\HasDelivery;
+use XGallery\Webservices\Services\Now\Traits\HasDish;
 use XGallery\Webservices\Services\Now\Traits\HasMerchant;
 use XGallery\Webservices\Services\Now\Traits\HasMetadata;
 use XGallery\Webservices\Services\Now\Traits\HasReservation;
@@ -30,6 +31,7 @@ class Now extends Restful
     use HasMerchant;
     use HasReservation;
     use HasMetadata;
+    use HasDish;
 
     const API_VERSION = 1;
 
@@ -54,10 +56,9 @@ class Now extends Restful
             'x-foody-client-version' => '3.0.0',
         ];
 
-        $id      = md5(serialize(func_get_args()));
-        $expires = 86400; // 24 hours
-        $cache   = Factory::getCache(DefinesCore::APPLICATION, $expires);
-        $item    = $cache->getItem($id);
+        $id    = md5(serialize(func_get_args()));
+        $cache = Factory::getCache(DefinesCore::APPLICATION);
+        $item  = $cache->getItem($id);
 
         if ($item->isHit()) {
             $this->logger->notice('Request have cached', func_get_args());
