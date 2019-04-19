@@ -48,9 +48,7 @@ trait HasReservation
             'POST',
             'https://gappapi.tablenow.vn/api/reservation_item/get_special_infos',
             [
-                'json' => [
-                    'item_ids' => $merchantIds,
-                ],
+                'json' => ['item_ids' => $merchantIds],
             ]
         );
 

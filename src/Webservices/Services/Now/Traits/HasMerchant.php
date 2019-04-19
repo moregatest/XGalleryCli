@@ -48,9 +48,7 @@ trait HasMerchant
             'POST',
             'https://gappapi.tablenow.vn/api/merchant/get_browsing_infos',
             [
-                'json' => [
-                    'merchant_ids' => $merchantIds,
-                ],
+                'json' => ['merchant_ids' => $merchantIds],
             ]
         );
 

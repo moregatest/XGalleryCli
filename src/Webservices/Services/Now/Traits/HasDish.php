@@ -24,6 +24,14 @@ trait HasDish
      */
     abstract public function fetch($method, $uri, array $options = []);
 
+    /**
+     * getDeliveryDishes
+     *
+     * @param $requestId
+     * @return boolean|mixed
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
     public function getDeliveryDishes($requestId)
     {
         $respond = $this->fetch(

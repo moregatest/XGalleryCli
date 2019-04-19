@@ -49,9 +49,7 @@ trait HasCollection
             'POST',
             'https://gappapi.tablenow.vn/api/collection/get_infos',
             [
-                'json' => [
-                    'collection_ids' => $collectionIds,
-                ],
+                'json' => ['collection_ids' => $collectionIds],
             ]
         );
 

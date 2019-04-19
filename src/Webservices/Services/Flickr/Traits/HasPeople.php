@@ -33,12 +33,7 @@ trait HasPeople
      */
     public function flickrPeopleFindByEmail($email)
     {
-        return $this->rest(
-            [
-                'method' => 'flickr.people.findByEmail',
-                'find_email' => $email,
-            ]
-        );
+        return $this->rest(['method' => 'flickr.people.findByEmail', 'find_email' => $email]);
     }
 
     /**
@@ -82,12 +77,7 @@ trait HasPeople
         }
 
         for ($page = 2; $page <= $pages; $page++) {
-            $response = $this->flickrPeopleGetPhotos(
-                $nsid,
-                [
-                    'page' => $page,
-                ]
-            );
+            $response = $this->flickrPeopleGetPhotos($nsid, ['page' => $page]);
 
             if (!$response) {
                 continue;
@@ -107,11 +97,6 @@ trait HasPeople
      */
     public function flickrPeopleGetInfo($nsid)
     {
-        return $this->rest(
-            [
-                'method' => 'flickr.people.getInfo',
-                'user_id' => $nsid,
-            ]
-        );
+        return $this->rest(['method' => 'flickr.people.getInfo', 'user_id' => $nsid]);
     }
 }

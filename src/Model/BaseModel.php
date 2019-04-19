@@ -14,6 +14,7 @@ use Doctrine\DBAL\ParameterType;
 use Exception;
 use Monolog\Logger;
 use XGallery\Factory;
+use XGallery\Traits\HasLogger;
 
 /**
  * Class BaseModel
@@ -21,6 +22,7 @@ use XGallery\Factory;
  */
 class BaseModel
 {
+    use HasLogger;
 
     /**
      * Database connection
@@ -91,7 +93,7 @@ class BaseModel
         $this->connection->close();
 
         if (!empty($this->getErrors())) {
-            $this->logger->error('', $this->errors);
+            $this->logError('', $this->errors);
         }
     }
 
@@ -134,7 +136,7 @@ class BaseModel
 
         // Bind column names
         foreach ($columnNames as $index => $columnName) {
-            if (in_array($columnName, $excludeFields)) {
+            if (in_array($columnName, $excludeFields, true)) {
                 unset($columnNames[$index]);
                 continue;
             }
@@ -187,6 +189,14 @@ class BaseModel
         return $prepare->rowCount();
     }
 
+    /**
+     * insertIgnore
+     * @param string $tableExpression
+     * @param array  $data
+     * @param array  $types
+     * @return integer
+     * @throws DBALException
+     */
     protected function insertIgnore($tableExpression, array $data, array $types = [])
     {
         if (empty($data)) {

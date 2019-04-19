@@ -55,7 +55,6 @@ trait HasActivity
     public function flickrActivityUserPhotos(array $params = [])
     {
         return $this->rest(
-            'GET',
             array_merge(
                 [
                     'method' => 'flickr.activity.userPhotos',

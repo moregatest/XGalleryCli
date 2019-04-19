@@ -12,6 +12,7 @@ use ReflectionException;
 use Symfony\Component\Process\Exception\RuntimeException;
 use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
 use XGallery\Defines\DefinesFlickr;
+use XGallery\Factory;
 use XGallery\Utilities\FlickrHelper;
 use XGallery\Utilities\SystemHelper;
 
@@ -21,7 +22,7 @@ use XGallery\Utilities\SystemHelper;
  *
  * @package XGallery\Applications\Commands\Flickr
  */
-class PhotosDownload extends AbstractCommandFlickr
+final class PhotosDownload extends AbstractCommandFlickr
 {
     /**
      * User ID
@@ -65,6 +66,9 @@ class PhotosDownload extends AbstractCommandFlickr
             'all' => [
                 'description' => 'Download all photos from NSID',
                 'default' => false,
+            ],
+            'email' => [
+                'description' => 'Send email after completed',
             ],
         ];
 
@@ -224,5 +228,35 @@ class PhotosDownload extends AbstractCommandFlickr
         }
 
         return true;
+    }
+
+    /**
+     * executeComplete
+     * @param boolean $status
+     * @return integer|mixed
+     * @throws \PHPMailer\PHPMailer\Exception
+     */
+    protected function executeComplete($status)
+    {
+        if ($status !== true) {
+            return parent::executeComplete($status);
+        }
+
+        $email = $this->getOption('email');
+
+        if (!$email) {
+            return parent::executeComplete($status);
+        }
+
+        $template = Factory::getTemplate(XGALLERY_ROOT.'/templates/email/%name%');
+        $html     = $template->render('flickr.php', ['data' => $this->model->getPhotoByIds($this->photos)]);
+
+        $mailer          = Factory::getMailer();
+        $mailer->Subject = 'Flickr photos download';
+        $mailer->Body    = $html;
+        $mailer->addAddress($email);
+        $mailer->send();
+
+        return parent::executeComplete($status);
     }
 }

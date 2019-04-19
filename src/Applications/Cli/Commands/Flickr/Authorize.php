@@ -16,7 +16,7 @@ use XGallery\Applications\Cli\Commands\AbstractCommandFlickr;
  * Class Authorize
  * @package XGallery\Applications\Commands\Flickr
  */
-class Authorize extends AbstractCommandFlickr
+final class Authorize extends AbstractCommandFlickr
 {
     /**
      * Configures the current command.

@@ -61,7 +61,7 @@ class Now extends Restful
         $item  = $cache->getItem($id);
 
         if ($item->isHit()) {
-            $this->logger->notice('Request have cached', func_get_args());
+            $this->logNotice('Request have cached', func_get_args());
 
             return $item->get();
         }
@@ -69,12 +69,12 @@ class Now extends Restful
         $response = parent::fetch($method, $uri, $options);
 
         if (!$response) {
-            $this->logger->notice('Fetch failed: '.$response);
+            $this->logNotice('Fetch failed: '.$response);
 
             return false;
         }
 
-        $response = json_decode($response);
+        $response = json_decode($response, false);
 
         if (!$response) {
             return false;

@@ -10,7 +10,6 @@ namespace XGallery\Model;
 
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\FetchMode;
-use Exception;
 
 /**
  * Class ModelFlickr
@@ -18,25 +17,6 @@ use Exception;
  */
 class ModelFlickr extends BaseModel
 {
-    /**
-     * Get class instance
-     *
-     * @return ModelFlickr
-     * @throws Exception
-     */
-    public static function getInstance()
-    {
-        static $instance;
-
-        if (isset($instance)) {
-            return $instance;
-        }
-
-        $instance = new static;
-
-        return $instance;
-    }
-
     /**
      * Insert multi contacts
      *
@@ -244,6 +224,32 @@ class ModelFlickr extends BaseModel
 
             return $this->connection->executeQuery($queryBuilder, [$id])->fetch(FetchMode::STANDARD_OBJECT);
         } catch (DBALException $exception) {
+            $this->errors[] = $exception->getMessage();
+
+            return false;
+        }
+    }
+
+    /**
+     * Get photo by ID
+     *
+     * @param $ids
+     * @return mixed
+     */
+    public function getPhotoByIds($ids)
+    {
+        $queryBuilder = $this->connection->createQueryBuilder();
+        $queryBuilder->select('*')
+            ->from('`xgallery_flickr_photos`')
+            ->where('`id` IN (' . implode(',', $ids) . ')');
+
+        try {
+            $this->reset();
+
+            return $this->connection->executeQuery($queryBuilder)->fetchAll(FetchMode::STANDARD_OBJECT);
+        } catch (DBALException $exception) {
+            $this->errors[] = $exception->getMessage();
+
             return false;
         }
     }

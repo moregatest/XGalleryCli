@@ -34,12 +34,7 @@ trait HasContacts
     public function flickrContactsGetListRecentlyUploaded(array $params = [])
     {
         return $this->rest(
-            array_merge(
-                [
-                    'method' => 'flickr.contacts.getListRecentlyUploaded',
-                ],
-                $params
-            )
+            array_merge(['method' => 'flickr.contacts.getListRecentlyUploaded',], $params)
         );
     }
 
@@ -83,11 +78,7 @@ trait HasContacts
         }
 
         for ($page = 2; $page <= $pages; $page++) {
-            $response = $this->flickrContactsGetList(
-                [
-                    'page' => $page,
-                ]
-            );
+            $response = $this->flickrContactsGetList(['page' => $page]);
 
             if (!$response) {
                 continue;

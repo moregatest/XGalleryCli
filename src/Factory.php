@@ -187,6 +187,15 @@ class Factory
         return $mail;
     }
 
+    public static function getImapMailer()
+    {
+        return imap_open(
+            '{imap.gmail.com:993/imap/ssl}INBOX',
+            getenv('smtp_username'),
+            getenv('smtp_password')
+        );
+    }
+
     /**
      * Get template
      *

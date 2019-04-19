@@ -32,11 +32,6 @@ trait HasProfile
      */
     public function flickrProfileGetProfile($userId)
     {
-        return $this->rest(
-            [
-                'method' => 'flickr.profile.getProfile',
-                'user_id' => $userId,
-            ]
-        );
+        return $this->rest(['method' => 'flickr.profile.getProfile', 'user_id' => $userId]);
     }
 }

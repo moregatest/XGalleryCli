@@ -67,10 +67,7 @@ class Flickr extends Client
      */
     private function getDefaultFlickrParameters()
     {
-        return [
-            'format' => $this->responseFormat,
-            'nojsoncallback' => 1,
-        ];
+        return ['format' => $this->responseFormat, 'nojsoncallback' => 1];
     }
 
     /**
@@ -95,13 +92,15 @@ class Flickr extends Client
         }
 
         if ($this->responseFormat === 'json') {
-            $response = json_decode($response);
+            $response = json_decode($response, false);
 
-            if (isset($response->stat) && $response->stat === 'fail') {
-                $this->logger->notice($response->message, [$parameters, get_object_vars($response)]);
-
-                return false;
+            if (isset($response->stat) && $response->stat !== 'fail') {
+                return $response;
             }
+
+            $this->logNotice($response->message, [$parameters, get_object_vars($response)]);
+
+            return false;
         }
 
         return $response;

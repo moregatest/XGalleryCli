@@ -250,7 +250,7 @@ final class PhotoDownload extends AbstractCommandFlickr
             $this->log('Local file-size: '.$originalFilesize.' vs remote file-size: '.$remoteFilesize);
 
             // Than we only re-download if corrupted and re-download is required
-            if ($originalFilesize != $remoteFilesize && $this->getOption('re_download') == 1) {
+            if ($originalFilesize !== $remoteFilesize && $this->getOption('re_download') == 1) {
                 $this->log('Local file is corrupted: '.$saveTo.'. Re-downloading ...', 'notice');
 
                 if (!DownloadHelper::download($this->lastSize->source, $saveTo)) {

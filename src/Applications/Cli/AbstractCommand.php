@@ -168,7 +168,7 @@ abstract class AbstractCommand extends Command
         $classes = get_class_methods($this);
 
         foreach ($classes as $class) {
-            if (strpos($class, 'prepare', 0) === false || $class === 'prepare') {
+            if ($class === 'prepare' || strpos($class, 'prepare') === false) {
                 continue;
             }
 
@@ -201,7 +201,7 @@ abstract class AbstractCommand extends Command
         $steps   = [];
 
         foreach ($classes as $class) {
-            if (strpos($class, 'process', 0) === false || $class === 'process') {
+            if ($class === 'process' || strpos($class, 'process') === false) {
                 continue;
             }
 

@@ -30,6 +30,13 @@ trait HasMetadata
      */
     abstract public function fetch($method, $uri, array $options = []);
 
+    /**
+     * getMetadata
+     *
+     * @return boolean
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
     public function getMetadata()
     {
         $respond = $this->fetch('POST', 'https://gappapi.tablenow.vn/api/metadata/get_metadata');

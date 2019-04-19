@@ -52,9 +52,7 @@ final class Contact extends AbstractCommandFlickr
      */
     protected function prepareContact()
     {
-        $nsid = $this->getOption('nsid');
-
-        if (!$nsid) {
+        if (!$nsid = $this->getOption('nsid')) {
             return self::PREPARE_FAILED;
         }
 
@@ -99,7 +97,7 @@ final class Contact extends AbstractCommandFlickr
             return false;
         }
 
-        $this->log("Affected rows: ".(int)$rows);
+        $this->log('Affected rows: '.(int)$rows);
 
         return true;
     }

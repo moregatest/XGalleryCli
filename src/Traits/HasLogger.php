@@ -27,17 +27,7 @@ trait HasLogger
      */
     private function getLogger()
     {
-        static $loggers;
-
-        $id = md5(static::class);
-
-        if (isset($loggers[$id])) {
-            return $loggers[$id];
-        }
-
-        $loggers[$id] = Factory::getLogger(static::class);
-
-        return $loggers[$id];
+        return  Factory::getLogger(static::class);
     }
 
     /**
