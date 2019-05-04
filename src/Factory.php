@@ -107,6 +107,10 @@ class Factory
             $directory = getenv('cache_path');
         }
 
+        if ($defaultLifetime === null) {
+            $defaultLifetime = getenv('cache_interval');
+        }
+
         $instances[$id] = new FilesystemAdapter($namespace, $defaultLifetime, $directory);
 
         return $instances[$id];

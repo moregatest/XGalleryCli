@@ -11,6 +11,9 @@ namespace XGallery\Webservices;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use Psr\Cache\InvalidArgumentException;
+use Spatie\Url\Url;
+use XGallery\Factory;
 use XGallery\Traits\HasLogger;
 
 /**
@@ -28,17 +31,40 @@ class Restful extends Client
      * @param string $method
      * @param string $uri
      * @param array  $options
-     * @return boolean|string
+     * @return boolean|mixed
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function fetch($method, $uri, array $options = [])
     {
         try {
+            $id = Url::fromString($uri)
+                ->withoutQueryParameter('oauth_nonce')
+                ->withoutQueryParameter('oauth_signature')
+                ->withoutQueryParameter('oauth_timestamp');
+            $id = md5(serialize($id));
+
+            $cache = Factory::getCache();
+            $item  = $cache->getItem($id);
+
+            if ($item->isHit()) {
+                $this->logNotice('Request have cached', func_get_args());
+
+                return $item->get();
+            }
+
             $response = $this->request($method, $uri, $options);
 
-            return $response->getBody()->getContents();
+            if (!$response) {
+                return false;
+            }
+
+            $item->set($response->getBody()->getContents());
+            $cache->save($item);
+
+            return $item->get();
         } catch (RequestException $exception) {
-            $this->logInfo(__FUNCTION__, [$uri, $method, $options]);
+            $this->logError(__FUNCTION__, [$uri, $method, $options]);
 
             if ($exception->getResponse()) {
                 $this->logError(

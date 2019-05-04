@@ -9,6 +9,7 @@
 namespace XGallery\Webservices\Oauth\Oauth1;
 
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use XGallery\Webservices\Oauth\Oauth1\Traits\HasAuthorize;
 use XGallery\Webservices\Restful;
 
@@ -43,8 +44,9 @@ class Client extends Restful
      * @param string $uri
      * @param array  $parameters
      * @param array  $options
-     * @return boolean|string
+     * @return boolean|mixed
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function api($method, $uri, $parameters, $options = [])
     {
@@ -72,9 +74,10 @@ class Client extends Restful
     /**
      * Call Oauth to get request token
      *
-     * @param $callback
-     * @return boolean|string
+     * @param string $callback
+     * @return boolean|mixed
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getRequestToken($callback)
     {
@@ -91,9 +94,10 @@ class Client extends Restful
     /**
      * Build request token API
      *
-     * @param $callback
-     * @return boolean|string
+     * @param string $callback
+     * @return string
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getRequestTokenUrl($callback)
     {
@@ -107,18 +111,16 @@ class Client extends Restful
      *
      * @param string $oauthToken
      * @param string $oauthVerifier
-     * @return boolean|string
+     * @return boolean|mixed
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getAccessToken($oauthToken, $oauthVerifier)
     {
         return $this->api(
             static::GET_ACCESS_TOKEN_METHOD,
             static::OAUTH_GET_ACCESS_TOKEN_ENDPOINT,
-            [
-                'oauth_token' => $oauthToken,
-                'oauth_verifier' => $oauthVerifier,
-            ]
+            ['oauth_token' => $oauthToken, 'oauth_verifier' => $oauthVerifier]
         );
     }
 }

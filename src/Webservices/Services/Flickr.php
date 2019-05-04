@@ -9,6 +9,7 @@
 namespace XGallery\Webservices\Services;
 
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use SimpleXMLElement;
 use XGallery\Webservices\Oauth\Oauth1\Client;
 use XGallery\Webservices\Services\Flickr\Traits\HasActivity;
@@ -71,12 +72,13 @@ class Flickr extends Client
     }
 
     /**
-     * Execute restfull
+     * Execute restful
      *
      * @param array $parameters
      * @param array $options
      * @return boolean|mixed|string
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function rest($parameters, $options = [])
     {
@@ -113,6 +115,7 @@ class Flickr extends Client
      * @param array  $options
      * @return boolean|SimpleXMLElement
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function upload($imageFile, $options = [])
     {
@@ -144,6 +147,7 @@ class Flickr extends Client
      * @param array  $options
      * @return boolean|SimpleXMLElement
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function replace($imageFile, $photoId, $options = [])
     {
