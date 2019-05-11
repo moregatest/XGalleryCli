@@ -37,11 +37,7 @@ trait HasFavorites
     {
         return $this->rest(
             array_merge(
-                [
-                    'method' => 'flickr.favorites.getList',
-                    'user_id' => $userId,
-                    'per_page ' => 500,
-                ],
+                ['method' => 'flickr.favorites.getList', 'user_id' => $userId, 'per_page ' => 500],
                 $params
             )
         );

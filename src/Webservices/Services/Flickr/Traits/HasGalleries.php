@@ -35,11 +35,7 @@ trait HasGalleries
     {
         return $this->rest(
             array_merge(
-                [
-                    'method' => 'flickr.galleries.getPhotos',
-                    'gallery_id' => $galleryId,
-                    'per_page' => 500,
-                ],
+                ['method' => 'flickr.galleries.getPhotos', 'gallery_id' => $galleryId, 'per_page' => 500],
                 $parameters
             )
         );

@@ -39,12 +39,7 @@ trait HasPhotos
     {
         return $this->rest(
             array_merge(
-                [
-                    'method' => 'flickr.photos.search',
-                    'text' => $keyword,
-                    'safe_search' => 3,
-                    'per_page' => 500,
-                ],
+                ['method' => 'flickr.photos.search', 'text' => $keyword, 'safe_search' => 3, 'per_page' => 500],
                 $parameters
             )
         );
@@ -61,10 +56,7 @@ trait HasPhotos
     {
         return $this->rest(
             array_merge(
-                [
-                    'method' => 'flickr.photos.getSizes',
-                    'photo_id' => $photoId,
-                ],
+                ['method' => 'flickr.photos.getSizes', 'photo_id' => $photoId],
                 $parameters
             )
         );
@@ -81,10 +73,7 @@ trait HasPhotos
     {
         return $this->rest(
             array_merge(
-                [
-                    'method' => 'flickr.photos.getInfo',
-                    'photo_id' => $photoId,
-                ],
+                ['method' => 'flickr.photos.getInfo', 'photo_id' => $photoId],
                 $parameters
             )
         );

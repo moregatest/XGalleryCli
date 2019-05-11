@@ -36,10 +36,7 @@ trait HasActivity
     {
         return $this->rest(
             array_merge(
-                [
-                    'method' => 'flickr.activity.userComments',
-                    'per_page' => 50,
-                ],
+                ['method' => 'flickr.activity.userComments', 'per_page' => 50],
                 $params
             )
         );
@@ -56,10 +53,7 @@ trait HasActivity
     {
         return $this->rest(
             array_merge(
-                [
-                    'method' => 'flickr.activity.userPhotos',
-                    'per_page' => 50,
-                ],
+                ['method' => 'flickr.activity.userPhotos', 'per_page' => 50],
                 $params
             )
         );

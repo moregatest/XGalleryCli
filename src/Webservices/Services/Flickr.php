@@ -82,7 +82,7 @@ class Flickr extends Client
      */
     public function rest($parameters, $options = [])
     {
-        $response = $this->api(
+        $response = $this->oauth(
             static::REST_METHOD,
             static::REST_ENDPOINT,
             array_merge($this->getDefaultFlickrParameters(), $parameters),
@@ -123,7 +123,7 @@ class Flickr extends Client
             return false;
         }
 
-        $response = $this->api(
+        $response = $this->oauth(
             static::UPLOAD_METHOD,
             static::UPLOAD_ENDPOINT,
             $options,
@@ -155,7 +155,7 @@ class Flickr extends Client
             return false;
         }
 
-        $response = $this->api(
+        $response = $this->oauth(
             static::UPLOAD_METHOD,
             static::UPLOAD_REPLACE_ENDPOINT,
             array_merge(['photo_id' => $photoId], $options),

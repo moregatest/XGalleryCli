@@ -12,7 +12,8 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Cache\InvalidArgumentException;
-use Spatie\Url\Url;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriInterface;
 use XGallery\Factory;
 use XGallery\Traits\HasLogger;
 
@@ -38,11 +39,8 @@ class Restful extends Client
     public function fetch($method, $uri, array $options = [])
     {
         try {
-            $id = Url::fromString($uri)
-                ->withoutQueryParameter('oauth_nonce')
-                ->withoutQueryParameter('oauth_signature')
-                ->withoutQueryParameter('oauth_timestamp');
-            $id = md5(serialize($id));
+
+            $id = md5(serialize($uri));
 
             $cache = Factory::getCache();
             $item  = $cache->getItem($id);
@@ -81,5 +79,33 @@ class Restful extends Client
         }
 
         return false;
+    }
+
+    /**
+     * GET request
+     *
+     * @param UriInterface|string $uri
+     * @param array                                 $options
+     * @return bool|mixed|ResponseInterface
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function get($uri, array $options = [])
+    {
+        return $this->fetch('GET', $uri, $options);
+    }
+
+    /**
+     * POST request
+     *
+     * @param UriInterface|string $uri
+     * @param array                                 $options
+     * @return bool|mixed|ResponseInterface
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function post($uri, array $options = [])
+    {
+        return $this->fetch('POST', $uri, $options);
     }
 }

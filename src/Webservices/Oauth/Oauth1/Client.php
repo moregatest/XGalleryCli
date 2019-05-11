@@ -10,6 +10,7 @@ namespace XGallery\Webservices\Oauth\Oauth1;
 
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
+use XGallery\Factory;
 use XGallery\Webservices\Oauth\Oauth1\Traits\HasAuthorize;
 use XGallery\Webservices\Restful;
 
@@ -48,13 +49,20 @@ class Client extends Restful
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
-    public function api($method, $uri, $parameters, $options = [])
+    public function oauth($method, $uri, $parameters, $options = [])
     {
-        $parameters = $this->sign(
-            $method,
-            $uri,
-            $parameters
-        );
+
+        $id    = md5(serialize(func_get_args()));
+        $cache = Factory::getCache();
+        $item  = $cache->getItem($id);
+
+        if ($item->isHit()) {
+            $this->logNotice('Request have cached', func_get_args());
+
+            return $item->get();
+        }
+
+        $parameters = $this->sign($method, $uri, $parameters);
 
         if ($method === 'GET') {
             $uri .= '?'.http_build_query($parameters);
@@ -68,7 +76,10 @@ class Client extends Restful
             return false;
         }
 
-        return $response;
+        $item->set($response);
+        $cache->save($item);
+
+        return $item->get();
     }
 
     /**
@@ -84,7 +95,7 @@ class Client extends Restful
         $this->credential->token       = '';
         $this->credential->tokenSecret = '';
 
-        return $this->api(
+        return $this->oauth(
             static::TOKEN_REQUEST_METHOD,
             static::OAUTH_REQUEST_TOKEN_ENDPOINT,
             ['oauth_callback' => $callback]
@@ -117,7 +128,7 @@ class Client extends Restful
      */
     public function getAccessToken($oauthToken, $oauthVerifier)
     {
-        return $this->api(
+        return $this->oauth(
             static::GET_ACCESS_TOKEN_METHOD,
             static::OAUTH_GET_ACCESS_TOKEN_ENDPOINT,
             ['oauth_token' => $oauthToken, 'oauth_verifier' => $oauthVerifier]

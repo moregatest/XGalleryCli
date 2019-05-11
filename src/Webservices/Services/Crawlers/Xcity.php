@@ -28,7 +28,7 @@ class Xcity extends AbstractCrawler
     private $kana = ['あ', 'か', 'さ', 'た', 'な', 'は', 'ま', 'や', 'ら', 'わ'];
 
     /**
-     * getPages
+     * Get pages number
      *
      * @param string $indexUrl
      * @return boolean|integer
@@ -37,7 +37,7 @@ class Xcity extends AbstractCrawler
      */
     public function getPages($indexUrl)
     {
-        $crawler = $this->fetch('GET', $indexUrl);
+        $crawler = $this->get($indexUrl);
 
         if (!$crawler) {
             return false;
@@ -72,7 +72,7 @@ class Xcity extends AbstractCrawler
 
             for ($page = 1; $page <= $totalPages; $page++) {
 
-                $crawler = $this->fetch('GET', $this->endpoint.'/idol/?kana='.$kana.'&num=100&page='.$page);
+                $crawler = $this->get($this->endpoint.'/idol/?kana='.$kana.'&num=100&page='.$page);
 
                 if (!$crawler) {
                     continue;
@@ -92,14 +92,14 @@ class Xcity extends AbstractCrawler
     /**
      * Get profile' properties
      *
-     * @param $url
-     * @return bool|mixed|stdClass
+     * @param string $url
+     * @return boolean|mixed|stdClass
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
     public function getProfile($url)
     {
-        $crawler = $this->fetch('GET', $this->endpoint.'/idol/'.$url.'?style=simple');
+        $crawler = $this->get($this->endpoint.'/idol/'.$url.'?style=simple');
 
         if (!$crawler) {
             return false;
@@ -113,8 +113,8 @@ class Xcity extends AbstractCrawler
 
         try {
             $model->name = $crawler->filter('.itemBox h1')->text();
-            $model->xid = explode('/', trim($url, '/'));
-            $model->xid = end($model->xid);
+            $model->xid  = explode('/', trim($url, '/'));
+            $model->xid  = end($model->xid);
 
             $fields = $crawler->filter('#avidolDetails dl.profile dd')->each(function ($dd) {
                 $text = $dd->text();
@@ -181,9 +181,9 @@ class Xcity extends AbstractCrawler
 
                     return [
                         'sizes' => [
-                            'breast' => isset($breast) ? $breast : null,
-                            'waist' => isset($waist) ? $waist : null,
-                            'hips' => isset($hips) ? $hips : null,
+                            'breast' => $breast ?? null,
+                            'waist' => $waist ?? null,
+                            'hips' => $hips ?? null,
                         ],
                     ];
                 }
@@ -222,8 +222,9 @@ class Xcity extends AbstractCrawler
 
     /**
      * getProfileFilmPages
-     * @param $url
-     * @return bool|int|AbstractCrawler
+     *
+     * @param string $url
+     * @return boolean|integer|AbstractCrawler
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
@@ -232,6 +233,14 @@ class Xcity extends AbstractCrawler
         return $this->getPages($this->endpoint.'/idol/'.$url.'?style=simple');
     }
 
+    /**
+     * getProfileFilmLinks
+     *
+     * @param string $profileUrl
+     * @return array|bool
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
     public function getProfileFilmLinks($profileUrl)
     {
         $totalPages = $this->getProfileFilmPages($profileUrl);
@@ -239,9 +248,9 @@ class Xcity extends AbstractCrawler
 
         for ($page = 1; $page <= $totalPages; $page++) {
             if ($page === 1) {
-                $crawler = $this->fetch('GET', $this->endpoint.'/idol/'.$profileUrl.'?style=simple');
+                $crawler = $this->get($this->endpoint.'/idol/'.$profileUrl.'?style=simple');
             } else {
-                $crawler = $this->fetch('GET', $this->endpoint.'/idol/'.$profileUrl.'?style=simple&page='.$page);
+                $crawler = $this->get($this->endpoint.'/idol/'.$profileUrl.'?style=simple&page='.$page);
             }
 
             if (!$crawler) {
@@ -268,7 +277,7 @@ class Xcity extends AbstractCrawler
      */
     public function getFilm($url)
     {
-        $crawler = $this->fetch('GET', $this->endpoint.$url);
+        $crawler = $this->get($this->endpoint.$url);
 
         if (!$crawler) {
             return false;

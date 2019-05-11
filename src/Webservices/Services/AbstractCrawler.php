@@ -20,7 +20,7 @@ abstract class AbstractCrawler extends Restful
      * @param       $method
      * @param       $uri
      * @param array $options
-     * @return bool|mixed|Crawler
+     * @return boolean|mixed|Crawler
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
@@ -35,5 +35,11 @@ abstract class AbstractCrawler extends Restful
         return new Crawler($response);
     }
 
+    /**
+     * Get number of pages
+     *
+     * @param string $indexUrl
+     * @return integer
+     */
     abstract public function getPages($indexUrl);
 }
