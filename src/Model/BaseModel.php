@@ -10,9 +10,8 @@ namespace XGallery\Model;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\ParameterType;
+use Doctrine\DBAL\FetchMode;
 use Exception;
-use Monolog\Logger;
 use XGallery\Factory;
 use XGallery\Traits\HasLogger;
 
@@ -39,13 +38,6 @@ class BaseModel
     protected $errors = [];
 
     /**
-     * Logger
-     *
-     * @var Logger
-     */
-    protected $logger;
-
-    /**
      * BaseModel constructor.
      * @throws Exception
      */
@@ -53,7 +45,6 @@ class BaseModel
     {
         try {
             $this->connection = Factory::getConnection();
-            $this->logger     = Factory::getLogger(static::class);
         } catch (DBALException $exception) {
             $this->errors[] = $exception->getMessage();
         }
@@ -82,34 +73,22 @@ class BaseModel
      */
     public function __destruct()
     {
-        $this->cleanup();
+        $this->reset();
     }
 
     /**
-     * Clean up
-     */
-    protected function cleanup()
-    {
-        $this->connection->close();
-
-        if (!empty($this->getErrors())) {
-            $this->logError('', $this->errors);
-        }
-    }
-
-    /**
-     * Reset everything for next request
+     * Reset everything
      */
     protected function reset()
     {
-        $this->connection->close();
         $this->errors = [];
+        $this->connection->close();
     }
 
     /**
      * Get errors
      *
-     * return array
+     * @return array
      */
     public function getErrors()
     {
@@ -117,126 +96,42 @@ class BaseModel
     }
 
     /**
-     * Insert multi rows
+     * Insert record
      *
-     * @param string $table
-     * @param array  $rows
-     * @param array  $excludeFields
+     * @param       $tableExpression
+     * @param array $data
+     * @param array $types
      * @return boolean|integer
      */
-    public function insertRows($table, $rows, $excludeFields = [])
+    protected function insert($tableExpression, array $data, array $types = [])
     {
-        $this->reset();
-        $query = 'INSERT INTO `'.$table.'`';
-
-        // Columns
-        $query            .= '(';
-        $onDuplicateQuery = [];
-        $columnNames      = array_keys(get_object_vars(reset($rows)));
-
-        // Bind column names
-        foreach ($columnNames as $index => $columnName) {
-            if (in_array($columnName, $excludeFields, true)) {
-                unset($columnNames[$index]);
-                continue;
-            }
-            $query              .= '`'.$columnName.'`,';
-            $onDuplicateQuery[] = '`'.$columnName.'`='.' VALUES(`'.$columnName.'`)';
-            $onDuplicateQuery[] = '`'.$columnName.'`='.' VALUES(`'.$columnName.'`)';
-        }
-
-        $query = rtrim($query, ',').')';
-        $query .= ' VALUES';
-
-        $bindKeys = [];
-
-        foreach ($rows as $index => $row) {
-            $query .= ' (';
-            foreach ($columnNames as $columnName) {
-                $columnId                    = 'value_'.uniqid($columnName, false);
-                $query                       .= ':'.$columnId.',';
-                $bindKeys[$index][$columnId] = isset($row->{$columnName}) ? $row->{$columnName} : null;
-            }
-
-            $query = rtrim($query, ',').'),';
-        }
-
-        $query = rtrim($query, ',');
-        $query .= ' ON DUPLICATE KEY UPDATE '.implode(',', $onDuplicateQuery).';';
-
         try {
-            $prepare = $this->connection->prepare($query);
+            return $this->connection->insert($tableExpression, $data, $types);
         } catch (DBALException $exception) {
-            $this->connection->close();
             $this->errors[] = $exception->getMessage();
 
             return false;
         }
-
-        // Bind values
-        foreach ($bindKeys as $index => $columns) {
-            foreach ($columns as $columnId => $value) {
-                $prepare->bindValue(':'.$columnId, $value);
-            }
-        }
-
-        if (!$prepare->execute()) {
-            return false;
-        }
-
-        $this->connection->close();
-
-        return $prepare->rowCount();
     }
 
     /**
-     * insertIgnore
-     * @param string $tableExpression
+     * getIdFrom
+     *
+     * @param string $table
      * @param array  $data
-     * @param array  $types
      * @return integer
-     * @throws DBALException
      */
-    protected function insertIgnore($tableExpression, array $data, array $types = [])
+    protected function getIdFrom($table, $data)
     {
-        if (empty($data)) {
-            return $this->connection->executeUpdate('INSERT IGNORE INTO '.$tableExpression.' () VALUES ()');
+        $queryBuilder = $this->connection->createQueryBuilder();
+        $queryBuilder->select('id')
+            ->from($table);
+
+        foreach ($data as $key => $value) {
+            $queryBuilder->andWhere($key.' = :'.$key);
+            $queryBuilder->setParameter(':'.$key, $value);
         }
 
-        $columns = [];
-        $values  = [];
-        $set     = [];
-
-        foreach ($data as $columnName => $value) {
-            $columns[] = $columnName;
-            $values[]  = $value;
-            $set[]     = '?';
-        }
-
-        return $this->connection->executeUpdate(
-            'INSERT IGNORE INTO '.$tableExpression.' ('.implode(', ', $columns).')'.
-            ' VALUES ('.implode(', ', $set).')',
-            $values,
-            is_string(key($types)) ? $this->extractTypeValues($columns, $types) : $types
-        );
-    }
-
-    /**
-     * Extract ordered type list from an ordered column list and type map.
-     *
-     * @param string[]       $columnList
-     * @param int[]|string[] $types
-     *
-     * @return int[]|string[]
-     */
-    private function extractTypeValues(array $columnList, array $types)
-    {
-        $typeValues = [];
-
-        foreach ($columnList as $columnIndex => $columnName) {
-            $typeValues[] = $types[$columnName] ?? ParameterType::STRING;
-        }
-
-        return $typeValues;
+        return (int)$queryBuilder->execute()->fetch(FetchMode::COLUMN);
     }
 }

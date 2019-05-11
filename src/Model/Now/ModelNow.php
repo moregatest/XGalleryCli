@@ -1,9 +1,10 @@
 <?php
 
-namespace XGallery\Model;
+namespace XGallery\Model\Now;
 
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\FetchMode;
+use XGallery\Model\BaseModel;
 use XGallery\Model\Now\Traits\Cuisines;
 use XGallery\Model\Now\Traits\DeliveryNow;
 use XGallery\Model\Now\Traits\Menus;
@@ -26,12 +27,16 @@ class ModelNow extends BaseModel
 
     /**
      * getSorts
+     *
      * @return mixed[]
-     * @throws DBALException
      */
     public function getSorts()
     {
-        return $this->connection->executeQuery(' SELECT * FROM `xgallery_now_restaurant_sort_types`')
-            ->fetchAll(FetchMode::STANDARD_OBJECT);
+        try {
+            return $this->connection->executeQuery(' SELECT * FROM `xgallery_now_restaurant_sort_types`')
+                ->fetchAll(FetchMode::STANDARD_OBJECT);
+        } catch (DBALException $exception) {
+            $this->errors[] = $exception->getMessage();
+        }
     }
 }

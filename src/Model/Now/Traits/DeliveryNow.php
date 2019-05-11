@@ -12,19 +12,14 @@ use Doctrine\DBAL\DBALException;
 trait DeliveryNow
 {
     /**
-     * Inserts IGNORE a table row with specified data.
+     * Insert record
      *
-     * Table expression and columns are not escaped and are not safe for user-input.
-     *
-     * @param string         $tableExpression The expression of the table to insert data into, quoted or unquoted.
-     * @param mixed[]        $data            An associative array containing column-value pairs.
-     * @param int[]|string[] $types           Types of the inserted data.
-     *
-     * @return int The number of affected rows.
-     *
-     * @throws DBALException
+     * @param       $tableExpression
+     * @param array $data
+     * @param array $types
+     * @return boolean|integer
      */
-    abstract protected function insertIgnore($tableExpression, array $data, array $types = []);
+    abstract protected function insert($tableExpression, array $data, array $types = []);
 
     /**
      * insertDeliveryNow
@@ -42,17 +37,17 @@ trait DeliveryNow
 
     /**
      * insertCancellations
-     * @param $cancellations
+     * @param object[] $cancellations
      * @return boolean
-     * @throws DBALException
      */
     protected function insertCancellations($cancellations)
     {
         if (empty($cancellations)) {
             return false;
         }
+
         foreach ($cancellations as $cancellation) {
-            $this->insertIgnore(
+            $this->insert(
                 'xgallery_now_cancellations',
                 ['id' => $cancellation->id, 'name' => $cancellation->name]
             );
@@ -61,28 +56,32 @@ trait DeliveryNow
 
     /**
      * insertDeliveryCategories
-     * @param $categories
+     *
+     * @param object[] $categories
      * @return boolean
-     * @throws DBALException
      */
     protected function insertDeliveryCategories($categories)
     {
         if (empty($categories)) {
             return false;
         }
+
         foreach ($categories as $category) {
-            $this->insertIgnore('`xgallery_now_categories`', [
-                'id' => $category->id,
-                'parent_id' => $category->parent_category_id,
-                'country_id' => $category->country_id,
-                'name' => $category->name,
-                'url' => $category->url_rewrite,
-            ]);
+            $this->insert('`xgallery_now_categories`',
+                [
+                    'id' => $category->id,
+                    'parent_id' => $category->parent_category_id,
+                    'country_id' => $category->country_id,
+                    'name' => $category->name,
+                    'url' => $category->url_rewrite,
+                ]
+            );
         }
     }
 
     /**
      * insertCities
+     *
      * @param $cities
      * @return boolean
      * @throws DBALException
@@ -92,6 +91,7 @@ trait DeliveryNow
         if (empty($cities)) {
             return false;
         }
+
         foreach ($cities as $city) {
             $this->insertCity($city);
 
@@ -103,59 +103,66 @@ trait DeliveryNow
 
     /**
      * insertSortTypes
-     * @param $sortTypes
+     *
+     * @param object[] $sortTypes
      * @return boolean
-     * @throws DBALException
      */
     protected function insertSortTypes($sortTypes)
     {
         if (empty($sortTypes)) {
             return false;
         }
+
         foreach ($sortTypes as $sortType) {
-            $this->insertIgnore('`xgallery_now_restaurant_sort_types`', [
-                'id' => $sortType->id,
-                'code' => $sortType->code,
-                'name' => $sortType->name,
-            ]);
+            $this->insert('`xgallery_now_restaurant_sort_types`',
+                [
+                    'id' => $sortType->id,
+                    'code' => $sortType->code,
+                    'name' => $sortType->name,
+                ]
+            );
         }
     }
 
     /**
      * insertCity
-     * @param $city
-     * @return int
-     * @throws DBALException
+     *
+     * @param object $city
+     * @return boolean|integer
      */
     private function insertCity($city)
     {
-        return $this->insertIgnore('`xgallery_now_cities`', [
-            'id' => $city->id,
-            'name' => $city->name,
-            'url' => $city->url_rewrite_name,
-            'country_id' => 86,
-            'latitude' => $city->latitude,
-            'longitude' => $city->longitude,
-            'services' => json_encode($city->services),
-        ]);
+        return $this->insert('`xgallery_now_cities`',
+            [
+                'id' => $city->id,
+                'name' => $city->name,
+                'url' => $city->url_rewrite_name,
+                'country_id' => 86,
+                'latitude' => $city->latitude,
+                'longitude' => $city->longitude,
+                'services' => json_encode($city->services),
+            ]
+        );
     }
 
     /**
      * insertDistrict
-     * @param $district
-     * @return int
-     * @throws DBALException
+     *
+     * @param object $district
+     * @return boolean|integer
      */
     private function insertDistrict($district)
     {
-        return $this->insertIgnore('`xgallery_now_districts`', [
-            'id' => $district->district_id,
-            'city_id' => $district->province_id,
-            'is_has_delivery' => (int)$district->is_has_delivery,
-            'latitude' => $district->latitude,
-            'longitude' => $district->longitude,
-            'name' => $district->name,
-            'url' => $district->url_rewrite_name,
-        ]);
+        return $this->insert('`xgallery_now_districts`',
+            [
+                'id' => $district->district_id,
+                'city_id' => $district->province_id,
+                'is_has_delivery' => (int)$district->is_has_delivery,
+                'latitude' => $district->latitude,
+                'longitude' => $district->longitude,
+                'name' => $district->name,
+                'url' => $district->url_rewrite_name,
+            ]
+        );
     }
 }

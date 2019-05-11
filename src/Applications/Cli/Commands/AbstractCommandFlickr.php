@@ -11,7 +11,7 @@ namespace XGallery\Applications\Cli\Commands;
 use ReflectionException;
 use XGallery\Applications\Cli\AbstractCommand;
 use XGallery\Factory;
-use XGallery\Model\ModelFlickr;
+use XGallery\Model\Flickr\ModelFlickr;
 use XGallery\Webservices\Services\Flickr;
 
 /**
@@ -30,7 +30,7 @@ abstract class AbstractCommandFlickr extends AbstractCommand
     /**
      * Flickr model
      *
-     * @var ModelFlickr
+     * @var FlickrModel
      */
     protected $model;
 

@@ -1,10 +1,13 @@
 <?php
 
-
 namespace XGallery\Model\Now\Traits;
 
 use Doctrine\DBAL\FetchMode;
 
+/**
+ * Trait Promotions
+ * @package XGallery\Model\Now\Traits
+ */
 trait Promotions
 {
     public function getDeliveriesWithPromotion($categories)

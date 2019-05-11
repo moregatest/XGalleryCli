@@ -6,22 +6,25 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace XGallery\Model;
+namespace XGallery\Model\Flickr;
 
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\FetchMode;
+use XGallery\Model\BaseModel;
 
 /**
  * Class ModelFlickr
- * @package XGallery\Model
+ *
+ * @package XGallery\Model\Flickr
  */
 class ModelFlickr extends BaseModel
 {
     /**
      * Insert multi contacts
      *
-     * @param array $contacts
-     * @return boolean|integer
+     * @param $contacts
+     * @return boolean
+     * @throws \Exception
      */
     public function insertContacts($contacts)
     {
@@ -29,14 +32,30 @@ class ModelFlickr extends BaseModel
             return false;
         }
 
-        return $this->insertRows('xgallery_flickr_contacts', $contacts);
+        foreach ($contacts as $contact) {
+            if (is_object($contact)) {
+                $contact = get_object_vars($contact);
+            }
+
+            try {
+                $this->connection->insert('xgallery_flickr_contacts', $contact);
+            } catch (DBALException $exception) {
+                $this->errors[] = $exception->getMessage();
+
+                continue;
+            }
+
+        }
+
+        return true;
     }
 
     /**
      * Insert multi photos
      *
-     * @param array $photos
-     * @return boolean|integer
+     * @param $photos
+     * @return boolean
+     * @throws \Exception
      */
     public function insertPhotos($photos)
     {
@@ -44,7 +63,23 @@ class ModelFlickr extends BaseModel
             return false;
         }
 
-        return $this->insertRows('xgallery_flickr_photos', $photos, ['is_primary', 'isprimary', 'date_faved']);
+        foreach ($photos as $photo) {
+            if (is_object($photo)) {
+                $photo = get_object_vars($photo);
+            }
+
+            unset($photo['is_primary'], $photo['isprimary'], $photo['date_faved']);
+
+            try {
+                $this->connection->insert('xgallery_flickr_photos', $photo);
+            } catch (DBALException $exception) {
+                $this->errors[] = $exception->getMessage();
+
+                continue;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -70,10 +105,10 @@ class ModelFlickr extends BaseModel
     /**
      * Get photo ids by status
      *
-     * @param      $status
-     * @param null $nsid
-     * @param null $limit
-     * @return bool|mixed[]
+     * @param integer $status
+     * @param string  $nsid
+     * @param integer $limit
+     * @return boolean|mixed[]
      */
     public function getPhotoIds($status, $nsid = null, $limit = null)
     {
@@ -107,7 +142,7 @@ class ModelFlickr extends BaseModel
      *
      * @param null $nsid
      * @param null $limit
-     * @return bool|mixed[]
+     * @return boolean|mixed[]
      */
     public function getPhotoIdsUnsized($nsid = null, $limit = null)
     {
@@ -241,7 +276,7 @@ class ModelFlickr extends BaseModel
         $queryBuilder = $this->connection->createQueryBuilder();
         $queryBuilder->select('*')
             ->from('`xgallery_flickr_photos`')
-            ->where('`id` IN (' . implode(',', $ids) . ')');
+            ->where('`id` IN ('.implode(',', $ids).')');
 
         try {
             $this->reset();
