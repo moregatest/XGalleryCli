@@ -266,7 +266,7 @@ final class Photos extends AbstractCommandFlickr
             return false;
         }
 
-        $this->log("Updated ".$rows." photos into contact");
+        $this->log("Updated $rows photos into contact");
 
         return true;
     }

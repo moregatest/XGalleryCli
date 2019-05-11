@@ -53,6 +53,8 @@ final class Contact extends AbstractCommandFlickr
     protected function prepareContact()
     {
         if (!$nsid = $this->getOption('nsid')) {
+            $this->log('No NSID provided', 'notice');
+
             return self::PREPARE_FAILED;
         }
 

@@ -41,6 +41,7 @@ final class Authorize extends AbstractCommandFlickr
      *
      * @return boolean
      * @throws GuzzleException
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     protected function process()
     {

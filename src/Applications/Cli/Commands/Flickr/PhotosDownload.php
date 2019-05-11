@@ -232,9 +232,10 @@ final class PhotosDownload extends AbstractCommandFlickr
 
     /**
      * executeComplete
+     *
      * @param boolean $status
      * @return integer|mixed
-     * @throws \PHPMailer\PHPMailer\Exception
+     * @throws \Exception
      */
     protected function executeComplete($status)
     {

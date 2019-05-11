@@ -73,8 +73,6 @@ final class Contacts extends AbstractCommandFlickr
             return false;
         }
 
-        $this->log('Affected rows: '.(int)$rows);
-
         return true;
     }
 }
