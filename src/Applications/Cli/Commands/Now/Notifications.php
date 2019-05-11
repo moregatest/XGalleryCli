@@ -2,6 +2,7 @@
 
 namespace XGallery\Applications\Cli\Commands\Now;
 
+use PHPMailer\PHPMailer\Exception;
 use ReflectionException;
 use XGallery\Applications\Cli\Commands\AbstractCommandNow;
 use XGallery\Factory;
@@ -31,7 +32,7 @@ class Notifications extends AbstractCommandNow
     /**
      * processSendNotifications
      * @return bool
-     * @throws \PHPMailer\PHPMailer\Exception
+     * @throws Exception
      */
     protected function processSendNotifications()
     {
@@ -54,7 +55,7 @@ class Notifications extends AbstractCommandNow
      * sendMail
      * @param $html
      * @return boolean
-     * @throws \PHPMailer\PHPMailer\Exception
+     * @throws Exception
      */
     private function sendMail($html)
     {

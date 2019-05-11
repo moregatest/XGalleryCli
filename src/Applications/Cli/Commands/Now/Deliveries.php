@@ -10,6 +10,11 @@ namespace XGallery\Applications\Cli\Commands\Now;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
+use Exception;
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
+use ReflectionException;
+use stdClass;
 use Symfony\Component\Console\Helper\ProgressBar;
 use XGallery\Applications\Cli\Commands\AbstractCommandNow;
 use XGallery\Entities\Now\Delivery;
@@ -40,7 +45,7 @@ class Deliveries extends AbstractCommandNow
      * configure
      *
      * @throws DBALException
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function configure()
     {
@@ -79,8 +84,8 @@ class Deliveries extends AbstractCommandNow
      *
      * @return bool
      * @throws DBALException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     protected function prepareGetDeliveryIds()
     {
@@ -121,8 +126,8 @@ class Deliveries extends AbstractCommandNow
      * prepareGetDelieveryDetail
      * @return boolean
      * @throws DBALException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     protected function prepareGetDelieveryDetail()
     {
@@ -146,7 +151,7 @@ class Deliveries extends AbstractCommandNow
 
             // Brand
             if (isset($deliveryDetail->brand) && !isset($this->deliveryData['branchs'][$deliveryDetail->brand->brand_id])) {
-                $this->deliveryData['branchs'][$deliveryDetail->brand->brand_id]       = new \stdClass;
+                $this->deliveryData['branchs'][$deliveryDetail->brand->brand_id]       = new stdClass;
                 $this->deliveryData['branchs'][$deliveryDetail->brand->brand_id]->id   = $deliveryDetail->brand->brand_id;
                 $this->deliveryData['branchs'][$deliveryDetail->brand->brand_id]->url  = $deliveryDetail->brand->brand_url;
                 $this->deliveryData['branchs'][$deliveryDetail->brand->brand_id]->name = $deliveryDetail->brand->name;
@@ -155,7 +160,7 @@ class Deliveries extends AbstractCommandNow
             // Promotions
             if (isset($deliveryDetail->delivery, $deliveryDetail->delivery->promotions)) {
                 foreach ($deliveryDetail->delivery->promotions as $promotion) {
-                    $promotionObj                       = new \stdClass;
+                    $promotionObj                       = new stdClass;
                     $promotionObj->id                   = $promotion->promotion_id;
                     $promotionObj->delivery_id          = $deliveryId;
                     $promotionObj->discount             = $promotion->discount;
@@ -179,7 +184,7 @@ class Deliveries extends AbstractCommandNow
             // Category
             if (isset($deliveryDetail->delivery_categories)) {
                 foreach ($deliveryDetail->delivery_categories as $deliveryCategory) {
-                    $categoryXref                            = new \stdClass;
+                    $categoryXref                            = new stdClass;
                     $categoryXref->delivery_id               = (int)$deliveryId;
                     $categoryXref->category_id               = (int)$deliveryCategory;
                     $this->deliveryData['categories_xref'][] = $categoryXref;
@@ -192,7 +197,7 @@ class Deliveries extends AbstractCommandNow
                     if (!isset($this->cuisines[$cuisine])) {
                         continue;
                     }
-                    $cuisineXref                           = new \stdClass;
+                    $cuisineXref                           = new stdClass;
                     $cuisineXref->cuisine_id               = $this->cuisines[$cuisine]->id;
                     $cuisineXref->delivery_id              = $deliveryId;
                     $this->deliveryData['cuisines_xref'][] = $cuisineXref;
@@ -216,7 +221,7 @@ class Deliveries extends AbstractCommandNow
      * processInsertDatabase
      *
      * @return boolean
-     * @throws \Exception
+     * @throws Exception
      */
     protected function processInsertDatabase()
     {

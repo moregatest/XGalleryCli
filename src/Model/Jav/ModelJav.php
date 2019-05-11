@@ -30,7 +30,6 @@ class ModelJav extends BaseModel
             $this->logNotice('Found duplicated', $vars);
 
             return $id;
-
         }
 
         unset($vars['favorite']);
@@ -71,7 +70,8 @@ class ModelJav extends BaseModel
             $filmId = $this->connection->lastInsertId();
         }
 
-        $this->insert('xgallery_jav_movie_casts_xref',
+        $this->insert(
+            'xgallery_jav_movie_casts_xref',
             ['movie_id' => $filmId, 'cast_id' => $modelId, 'source' => $type]
         );
 

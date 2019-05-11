@@ -67,7 +67,8 @@ trait DeliveryNow
         }
 
         foreach ($categories as $category) {
-            $this->insert('`xgallery_now_categories`',
+            $this->insert(
+                '`xgallery_now_categories`',
                 [
                     'id' => $category->id,
                     'parent_id' => $category->parent_category_id,
@@ -114,7 +115,8 @@ trait DeliveryNow
         }
 
         foreach ($sortTypes as $sortType) {
-            $this->insert('`xgallery_now_restaurant_sort_types`',
+            $this->insert(
+                '`xgallery_now_restaurant_sort_types`',
                 [
                     'id' => $sortType->id,
                     'code' => $sortType->code,
@@ -132,7 +134,8 @@ trait DeliveryNow
      */
     private function insertCity($city)
     {
-        return $this->insert('`xgallery_now_cities`',
+        return $this->insert(
+            '`xgallery_now_cities`',
             [
                 'id' => $city->id,
                 'name' => $city->name,
@@ -153,7 +156,8 @@ trait DeliveryNow
      */
     private function insertDistrict($district)
     {
-        return $this->insert('`xgallery_now_districts`',
+        return $this->insert(
+            '`xgallery_now_districts`',
             [
                 'id' => $district->district_id,
                 'city_id' => $district->province_id,

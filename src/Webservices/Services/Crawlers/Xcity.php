@@ -71,7 +71,6 @@ class Xcity extends AbstractCrawler
             $totalPages = $this->getPages($this->endpoint.'/idol/?kana='.$kana.'&num=100&page=1');
 
             for ($page = 1; $page <= $totalPages; $page++) {
-
                 $crawler = $this->get($this->endpoint.'/idol/?kana='.$kana.'&num=100&page='.$page);
 
                 if (!$crawler) {

@@ -51,7 +51,6 @@ class Client extends Restful
      */
     public function oauth($method, $uri, $parameters, $options = [])
     {
-
         $id    = md5(serialize(func_get_args()));
         $cache = Factory::getCache();
         $item  = $cache->getItem($id);

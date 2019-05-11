@@ -39,7 +39,6 @@ class Restful extends Client
     public function fetch($method, $uri, array $options = [])
     {
         try {
-
             $id = md5(serialize($uri));
 
             $cache = Factory::getCache();

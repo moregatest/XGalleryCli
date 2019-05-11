@@ -5,6 +5,7 @@ namespace XGallery\Applications\Cli\Commands\Now;
 use Doctrine\DBAL\DBALException;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
+use ReflectionException;
 use XGallery\Applications\Cli\Commands\AbstractCommandNow;
 
 /**
@@ -26,7 +27,7 @@ final class Now extends AbstractCommandNow
     /**
      * configure
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function configure()
     {

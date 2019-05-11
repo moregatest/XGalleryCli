@@ -2,7 +2,6 @@
 
 namespace XGallery\Utilities;
 
-
 class XCityHelper
 {
     public static function getMonth($index)

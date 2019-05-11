@@ -26,7 +26,8 @@ trait Menus
      */
     public function insertMenuItem($deliveryId, $item)
     {
-        $this->insert('xgallery_now_menus',
+        $this->insert(
+            'xgallery_now_menus',
             [
                 'id' => $item->id,
                 'delivery_id' => $deliveryId,

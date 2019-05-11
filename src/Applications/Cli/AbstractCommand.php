@@ -11,6 +11,7 @@ namespace XGallery\Applications\Cli;
 use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -117,6 +118,8 @@ abstract class AbstractCommand extends Command
             }
         }
 
+        $this->addOption('task', null, InputOption::VALUE_OPTIONAL, 'Execute specific task');
+
         if (!empty($this->arguments)) {
             foreach ($this->arguments as $key => $arguments) {
                 $this->addArgument(
@@ -149,7 +152,7 @@ abstract class AbstractCommand extends Command
             return 1;
         }
 
-        $this->log('Prepare succeed. Starting ...');
+        $this->log('Prepare succeed', 'success', [], true);
 
         return $this->executeComplete($this->process());
     }
@@ -161,9 +164,8 @@ abstract class AbstractCommand extends Command
      */
     protected function prepare()
     {
-        $this->log(__FUNCTION__);
-        $this->progressBar = new ProgressBar($this->output);
-        $this->progressBar->setFormat('debug');
+        $this->log(__FUNCTION__, 'head');
+        $this->progressBar = $this->getProgressBar();
 
         $classes = get_class_methods($this);
 
@@ -173,6 +175,7 @@ abstract class AbstractCommand extends Command
             }
 
             $this->log($class.' ...', 'stage');
+
             $return = call_user_func([$this, $class]);
 
             if ($return === self::PREPARE_FAILED) {
@@ -191,12 +194,20 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * Process enpoint
+     * Process endpoint
      *
      * @return boolean
      */
     protected function process()
     {
+        $this->log(__FUNCTION__, 'head');
+
+        $task = $this->getOption('task');
+
+        if ($task && method_exists($this, $task)) {
+            return $this->{$task}();
+        }
+
         $classes = get_class_methods($this);
         $steps   = [];
 
@@ -208,23 +219,32 @@ abstract class AbstractCommand extends Command
             $steps[] = $class;
         }
 
-        if (!empty($steps)) {
-            $this->log('Steps: '.implode(',', $steps), 'stage', [], true);
-            $this->progressBar->start(count($steps));
+        if (empty($steps)) {
+            $this->output->writeln("\n");
 
-            foreach ($steps as $step) {
-                $this->log($step.' ...');
-                $result = call_user_func([$this, $step]);
-                if (!$result) {
-                    $this->log($step.' failed', 'notice');
-
-                    return false;
-                }
-                $this->output->write("\n");
-                $this->progressBar->advance();
-                $this->log('Succeed', 'info');
-            }
+            return true;
         }
+
+        $this->log('Steps: '.implode(',', $steps), 'steps', [], true);
+        $this->progressBar->setMaxSteps(count($steps));
+
+        foreach ($steps as $step) {
+            $this->log($step.' ...', 'stage');
+            $result = call_user_func([$this, $step]);
+
+            if (!$result) {
+                $this->log($step.' failed', 'error');
+
+                return false;
+            }
+
+            $this->output->write("\n");
+            $this->progressBar->advance();
+
+            $this->log('Process succeed', 'success');
+        }
+
+        $this->output->write("\n");
 
         return true;
     }
@@ -249,27 +269,38 @@ abstract class AbstractCommand extends Command
     /**
      * Wrapped method to display console output and log to file
      *
-     * @param         $message
+     * @param string  $message
      * @param string  $type
      * @param array   $context
      * @param boolean $newLine
      */
     protected function log($message, $type = 'info', $context = [], $newLine = false)
     {
-        switch ($type) {
-            case 'stage':
-                $this->output->write("\n<info>".$message.'</info>');
-                $type = 'info';
-                break;
-            case 'notice':
-                $this->output->write("\n<error>".$message.'</error>');
-                break;
-            default:
-                $this->output->write("\n".$message);
-                break;
+        $this->output->getFormatter()->setStyle('head', new OutputFormatterStyle('white', 'green', ['bold']));
+        $this->output->getFormatter()->setStyle('stage', new OutputFormatterStyle('green', 'black', ['bold']));
+        $this->output->getFormatter()->setStyle('steps', new OutputFormatterStyle('yellow', 'black', ['bold']));
+        $this->output->getFormatter()->setStyle('success', new OutputFormatterStyle('blue', 'black', ['bold']));
+
+        $this->output->getFormatter()->setStyle('notice', new OutputFormatterStyle('red', 'black'));
+        $this->output->getFormatter()->setStyle('warning', new OutputFormatterStyle('red', 'black', ['bold']));
+        $this->output->getFormatter()->setStyle('error', new OutputFormatterStyle('white', 'red', ['bold']));
+
+        $mapType = [
+            'head' => 'info',
+            'stage' => 'info',
+            'steps' => 'info',
+            'success' => 'info',
+            'comment' => 'info',
+            'question' => 'info',
+        ];
+
+        if ($type !== 'info') {
+            $this->output->write("\n<$type>$message</$type>");
+        } else {
+            $this->output->write("\n".$message);
         }
 
-        $this->{'log'.ucfirst($type)}($message, $context);
+        $this->{'log'.ucfirst(isset($mapType[$type]) ? $mapType[$type] : $type)}($message, $context);
 
         if ($newLine === false) {
             return;
@@ -282,5 +313,17 @@ abstract class AbstractCommand extends Command
         }
 
         $this->output->writeln($newLine);
+    }
+
+    protected function getModel($name)
+    {
+    }
+
+    protected function getProgressBar($max = 0)
+    {
+        $progressBar = new ProgressBar($this->output, $max);
+        $progressBar->setFormat('debug');
+
+        return $progressBar;
     }
 }

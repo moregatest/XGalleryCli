@@ -44,7 +44,6 @@ class ModelFlickr extends BaseModel
 
                 continue;
             }
-
         }
 
         return true;

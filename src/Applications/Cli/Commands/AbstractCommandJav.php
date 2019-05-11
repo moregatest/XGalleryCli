@@ -10,24 +10,22 @@ namespace XGallery\Applications\Cli\Commands;
 
 use ReflectionException;
 use XGallery\Applications\Cli\AbstractCommand;
-use XGallery\Model\Now\ModelNow;
-use XGallery\Webservices\Services\Now;
+use XGallery\Model\Jav\ModelJav;
+use XGallery\Webservices\Services\Crawlers\Xcity;
 
 /**
  * Class CommandFlickr
  * @package XGallery\Applications\Commands
  */
-abstract class AbstractCommandNow extends AbstractCommand
+abstract class AbstractCommandJav extends AbstractCommand
 {
     /**
-     * Now service
-     *
-     * @var Now
+     * @var Xcity
      */
-    protected $now;
+    protected $xcity;
 
     /**
-     * @var ModelNow $model
+     * @var ModelJav
      */
     protected $model;
 
@@ -38,9 +36,9 @@ abstract class AbstractCommandNow extends AbstractCommand
      */
     protected function configure()
     {
-        $this->setName('now:'.strtolower($this->getClassName()));
-        $this->now   = new Now;
-        $this->model = ModelNow::getInstance();
+        $this->setName('jav:'.strtolower($this->getClassName()));
+        $this->xcity = new Xcity;
+        $this->model = ModelJav::getInstance();
 
         parent::configure();
     }

@@ -35,7 +35,7 @@ trait HasCollection
      * @uses https://www.now.vn/ Bộ sưu tập
      *
      * @param array $collectionIds
-     * @return boolean
+     * @return boolean|array
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
