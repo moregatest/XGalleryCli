@@ -1,215 +1,90 @@
 <?php
 /**
+ *
  * Copyright (c) 2019 JOOservices Ltd
- * @author  Viet Vu <jooservices@gmail.com>
+ * @author Viet Vu <jooservices@gmail.com>
+ * @package XGallery
  * @license GPL
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace XGallery;
+namespace App;
 
-use Doctrine\DBAL\Configuration;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\DriverManager;
-use Exception;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
+use ErrorException;
+use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\Templating\Loader\FilesystemLoader;
-use Symfony\Component\Templating\PhpEngine;
-use Symfony\Component\Templating\TemplateNameParser;
+use Symfony\Component\Cache\Adapter\MemcachedAdapter;
+use XGallery\Defines\DefinesCore;
 
 /**
  * Class Factory
- * @package XGallery
+ * @package App
  */
 class Factory
 {
-    const APP_NAMESPACE = 'XGallery3';
-
-    /**
-     * Get database connection
-     *
-     * @return Connection
-     * @throws DBALException
-     */
-    public static function getConnection()
-    {
-        $config = new Configuration;
-
-        return DriverManager::getConnection(
-            [
-                'dbname' => getenv('mysql_database'),
-                'user' => getenv('mysql_user'),
-                'password' => getenv('mysql_password'),
-                'host' => getenv('mysql_host'),
-                'driver' => 'pdo_mysql',
-                'charset' => 'utf8mb4',
-            ],
-            $config
-        );
-    }
-
-    /**
-     * Get logger
-     *
-     * @param $name
-     * @return Logger
-     * @throws Exception
-     */
-    public static function getLogger($name = null)
-    {
-        static $loggers;
-
-        if ($name === null) {
-            $name = static::class;
-        }
-
-        if (isset($loggers[$name])) {
-            return $loggers[$name];
-        }
-
-        $loggers[$name] = new Logger(self::APP_NAMESPACE);
-        $logFile        = str_replace('\\', DIRECTORY_SEPARATOR, strtolower($name));
-
-        $loggers[$name]->pushHandler(
-            new StreamHandler(
-                getenv('log_path').'/'.uniqid($logFile.'_'.date('Y-m-d').'_'.time(), true).'.log'
-            )
-        );
-
-        return $loggers[$name];
-    }
-
     /**
      * Get cache instance
      *
-     * @param string      $namespace
-     * @param int         $defaultLifetime
-     * @param string|null $directory
-     *
-     * @return FilesystemAdapter
+     * @return boolean|FilesystemAdapter|MemcachedAdapter
      */
-    public static function getCache($namespace = self::APP_NAMESPACE, $defaultLifetime = 0, string $directory = null)
+    public static function getCache()
     {
-        static $instances;
+        static $instance;
 
-        $id = md5(serialize(func_get_args()));
-
-        if (isset($instances[$id])) {
-            return $instances[$id];
+        if ($instance) {
+            return $instance;
         }
 
-        if ($directory === null) {
-            $directory = getenv('cache_path');
+        $defaultLifetime = (int)getenv('cache_interval');
+
+        switch (getenv('cache_driver')) {
+            case 'memcached':
+                try {
+                    $instance = new MemcachedAdapter(
+                        MemcachedAdapter::createConnection(getenv('memcached')),
+                        DefinesCore::APPLICATION,
+                        $defaultLifetime
+                    );
+                } catch (ErrorException $exception) {
+                    return false;
+                }
+                break;
+            default:
+            case'filesystem':
+                $instance = new FilesystemAdapter(
+                    DefinesCore::APPLICATION,
+                    $defaultLifetime,
+                    getenv('filecache_path')
+                );
+                break;
         }
 
-        if ($defaultLifetime === null) {
-            $defaultLifetime = getenv('cache_interval');
-        }
-
-        $instances[$id] = new FilesystemAdapter($namespace, $defaultLifetime, $directory);
-
-        return $instances[$id];
-    }
-
-    /**
-     * Get service instance
-     *
-     * @param $service
-     * @return boolean|mixed
-     */
-    public static function getServices($service)
-    {
-        static $instances;
-
-        $id = md5(serialize(func_get_args()));
-
-        if (isset($instances[$id])) {
-            return $instances[$id];
-        }
-
-        $classString = '\\XGallery\\Webservices\\Services\\'.ucfirst($service);
-
-        if (!class_exists($classString)) {
-            return false;
-        }
-
-        $class = new $classString;
-        $class->setCredential(
-            getenv($service.'_oauth_consumer_key'),
-            getenv($service.'_oauth_consumer_secret'),
-            getenv($service.'_oauth_token'),
-            getenv($service.'_oauth_token_secret')
-        );
-
-        return $class;
-    }
-
-    /**
-     * Get dispatcher instance
-     *
-     * @return EventDispatcher
-     */
-    public static function getDispatcher()
-    {
-        static $dispatcher;
-
-        if (isset($dispatcher)) {
-            return $dispatcher;
-        }
-
-        $dispatcher = new EventDispatcher;
-
-        return $dispatcher;
+        return $instance;
     }
 
     /**
      * getMailer
      * @return PHPMailer
-     * @throws \PHPMailer\PHPMailer\Exception
+     * @throws Exception
      */
     public static function getMailer()
     {
-        $mail = new PHPMailer;
-        $mail->IsSMTP();
-        $mail->SMTPDebug  = 0;
-        $mail->SMTPAuth   = true;
-        $mail->SMTPSecure = getenv('smtp_secure');
-        $mail->Host       = getenv('smtp_host');
-        $mail->Port       = getenv('smtp_port');
-        $mail->IsHTML(true);
-        $mail->Username = getenv('smtp_username');
-        $mail->Password = getenv('smtp_password');
-        $mail->SetFrom(getenv('smtp_username'));
-        $mail->CharSet  = 'UTF-8';
-        $mail->Encoding = 'base64';
+        $mailer = new PHPMailer;
+        $mailer->IsSMTP();
 
-        return $mail;
-    }
+        $mailer->SMTPDebug = 2;
+        $mailer->SMTPAuth = true;
+        $mailer->SMTPSecure = getenv('smtp_secure');
+        $mailer->Host = getenv('smtp_host');
+        $mailer->Port = getenv('smtp_port');
+        $mailer->IsHTML(true);
+        $mailer->Username = getenv('smtp_username');
+        $mailer->Password = getenv('smtp_password');
+        $mailer->SetFrom(getenv('smtp_username'));
+        $mailer->CharSet = 'UTF-8';
+        $mailer->Encoding = 'base64';
 
-    public static function getImapMailer()
-    {
-        return imap_open(
-            '{imap.gmail.com:993/imap/ssl}INBOX',
-            getenv('smtp_username'),
-            getenv('smtp_password')
-        );
-    }
-
-    /**
-     * Get template
-     *
-     * @param string $dirPattern
-     * @return PhpEngine
-     */
-    public static function getTemplate($dirPattern = XGALLERY_ROOT.'/templates/%name%')
-    {
-        $filesystemLoader = new FilesystemLoader($dirPattern);
-
-        return new PhpEngine(new TemplateNameParser(), $filesystemLoader);
+        return $mailer;
     }
 }

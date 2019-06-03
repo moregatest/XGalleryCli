@@ -1,9 +1,25 @@
 <?php
+/**
+ *
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @package XGallery
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
 
-namespace XGallery\Utilities;
+namespace App\Utilities;
 
+/**
+ * Class XCityHelper
+ * @package App\Utilities
+ */
 class XCityHelper
 {
+    /**
+     * @param string $index
+     * @return boolean|mixed
+     */
     public static function getMonth($index)
     {
         $months = [

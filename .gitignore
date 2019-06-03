@@ -1,15 +1,28 @@
-/php-cs-fixer
-/.php_cs.cache
-/cs.sh
+/.idea/
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+###> symfony/phpunit-bridge ###
+.phpunit
+/phpunit.xml
+###< symfony/phpunit-bridge ###
+
+###> symfony/web-server-bundle ###
+/.web-server-pid
+###< symfony/web-server-bundle ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###
 
 /composer.lock
-/.gitignore
-
-/.idea/*
-/cache/*
-/logs/*
-/media/*
-/vendor/*
-
-/.prod.env
-/.scruntinizer.yml
+/symfony.lock
+/.php_cs.cache
