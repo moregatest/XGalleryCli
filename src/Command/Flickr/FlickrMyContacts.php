@@ -13,7 +13,6 @@ namespace App\Command\Flickr;
 use DateTime;
 use Exception;
 use XGallery\Command\FlickrCommand;
-use XGallery\Defines\DefinesCommand;
 
 /**
  * Class FlickrMyContacts
@@ -33,8 +32,7 @@ final class FlickrMyContacts extends FlickrCommand
      */
     protected function configure()
     {
-        $this->setName('flickr:mycontacts')
-            ->setDescription('Fetch & insert all contacts of current user');
+        $this->setDescription('Fetch & insert all contacts of current user');
 
         parent::configure();
     }
@@ -53,10 +51,10 @@ final class FlickrMyContacts extends FlickrCommand
         if (!$this->contacts || empty($this->contacts)) {
             $this->log('Can not get contacts or empty', 'notice');
 
-            return DefinesCommand::PREPARE_FAILED;
+            return self::PREPARE_FAILED;
         }
 
-        return DefinesCommand::PREPARE_SUCCEED;
+        return self::PREPARE_SUCCEED;
     }
 
     /**

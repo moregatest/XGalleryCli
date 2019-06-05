@@ -12,6 +12,7 @@ namespace App\Repository;
 
 use App\Entity\FlickrContact;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
@@ -50,7 +51,7 @@ class FlickrContactRepository extends ServiceEntityRepository
 
     /**
      * @return FlickrContact|null
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function getFreeContact(): ?FlickrContact
     {

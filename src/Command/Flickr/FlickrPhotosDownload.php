@@ -15,7 +15,6 @@ use RuntimeException;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use XGallery\Command\FlickrCommand;
-use XGallery\Defines\DefinesCommand;
 use XGallery\Defines\DefinesFlickr;
 
 /**
@@ -39,8 +38,7 @@ final class FlickrPhotosDownload extends FlickrCommand
      */
     protected function configure()
     {
-        $this->setName('flickr:downloads')
-            ->setDescription('Download photos')
+        $this->setDescription('Download photos')
             ->setDefinition(
                 new InputDefinition(
                     [
@@ -76,7 +74,7 @@ final class FlickrPhotosDownload extends FlickrCommand
                             null,
                             InputOption::VALUE_OPTIONAL,
                             'Number of photos will be used for get sizes',
-                            DefinesFlickr::REST_LIMIT_PHOTOS_SIZE
+                            self::REST_LIMIT_PHOTOS_SIZE
                         ),
                         new InputOption(
                             'all',
@@ -100,7 +98,7 @@ final class FlickrPhotosDownload extends FlickrCommand
     {
         $this->nsid = $this->client->getNsid($this->getOption('nsid'));
 
-        return DefinesCommand::PREPARE_SUCCEED;
+        return self::PREPARE_SUCCEED;
     }
 
     /**
@@ -114,7 +112,7 @@ final class FlickrPhotosDownload extends FlickrCommand
 
         // Skip
         if (!$album) {
-            return DefinesCommand::NEXT_PREPARE;
+            return self::NEXT_PREPARE;
         }
 
         $photos = $this->client->getAlbumPhotos($album);
@@ -122,18 +120,18 @@ final class FlickrPhotosDownload extends FlickrCommand
         if (!$photos || !$photos['photos']) {
             $this->log('Can not get or there are no photos in album', 'notice');
 
-            return DefinesCommand::NEXT_PREPARE;
+            return self::NEXT_PREPARE;
         }
 
         $this->log(
-            'Working on album <options=bold>'.$photos['album'].'</> of NSID <options=bold>'.$photos['nsid'].'</>'
+            'Working on album <options=bold>' . $photos['album'] . '</> of NSID <options=bold>' . $photos['nsid'] . '</>'
         );
 
         foreach ($photos['photos'] as $photo) {
             $this->photos[] = $photo->id;
         }
 
-        return DefinesCommand::SKIP_PREPARE;
+        return self::SKIP_PREPARE;
     }
 
     /**
@@ -147,20 +145,20 @@ final class FlickrPhotosDownload extends FlickrCommand
 
         // Skip
         if (!$gallery) {
-            return DefinesCommand::NEXT_PREPARE;
+            return self::NEXT_PREPARE;
         }
 
         $photos = $this->client->flickrGalleriesGetAllPhotos($gallery);
 
         if (!$photos) {
-            return DefinesCommand::NEXT_PREPARE;
+            return self::NEXT_PREPARE;
         }
 
         foreach ($photos as $photo) {
             $this->photos[] = $photo->id;
         }
 
-        return DefinesCommand::SKIP_PREPARE;
+        return self::SKIP_PREPARE;
     }
 
     /**
@@ -174,16 +172,16 @@ final class FlickrPhotosDownload extends FlickrCommand
         $photoIds = $this->getOption('photo_ids');
 
         if (!$photoIds) {
-            return DefinesCommand::NEXT_PREPARE;
+            return self::NEXT_PREPARE;
         }
 
         $this->getProcess(
-            ['php', XGALLERY_PATH.'/bin/application', 'flickr:photos', '--photo_ids='.$photoIds]
+            ['php', XGALLERY_PATH . '/bin/application', 'flickr:photos', '--photo_ids=' . $photoIds]
         )->run();
 
         $this->photos = explode(',', $photoIds);
 
-        return DefinesCommand::SKIP_PREPARE;
+        return self::SKIP_PREPARE;
     }
 
     /**
@@ -210,10 +208,10 @@ final class FlickrPhotosDownload extends FlickrCommand
         if (!$this->photos || empty($this->photos)) {
             $this->log('There are no photos', 'notice');
 
-            return DefinesCommand::PREPARE_FAILED;
+            return self::PREPARE_FAILED;
         }
 
-        return DefinesCommand::PREPARE_SUCCEED;
+        return self::PREPARE_SUCCEED;
     }
 
     /**
@@ -229,11 +227,11 @@ final class FlickrPhotosDownload extends FlickrCommand
             return false;
         }
 
-        $this->log('Working on: '.count($this->photos).' photos');
+        $this->log('Working on: ' . count($this->photos) . ' photos');
         $processes = [];
 
         foreach ($this->photos as $photoId) {
-            $this->log('Sending download request <options=bold>'.$photoId.'</>');
+            $this->log('Sending download request <options=bold>' . $photoId . '</>');
 
             /**
              * @TODO Prevent flickr:photodownload query again
@@ -242,9 +240,9 @@ final class FlickrPhotosDownload extends FlickrCommand
                 $processes[$photoId] = $this->getProcess(
                     [
                         'php',
-                        XGALLERY_PATH.'/bin/application',
+                        XGALLERY_PATH . '/bin/application',
                         'flickr:download',
-                        '--photo_id='.$photoId,
+                        '--photo_id=' . $photoId,
                     ]
                 );
                 $processes[$photoId]->start();
@@ -254,9 +252,9 @@ final class FlickrPhotosDownload extends FlickrCommand
         }
 
         foreach ($processes as $id => $process) {
-            $this->log('Downloading '.$id.' ...');
+            $this->log('Downloading ' . $id . ' ...');
             $process->wait();
-            $this->log('Process complete: '.$id);
+            $this->log('Process complete: ' . $id);
         }
 
         return true;

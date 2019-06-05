@@ -15,7 +15,6 @@ use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use XGallery\Command\NctCommand;
-use XGallery\Defines\DefinesCommand;
 use XGallery\Defines\DefinesCore;
 
 /**
@@ -34,8 +33,7 @@ final class NctSearch extends NctCommand
      */
     protected function configure()
     {
-        $this->setName('nct:search')
-            ->setDescription('Search NCT by conditions')
+        $this->setDescription('Search NCT by conditions')
             ->setDefinition(
                 new InputDefinition(
                     [
@@ -62,10 +60,10 @@ final class NctSearch extends NctCommand
         );
 
         if (empty($this->songs)) {
-            return DefinesCommand::PREPARE_FAILED;
+            return self::PREPARE_FAILED;
         }
 
-        return DefinesCommand::PREPARE_SUCCEED;
+        return self::PREPARE_SUCCEED;
     }
 
     /**

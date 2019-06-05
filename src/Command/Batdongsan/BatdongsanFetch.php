@@ -13,15 +13,13 @@ namespace App\Command\Batdongsan;
 use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\Command\BdsCommand;
-use XGallery\Defines\DefinesCommand;
+use XGallery\Command\BatdongsanCommand;
 
 /**
- * Class BatdongsanSearch
+ * Class BatdongsanFetch
  * @package App\Command\Batdongsan
- * @TODO Use client adapter instead each crawler each base command
  */
-class BatdongsanFetch extends BdsCommand
+final class BatdongsanFetch extends BatdongsanCommand
 {
     /**
      * @var integer
@@ -33,20 +31,24 @@ class BatdongsanFetch extends BdsCommand
      */
     protected function configure()
     {
-        $this->setName('bds:fetch')
-            ->setDefinition(
-                new InputDefinition(
-                    [
-                        new InputOption(
-                            'url',
-                            'url',
-                            InputOption::VALUE_OPTIONAL,
-                            '',
-                            'https://batdongsan.com.vn/ban-loai-bat-dong-san-khac'
-                        ),
-                    ]
-                )
-            );
+        $this->setDefinition(
+            new InputDefinition(
+                [
+                    new InputOption(
+                        'url',
+                        null,
+                        InputOption::VALUE_OPTIONAL,
+                        '',
+                        'https://batdongsan.com.vn/nha-dat-ban'
+                    ),
+                    new InputOption(
+                        'limit',
+                        null,
+                        InputOption::VALUE_OPTIONAL
+                    ),
+                ]
+            )
+        );
 
         parent::configure();
     }
@@ -58,9 +60,9 @@ class BatdongsanFetch extends BdsCommand
     protected function prepareGetPages()
     {
         $this->pages = $this->client->getPages($this->getOption('url'));
-        $this->log('Total pages: <options=bold>'.$this->pages.'</>');
+        $this->log('Total pages: <options=bold>' . $this->pages . '</>');
 
-        return DefinesCommand::PREPARE_SUCCEED;
+        return self::PREPARE_SUCCEED;
     }
 
     /**
@@ -76,12 +78,14 @@ class BatdongsanFetch extends BdsCommand
          * @TODO Support multi pages at same time
          */
         for ($page = 1; $page <= $this->pages; $page++) {
+            $url = $this->getOption('url') . '/p' . $page;
+
             $this->getProcess(
                 [
                     'php',
-                    XGALLERY_PATH.'/bin/application',
-                    'bds:import',
-                    '--url='.$this->getOption('url').'/p'.$page,
+                    XGALLERY_PATH . '/bin/application',
+                    'batdongsan:import',
+                    '--url=' . $url,
                 ]
             )->run();
 

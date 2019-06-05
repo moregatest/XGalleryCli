@@ -17,7 +17,7 @@ use GuzzleHttp\Exception\GuzzleException;
  * Class Nct
  * @package App\Service\Crawler
  */
-class Nct extends Crawler
+class NctCrawler extends Crawler
 {
     /**
      * Endpoint
@@ -33,7 +33,7 @@ class Nct extends Crawler
      */
     public function search($conditions)
     {
-        $crawler = $this->request('GET', $this->endpoint.'/tim-nang-cao?'.http_build_query($conditions));
+        $crawler = $this->request('GET', $this->endpoint . '/tim-nang-cao?' . http_build_query($conditions));
 
         $pagesUrl = $crawler->filter('div.box_pageview a')->last()->attr('href');
         parse_str(parse_url($pagesUrl)['query'], $queries);
@@ -43,7 +43,7 @@ class Nct extends Crawler
         for ($page = 2; $page < $queries['page']; $page++) {
             $crawler = $this->request(
                 'GET',
-                $this->endpoint.'/tim-nang-cao?'.http_build_query($conditions).'&page='.$page
+                $this->endpoint . '/tim-nang-cao?' . http_build_query($conditions) . '&page=' . $page
             );
             $songs = array_merge($songs, $this->extractSongsInSearchView($crawler));
         }
@@ -102,7 +102,7 @@ class Nct extends Crawler
      * @param $url
      * @return array
      */
-    public function getSong($url)
+    public function extractItem($url)
     {
         try {
             $crawler = $this->request('GET', $url);

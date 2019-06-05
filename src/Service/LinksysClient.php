@@ -8,14 +8,14 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace App\Service\BasicAuthentication;
+namespace App\Service;
 
-use App\Service\HttpClient;
+use GuzzleHttp\Exception\GuzzleException;
 use stdClass;
 
 /**
  * Class LinksysClient
- * @package App\Service\BasicAuthentication
+ * @package XGallery\Service
  */
 class LinksysClient extends HttpClient
 {
@@ -24,15 +24,15 @@ class LinksysClient extends HttpClient
      * @param string $method
      * @param string $uri
      * @param array $options
-     * @return bool|string
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @return boolean|string
+     * @throws GuzzleException
      */
     public function request($method, $uri, array $options = [])
     {
         $response = parent::request($method, $uri, $options);
 
         if (!$response) {
-            $this->logNotice('Fetch failed: '.$response);
+            $this->logNotice('Fetch failed: ' . $response);
 
             return false;
         }
@@ -51,8 +51,8 @@ class LinksysClient extends HttpClient
     }
 
     /**
-     * @return bool|string
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @return boolean|string
+     * @throws GuzzleException
      */
     public function jNapCoreTransaction()
     {

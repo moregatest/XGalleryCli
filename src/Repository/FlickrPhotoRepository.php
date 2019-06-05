@@ -13,6 +13,7 @@ namespace App\Repository;
 use App\Entity\FlickrPhoto;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\AbstractQuery;
+use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
@@ -51,7 +52,7 @@ class FlickrPhotoRepository extends ServiceEntityRepository
 
     /**
      * @return FlickrPhoto|null
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function getFreePhoto(): ?FlickrPhoto
     {

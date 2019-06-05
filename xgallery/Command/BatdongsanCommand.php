@@ -10,27 +10,28 @@
 
 namespace XGallery\Command;
 
-use App\Service\Crawler;
+
+use App\Service\Crawler\BatdongsanCrawler;
 use Doctrine\ORM\EntityManagerInterface;
+use XGallery\BaseCommand;
 
 /**
- * Class BdsCommand
+ * Class BatdongsanCommand
  * @package XGallery\Command
  */
-class BdsCommand extends AbstractCommand
+class BatdongsanCommand extends BaseCommand
 {
     /**
-     * @var Crawler\BdsCrawler
+     * @var BatdongsanCrawler
      */
     protected $client;
 
     /**
-     * BdsCommand constructor.
-     *
-     * @param Crawler\BdsCrawler $client
+     * BatdongsanCommand constructor.
+     * @param BatdongsanCrawler $client
      * @param EntityManagerInterface $entityManager
      */
-    public function __construct(Crawler\BdsCrawler $client, EntityManagerInterface $entityManager)
+    public function __construct(BatdongsanCrawler $client, EntityManagerInterface $entityManager)
     {
         $this->client = $client;
         $this->entityManager = $entityManager;

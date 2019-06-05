@@ -8,14 +8,13 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace App\Service\Restful;
+namespace App\Service;
 
-use App\Service\HttpClient;
 use GuzzleHttp\Exception\GuzzleException;
 
 /**
- * Class Now
- * @package App\Service\Restful
+ * Class NowClient
+ * @package App\Service
  */
 class NowClient extends HttpClient
 {
@@ -40,7 +39,7 @@ class NowClient extends HttpClient
         $response = parent::request($method, $uri, $options);
 
         if (!$response) {
-            $this->logNotice('Fetch failed: '.$response);
+            $this->logNotice('Fetch failed: ' . $response);
 
             return false;
         }

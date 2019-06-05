@@ -11,7 +11,6 @@
 namespace App\Service\Crawler;
 
 use App\Service\Crawler;
-use App\Utilities\XCityHelper;
 use GuzzleHttp\Exception\GuzzleException;
 use RuntimeException;
 use stdClass;
@@ -33,6 +32,34 @@ class XCityCrawler extends Crawler
      * @var array
      */
     private $kana = ['あ', 'か', 'さ', 'た', 'な', 'は', 'ま', 'や', 'ら', 'わ'];
+
+    /**
+     * @param string $index
+     * @return boolean|mixed
+     */
+    private function getMonth($index)
+    {
+        $months = [
+            'Jan' => '01',
+            'Feb' => '02',
+            'Mar' => '03',
+            'Apr' => '04',
+            'May' => '05',
+            'Jun' => '06',
+            'Jul' => '07',
+            'Aug' => '08',
+            'Sep' => '09',
+            'Oct' => '10',
+            'Nov' => '11',
+            'Dec' => '12',
+        ];
+
+        if (isset($months[$index])) {
+            return $months[$index];
+        }
+
+        return false;
+    }
 
     /**
      * Get number of pages
@@ -73,10 +100,10 @@ class XCityCrawler extends Crawler
         $list = [];
 
         foreach ($this->kana as $kana) {
-            $totalPages = $this->getPages($this->endpoint.'/idol/?kana='.$kana.'&num=90&page=1');
+            $totalPages = $this->getPages($this->endpoint . '/idol/?kana=' . $kana . '&num=90&page=1');
 
             for ($page = 1; $page <= $totalPages; $page++) {
-                $crawler = $this->request('GET', $this->endpoint.'/idol/?kana='.$kana.'&num=100&page='.$page);
+                $crawler = $this->request('GET', $this->endpoint . '/idol/?kana=' . $kana . '&num=100&page=' . $page);
 
                 if (!$crawler) {
                     continue;
@@ -102,7 +129,7 @@ class XCityCrawler extends Crawler
      */
     public function getProfile($url)
     {
-        $crawler = $this->request('GET', $this->endpoint.'/idol/'.$url.'?style=simple');
+        $crawler = $this->request('GET', $this->endpoint . '/idol/' . $url . '?style=simple');
 
         if (!$crawler) {
             return false;
@@ -135,13 +162,13 @@ class XCityCrawler extends Crawler
                         }
 
                         $days = explode(' ', $birthday);
-                        $month = XCityHelper::getMonth($days[1]);
+                        $month = $this->getMonth($days[1]);
 
                         if (!$month) {
                             return null;
                         }
 
-                        return ['birthday' => $days[0].'-'.$month.'-'.$days[2]];
+                        return ['birthday' => $days[0] . '-' . $month . '-' . $days[2]];
                     }
 
                     if (strpos($text, 'Blood Type') !== false) {
@@ -238,7 +265,7 @@ class XCityCrawler extends Crawler
      */
     public function getProfileFilmPages($url)
     {
-        return $this->getPages($this->endpoint.'/idol/'.$url);
+        return $this->getPages($this->endpoint . '/idol/' . $url);
     }
 
     /**
@@ -255,9 +282,9 @@ class XCityCrawler extends Crawler
 
         for ($page = 1; $page <= $totalPages; $page++) {
             if ($page === 1) {
-                $crawler = $this->request('GET', $this->endpoint.'/idol/'.$profileUrl);
+                $crawler = $this->request('GET', $this->endpoint . '/idol/' . $profileUrl);
             } else {
-                $crawler = $this->request('GET', $this->endpoint.'/idol/'.$profileUrl.'?page='.$page);
+                $crawler = $this->request('GET', $this->endpoint . '/idol/' . $profileUrl . '?page=' . $page);
             }
 
             if (!$crawler) {
@@ -283,7 +310,7 @@ class XCityCrawler extends Crawler
      */
     public function getFilm($url)
     {
-        $crawler = $this->request('GET', $this->endpoint.$url);
+        $crawler = $this->request('GET', $this->endpoint . $url);
 
         if (!$crawler) {
             return false;

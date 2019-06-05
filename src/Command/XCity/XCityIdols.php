@@ -14,7 +14,6 @@ use App\Entity\JavIdol;
 use DateTime;
 use GuzzleHttp\Exception\GuzzleException;
 use XGallery\Command\XCityCommand;
-use XGallery\Defines\DefinesCommand;
 
 /**
  * Class XCityIdols
@@ -27,12 +26,9 @@ class XCityIdols extends XCityCommand
      */
     private $urls;
 
-    /**
-     * Configures the current command.
-     */
     protected function configure()
     {
-        $this->setName('xcity:idols');
+        $this->setDescription('Extract XCity idols');
 
         parent::configure();
     }
@@ -45,7 +41,7 @@ class XCityIdols extends XCityCommand
     {
         $this->urls = $this->client->getProfiles();
 
-        return DefinesCommand::PREPARE_SUCCEED;
+        return self::PREPARE_SUCCEED;
     }
 
     /**
@@ -65,7 +61,7 @@ class XCityIdols extends XCityCommand
             $profile = $this->client->getProfile($url);
 
             if (!$profile) {
-                $this->log('Can not get profile: '.$url);
+                $this->log('Can not get profile: ' . $url);
                 continue;
             }
 

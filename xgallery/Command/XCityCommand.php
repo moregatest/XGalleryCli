@@ -13,12 +13,13 @@ namespace XGallery\Command;
 
 use App\Service\Crawler\XCityCrawler;
 use Doctrine\ORM\EntityManagerInterface;
+use XGallery\BaseCommand;
 
 /**
  * Class XCityCommand
  * @package XGallery\Command
  */
-class XCityCommand extends AbstractCommand
+class XCityCommand extends BaseCommand
 {
     /**
      * @var XCityCrawler

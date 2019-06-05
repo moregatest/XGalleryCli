@@ -17,7 +17,6 @@ use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Question\Question;
 use XGallery\Command\FlickrCommand;
-use XGallery\Defines\DefinesCommand;
 
 /**
  * Class FlickrContact
@@ -37,8 +36,7 @@ final class FlickrContact extends FlickrCommand
      */
     protected function configure()
     {
-        $this->setName('flickr:contact')
-            ->setDescription('Manual update contact into database')
+        $this->setDescription('Manual update contact into database')
             ->setDefinition(
                 new InputDefinition(
                     [
@@ -82,13 +80,13 @@ final class FlickrContact extends FlickrCommand
         if (!$this->contact) {
             $this->log('Can not get contact or contact not found', 'notice');
 
-            return DefinesCommand::PREPARE_FAILED;
+            return self::PREPARE_FAILED;
         }
 
         /**
          * @TODO : Console output show one blank line before Prepare succeed if NSID manual input
          */
-        return DefinesCommand::PREPARE_SUCCEED;
+        return self::PREPARE_SUCCEED;
     }
 
     /**
@@ -99,7 +97,7 @@ final class FlickrContact extends FlickrCommand
      */
     protected function processInsertContact()
     {
-        $this->log('Process with NSID: '.$this->contact->person->nsid);
+        $this->log('Process with NSID: ' . $this->contact->person->nsid);
 
         $contactEntity = $this->entityManager
             ->getRepository(\App\Entity\FlickrContact::class)

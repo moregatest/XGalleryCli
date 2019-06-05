@@ -8,50 +8,47 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace XGallery\Command;
+namespace XGallery;
 
 use App\Traits\HasConsole;
+use App\Traits\HasEntityManager;
 use App\Traits\HasLogger;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Templating\Loader\FilesystemLoader;
-use Symfony\Component\Templating\PhpEngine;
-use Symfony\Component\Templating\TemplateNameParser;
-use XGallery\Defines\DefinesCommand;
 use XGallery\Defines\DefinesCore;
 
 /**
- * Class AbstractCommand
+ * Class BaseCommand
  * @package XGallery\Command
  */
-abstract class AbstractCommand extends Command
+class BaseCommand extends Command
 {
     use HasLogger;
     use HasConsole;
+    use HasEntityManager;
 
     /**
-     * @var EntityManagerInterface
+     * Ignore this prepare. Move to next
      */
-    protected $entityManager;
+    const NEXT_PREPARE = 1;
 
     /**
-     * Array of options
-     *
-     * @var array
+     * Prepare failed. Escape prepare with failed
      */
-    protected $options = [];
+    const PREPARE_FAILED = false;
+
+    const PREPARE_SUCCEED = true;
 
     /**
-     * Array of args
-     *
-     * @var array
+     * Complete prepare. Move to process directly
      */
-    protected $arguments = [];
+    const SKIP_PREPARE = 2;
+
+    const EXECUTE_SUCCEED = 0;
 
     /**
      * Input
@@ -105,7 +102,19 @@ abstract class AbstractCommand extends Command
      */
     protected function configure()
     {
-        $this->addOption('task', null, InputOption::VALUE_OPTIONAL, 'Execute specific task');
+        $className = get_called_class();
+        $className = explode('\\', $className);
+        $command = strtolower($className[2] . ':' . str_replace($className[2], '', end($className)));
+
+        $this->setName($command);
+        $this->addOption(
+            'task',
+            null,
+            InputOption::VALUE_OPTIONAL,
+            'Execute specific task'
+        );
+
+        parent::configure();
     }
 
     /**
@@ -117,14 +126,6 @@ abstract class AbstractCommand extends Command
      */
     protected function getProcess($cmd, $timeout = DefinesCore::MAX_EXECUTE_TIME)
     {
-        /*        $cmd = array_merge(
-                    [
-                        'php',
-                        XGALLERY_PATH.'/bin/application',
-                    ],
-                    $cmd
-                );*/
-
         /**
          * @TODO Use https://symfony.com/doc/current/console/calling_commands.html
          */
@@ -168,7 +169,7 @@ abstract class AbstractCommand extends Command
         }
 
         // Can not prepare then exit execute
-        if ($this->prepare() === DefinesCommand::PREPARE_FAILED) {
+        if ($this->prepare() === self::PREPARE_FAILED) {
             $this->log('Prepare failed', 'warning', [], true);
 
             return 1;
@@ -186,19 +187,19 @@ abstract class AbstractCommand extends Command
      */
     protected function prepare()
     {
-        $this->output->write('Prepares: '.implode(',', $this->prepares));
+        $this->output->write('Prepares: ' . implode(',', $this->prepares));
 
         foreach ($this->prepares as $prepare) {
-            $this->log('<stage>'.$prepare.' ...</stage>');
+            $this->log('<stage>' . $prepare . ' ...</stage>');
 
             $return = call_user_func([$this, $prepare]);
 
-            if ($return === DefinesCommand::PREPARE_FAILED) {
+            if ($return === self::PREPARE_FAILED) {
                 return false;
-            } elseif ($return === DefinesCommand::NEXT_PREPARE) {
+            } elseif ($return === self::NEXT_PREPARE) {
                 $this->log('Skip this prepare. Move to next');
                 continue;
-            } elseif ($return === DefinesCommand::SKIP_PREPARE) {
+            } elseif ($return === self::SKIP_PREPARE) {
                 $this->log('Skip prepare. Move to process');
 
                 return true;
@@ -227,14 +228,14 @@ abstract class AbstractCommand extends Command
             return true;
         }
 
-        $this->log('Process: '.implode(',', $this->processes));
+        $this->log('Process: ' . implode(',', $this->processes));
 
         foreach ($this->processes as $process) {
-            $this->log('<stage>'.$process.' ...</stage>', 'info');
+            $this->log('<stage>' . $process . ' ...</stage>', 'info');
             $result = call_user_func([$this, $process]);
 
             if (!$result) {
-                $this->log($process.' failed', 'error');
+                $this->log($process . ' failed', 'error');
 
                 return false;
             }
@@ -256,12 +257,12 @@ abstract class AbstractCommand extends Command
     protected function executeComplete($status)
     {
         if ($status === true) {
-            $this->io->success('Completed '.$this->getName().': '.(int)$status);
+            $this->io->success('Completed ' . $this->getName() . ': ' . (int)$status);
 
-            return DefinesCommand::EXECUTE_SUCCEED;
+            return self::EXECUTE_SUCCEED;
         }
 
-        $this->io->error('Completed '.$this->getName().': '.(int)$status);
+        $this->io->error('Completed ' . $this->getName() . ': ' . (int)$status);
 
         return $status;
     }
@@ -278,39 +279,16 @@ abstract class AbstractCommand extends Command
     {
         $this->output->write("\n<$type>$message</$type>");
 
-        if (!method_exists($this, 'log'.ucfirst($type))) {
+        if (!method_exists($this, 'log' . ucfirst($type))) {
             $type = 'info';
         }
 
-        $this->{'log'.ucfirst($type)}(strip_tags($message), $context);
+        $this->{'log' . ucfirst($type)}(strip_tags($message), $context);
 
         if ($newLine === false) {
             return;
         }
 
         $this->output->writeln('');
-    }
-
-    protected function getTemplate()
-    {
-        $filesystemLoader = new FilesystemLoader(XGALLERY_PATH.'/templates/command/%name%');
-
-        $templating = new PhpEngine(new TemplateNameParser, $filesystemLoader);
-        echo $templating->render('hello.php', ['firstname' => 'Fabien']);
-    }
-
-    /**
-     * @param $entity
-     * @param $index
-     */
-    protected function batchInsert($entity, $index)
-    {
-        $this->entityManager->persist($entity);
-
-        // flush everything to the database every bulk inserts
-        if (($index % DefinesCore::BATCH_SIZE) == 0) {
-            $this->entityManager->flush();
-            $this->entityManager->clear();
-        }
     }
 }

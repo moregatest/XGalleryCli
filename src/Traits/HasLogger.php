@@ -46,7 +46,7 @@ trait HasLogger
         try {
             $loggers[$name]->pushHandler(
                 new StreamHandler(
-                    getenv('log_path').'/'.uniqid($logFile.'_'.date('Y-m-d').'_'.time(), true).'.log'
+                    getenv('log_path') . '/' . uniqid($logFile . '_' . date('Y-m-d') . '_' . time(), true) . '.log'
                 )
             );
 

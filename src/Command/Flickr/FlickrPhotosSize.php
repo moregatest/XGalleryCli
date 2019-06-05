@@ -14,8 +14,6 @@ use App\Entity\FlickrPhoto;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use XGallery\Command\FlickrCommand;
-use XGallery\Defines\DefinesCommand;
-use XGallery\Defines\DefinesFlickr;
 
 /**
  * Class FlickrPhotosSize
@@ -42,8 +40,7 @@ final class FlickrPhotosSize extends FlickrCommand
      */
     protected function configure()
     {
-        $this->setName('flickr:photossize')
-            ->setDescription('Fetch photo\'s sizes for download')
+        $this->setDescription('Fetch photo\'s sizes for download')
             ->setDefinition(
                 new InputDefinition(
                     [
@@ -68,7 +65,7 @@ final class FlickrPhotosSize extends FlickrCommand
                             null,
                             InputOption::VALUE_OPTIONAL,
                             'Number of photos will be used for get sizes',
-                            DefinesFlickr::REST_LIMIT_PHOTOS_SIZE
+                            self::REST_LIMIT_PHOTOS_SIZE
                         ),
                         new InputOption(
                             'all',
@@ -92,7 +89,7 @@ final class FlickrPhotosSize extends FlickrCommand
     {
         $this->nsid = $this->client->getNsid($this->getOption('nsid'));
 
-        return DefinesCommand::NEXT_PREPARE;
+        return self::NEXT_PREPARE;
     }
 
     /**
@@ -107,20 +104,20 @@ final class FlickrPhotosSize extends FlickrCommand
         if (!$album || !filter_var($album, FILTER_VALIDATE_URL)) {
             $this->log('There is no album provided or invalid URL', 'notice');
 
-            return DefinesCommand::NEXT_PREPARE;
+            return self::NEXT_PREPARE;
         }
 
         $photos = $this->client->getAlbumPhotos($album);
 
         if (!$photos && (!$photos['photos'] || empty($photos['photos']))) {
-            return DefinesCommand::NEXT_PREPARE;
+            return self::NEXT_PREPARE;
         }
 
         foreach ($photos['photos'] as $photo) {
             $this->photos[] = $photo->id;
         }
 
-        return DefinesCommand::SKIP_PREPARE;
+        return self::SKIP_PREPARE;
     }
 
     /**
@@ -134,21 +131,21 @@ final class FlickrPhotosSize extends FlickrCommand
 
         // Skip
         if (!$photoIds) {
-            return DefinesCommand::NEXT_PREPARE;
+            return self::NEXT_PREPARE;
         }
 
         $this->getProcess(
             [
                 'php',
-                XGALLERY_PATH.'/bin/application',
+                XGALLERY_PATH . '/bin/application',
                 'flickr:photos',
-                '--photo_ids='.$photoIds,
+                '--photo_ids=' . $photoIds,
             ]
         )->run();
 
         $this->photos = explode(',', $photoIds);
 
-        return DefinesCommand::SKIP_PREPARE;
+        return self::SKIP_PREPARE;
     }
 
     /**
@@ -160,7 +157,7 @@ final class FlickrPhotosSize extends FlickrCommand
     {
         // Specific NSID
         if ($this->nsid) {
-            $this->log('Working on NSID: '.$this->nsid);
+            $this->log('Working on NSID: ' . $this->nsid);
         }
 
         /**
@@ -179,21 +176,21 @@ final class FlickrPhotosSize extends FlickrCommand
 
         if (!$this->photos || empty($this->photos)) {
             $this->log('There are no photos', 'notice');
-            $this->log('Trying to fetch photos from NSID: '.$this->nsid);
+            $this->log('Trying to fetch photos from NSID: ' . $this->nsid);
 
             $this->getProcess(
                 [
                     'php',
-                    XGALLERY_PATH.'/bin/application',
+                    XGALLERY_PATH . '/bin/application',
                     'flickr:photos',
-                    '--nsid='.$this->nsid,
+                    '--nsid=' . $this->nsid,
                 ]
             )->run();
 
             $this->preparePhotosFromDb();
         }
 
-        return DefinesCommand::PREPARE_SUCCEED;
+        return self::PREPARE_SUCCEED;
     }
 
     /**
@@ -214,7 +211,7 @@ final class FlickrPhotosSize extends FlickrCommand
             $this->photos = array_slice($this->photos, 0, 3600);
         }
 
-        $this->log('Working on '.count($this->photos).' photos', 'info', [], true);
+        $this->log('Working on ' . count($this->photos) . ' photos', 'info', [], true);
         $failed = 0;
 
         $this->io->progressStart(count($this->photos));
@@ -229,28 +226,28 @@ final class FlickrPhotosSize extends FlickrCommand
                 $this->getProcess(
                     [
                         'php',
-                        XGALLERY_PATH.'/bin/application',
+                        XGALLERY_PATH . '/bin/application',
                         'flickr:photos',
-                        '--photo_ids='.$photoId,
+                        '--photo_ids=' . $photoId,
                     ]
                 )->run();
 
                 $photoEntity = $this->entityManager->getRepository(FlickrPhoto::class)->find($photoId);
 
                 if (!$photoEntity) {
-                    $this->log('Can not fetch photo then no size can fetch too: '.$photoId, 'notice');
+                    $this->log('Can not fetch photo then no size can fetch too: ' . $photoId, 'notice');
 
                     continue;
                 }
             }
 
             if (!$photoSize) {
-                $photoEntity->setStatus(DefinesFlickr::PHOTO_STATUS_ERROR_NOT_FOUND_GET_SIZES);
+                $photoEntity->setStatus(self::PHOTO_STATUS_ERROR_NOT_FOUND_GET_SIZES);
 
                 /**
                  * @TODO Send email with failed case
                  */
-                $this->log('Something wrong on photo '.$photoId.': Can not get sizes', 'notice');
+                $this->log('Something wrong on photo ' . $photoId . ': Can not get sizes', 'notice');
                 $failed++;
 
                 $this->entityManager->persist($photoEntity);
@@ -275,7 +272,7 @@ final class FlickrPhotosSize extends FlickrCommand
         $this->entityManager->clear();
 
         if ($failed) {
-            $this->log('Failed count: '.$failed, 'notice', [], true);
+            $this->log('Failed count: ' . $failed, 'notice', [], true);
         }
 
         return true;

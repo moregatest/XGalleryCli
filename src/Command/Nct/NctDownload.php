@@ -10,7 +10,6 @@
 
 namespace App\Command\Nct;
 
-use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use XGallery\Command\NctCommand;
@@ -27,8 +26,7 @@ class NctDownload extends NctCommand
      */
     protected function configure()
     {
-        $this->setName('nct:download')
-            ->setDescription('Download song')
+        $this->setDescription('Download song')
             ->setDefinition(
                 new InputDefinition(
                     [
@@ -42,7 +40,6 @@ class NctDownload extends NctCommand
 
     /**
      * @return boolean
-     * @throws GuzzleException
      */
     protected function processDownload()
     {
@@ -52,12 +49,14 @@ class NctDownload extends NctCommand
             return false;
         }
 
-        $download = $this->client->getSong($url);
+        $download = $this->client->extractItem($url);
 
         if (!$download) {
             return false;
         }
 
-        // Process download
+        /**
+         * @TODO Implement download process
+         */
     }
 }

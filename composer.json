@@ -11,6 +11,7 @@
         "guzzlehttp/guzzle": "^6.3",
         "phpmailer/phpmailer": "^6.0",
         "sensio/framework-extra-bundle": "^5.3",
+        "squizlabs/php_codesniffer": "*",
         "symfony/apache-pack": "^1.0",
         "symfony/asset": "4.2.*",
         "symfony/cache": "4.2.*",
@@ -42,7 +43,7 @@
         "symfony/maker-bundle": "^1.11",
         "symfony/phpunit-bridge": "4.2.*",
         "symfony/profiler-pack": "^1.0",
-        "symfony/test-pack": "*",
+        "symfony/test-pack": "^1.0",
         "symfony/web-server-bundle": "4.2.*"
     },
     "config": {

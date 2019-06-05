@@ -107,12 +107,12 @@ class OAuthClient
             /**
              * @uses Both $key and $value MUST BE encoded
              */
-            $parametersString[] = $this->encode($key).'='.$this->encode($value);
+            $parametersString[] = $this->encode($key) . '=' . $this->encode($value);
         }
 
         $baseSignature = $this->encode(strtoupper($method))
-            .'&'.$this->encode($uri)
-            .'&'.$this->encode(
+            . '&' . $this->encode($uri)
+            . '&' . $this->encode(
                 implode('&', $parametersString)
             );
 
@@ -147,7 +147,7 @@ class OAuthClient
         $header = 'OAuth ';
 
         foreach ($this->oauthParameters as $key => $value) {
-            $header .= $key.'="'.$value.'",';
+            $header .= $key . '="' . $value . '",';
         }
 
         return rtrim($header, ',');
@@ -178,7 +178,7 @@ class OAuthClient
     private function getKey()
     {
         return $this->encode($this->credential['consumerSecretKey'])
-            .'&'.$this->encode($this->credential['tokenSecret']);
+            . '&' . $this->encode($this->credential['tokenSecret']);
     }
 
     /**
@@ -208,7 +208,7 @@ class OAuthClient
             $parameters = $this->sign($method, $uri, $parameters);
 
             if ($method === 'GET') {
-                $uri .= '?'.http_build_query($parameters);
+                $uri .= '?' . http_build_query($parameters);
             } else {
                 $options['headers']['Authorization'] = $this->getOauthHeader();
             }
@@ -270,7 +270,7 @@ class OAuthClient
     {
         parse_str($this->getRequestToken($callback), $query);
 
-        return static::OAUTH_AUTHORIZE_ENDPOINT.'?oauth_token='.$query['oauth_token'];
+        return static::OAUTH_AUTHORIZE_ENDPOINT . '?oauth_token=' . $query['oauth_token'];
     }
 
     /**

@@ -10,8 +10,8 @@
 
 namespace App\Command\Linksys;
 
+use GuzzleHttp\Exception\GuzzleException;
 use XGallery\Command\LinksysCommand;
-use XGallery\Defines\DefinesCommand;
 
 /**
  * Class LinksysDevices
@@ -26,25 +26,26 @@ class LinksysDevices extends LinksysCommand
      */
     protected function configure()
     {
-        $this->setName('linksys:devices');
+        $this->setDescription('Show list of connected devices');
 
         parent::configure();
     }
 
     /**
      * @return boolean
+     * @throws GuzzleException
      */
     public function prepareGetDevices()
     {
         $devices = $this->client->jNapCoreTransaction();
 
         if (!$devices) {
-            return DefinesCommand::PREPARE_FAILED;
+            return self::PREPARE_FAILED;
         }
 
         $this->devices = $devices[0]->output->devices;
 
-        return DefinesCommand::PREPARE_SUCCEED;
+        return self::PREPARE_SUCCEED;
     }
 
     /**

@@ -13,7 +13,6 @@ namespace App\Command\Nct;
 use App\Entity\Nct;
 use GuzzleHttp\Exception\GuzzleException;
 use XGallery\Command\NctCommand;
-use XGallery\Defines\DefinesCommand;
 use XGallery\Defines\DefinesCore;
 
 /**
@@ -32,8 +31,7 @@ final class NctTop20 extends NctCommand
      */
     protected function configure()
     {
-        $this->setName('nct:top20')
-            ->setDescription('Fetch TOP 20');
+        $this->setDescription('Fetch TOP 20');
 
         parent::configure();
     }
@@ -54,7 +52,7 @@ final class NctTop20 extends NctCommand
             $this->songs = array_merge($this->songs, $this->client->getTop20($aTop));
         }
 
-        return DefinesCommand::PREPARE_SUCCEED;
+        return self::PREPARE_SUCCEED;
     }
 
     /**

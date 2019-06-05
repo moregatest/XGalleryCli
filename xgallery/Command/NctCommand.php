@@ -10,17 +10,18 @@
 
 namespace XGallery\Command;
 
-use App\Service\Crawler\Nct;
+use App\Service\Crawler\NctCrawler;
 use Doctrine\ORM\EntityManagerInterface;
+use XGallery\BaseCommand;
 
 /**
  * Class NctCommand
  * @package XGallery\Command
  */
-class NctCommand extends AbstractCommand
+class NctCommand extends BaseCommand
 {
     /**
-     * @var Nct
+     * @var NctCrawler
      */
     protected $client;
 
@@ -31,10 +32,10 @@ class NctCommand extends AbstractCommand
 
     /**
      * NctCommand constructor.
-     * @param Nct $client
+     * @param NctCrawler $client
      * @param EntityManagerInterface $entityManager
      */
-    public function __construct(Nct $client, EntityManagerInterface $entityManager)
+    public function __construct(NctCrawler $client, EntityManagerInterface $entityManager)
     {
         $this->client = $client;
         $this->entityManager = $entityManager;

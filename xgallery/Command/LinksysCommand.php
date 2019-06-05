@@ -10,15 +10,15 @@
 
 namespace XGallery\Command;
 
-
-use App\Service\BasicAuthentication\LinksysClient;
+use App\Service\LinksysClient;
 use Doctrine\ORM\EntityManagerInterface;
+use XGallery\BaseCommand;
 
 /**
  * Class LinksysCommand
  * @package XGallery\Command
  */
-class LinksysCommand extends AbstractCommand
+class LinksysCommand extends BaseCommand
 {
     /**
      * @var LinksysClient

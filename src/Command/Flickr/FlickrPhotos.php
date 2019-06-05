@@ -17,7 +17,6 @@ use stdClass;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use XGallery\Command\FlickrCommand;
-use XGallery\Defines\DefinesCommand;
 
 /**
  * Class FlickrPhotos
@@ -41,8 +40,7 @@ final class FlickrPhotos extends FlickrCommand
      */
     protected function configure()
     {
-        $this->setName('flickr:photos')
-            ->setDescription('Fetch & insert photos')
+        $this->setDescription('Fetch & insert photos')
             ->setDefinition(
                 new InputDefinition(
                     [
@@ -81,7 +79,7 @@ final class FlickrPhotos extends FlickrCommand
     {
         $this->nsid = $this->client->getNsid($this->getOption('nsid'));
 
-        return DefinesCommand::NEXT_PREPARE;
+        return self::NEXT_PREPARE;
     }
 
     /**
@@ -97,7 +95,7 @@ final class FlickrPhotos extends FlickrCommand
         if (!$album || !filter_var($album, FILTER_VALIDATE_URL)) {
             $this->log('There is no album provided or invalid URL', 'notice');
 
-            return DefinesCommand::NEXT_PREPARE;
+            return self::NEXT_PREPARE;
         }
 
         $data = $this->client->getAlbumPhotos($album);
@@ -105,7 +103,7 @@ final class FlickrPhotos extends FlickrCommand
         if (!$data['photos']) {
             $this->log('Can not get photos in album or empty', 'notice');
 
-            return DefinesCommand::NEXT_PREPARE;
+            return self::NEXT_PREPARE;
         }
 
         $this->nsid = $data['nsid'];
@@ -115,9 +113,11 @@ final class FlickrPhotos extends FlickrCommand
             $this->photos[] = $photo;
         }
 
-        $this->log('Fetched '.count($this->photos).' photos of NSID: '.$data['nsid'].' in album '.$data['album']);
+        $this->log(
+            'Fetched ' . count($this->photos) . ' photos of NSID: ' . $data['nsid'] . ' in album ' . $data['album']
+        );
 
-        return DefinesCommand::SKIP_PREPARE;
+        return self::SKIP_PREPARE;
     }
 
     /**
@@ -132,7 +132,7 @@ final class FlickrPhotos extends FlickrCommand
         if (!$gallery) {
             $this->log('There is no gallery provided', 'notice');
 
-            return DefinesCommand::NEXT_PREPARE;
+            return self::NEXT_PREPARE;
         }
 
         if (filter_var($gallery, FILTER_VALIDATE_URL)) {
@@ -140,16 +140,16 @@ final class FlickrPhotos extends FlickrCommand
             $gallery = end($gallery);
         }
 
-        $this->log('Working on gallery: '.$gallery);
+        $this->log('Working on gallery: ' . $gallery);
         $this->photos = $this->client->flickrGalleriesGetAllPhotos($gallery);
 
         if (!$this->photos || empty($this->photos)) {
             $this->log('Can not get photos in gallery or empty', 'notice');
 
-            return DefinesCommand::NEXT_PREPARE;
+            return self::NEXT_PREPARE;
         }
 
-        return DefinesCommand::SKIP_PREPARE;
+        return self::SKIP_PREPARE;
     }
 
     /**
@@ -163,10 +163,10 @@ final class FlickrPhotos extends FlickrCommand
         $photoIds = $this->getOption('photo_ids');
 
         if (!$photoIds) {
-            return DefinesCommand::NEXT_PREPARE;
+            return self::NEXT_PREPARE;
         }
 
-        $this->log('Working on specific photos: '.$photoIds);
+        $this->log('Working on specific photos: ' . $photoIds);
         $photos = explode(',', $photoIds);
 
         /**
@@ -193,7 +193,7 @@ final class FlickrPhotos extends FlickrCommand
             $this->photos[] = $photo;
         }
 
-        return DefinesCommand::SKIP_PREPARE;
+        return self::SKIP_PREPARE;
     }
 
     /**
@@ -217,7 +217,7 @@ final class FlickrPhotos extends FlickrCommand
             if (!$contactEntity) {
                 $this->log('Can not get people from database', 'notice');
 
-                return DefinesCommand::PREPARE_FAILED;
+                return self::PREPARE_FAILED;
             }
 
             $contactEntity->setUpdated(new DateTime());
@@ -237,23 +237,23 @@ final class FlickrPhotos extends FlickrCommand
             $this->nsid = $contactEntity->getNsid();
         }
 
-        $this->log('Working on NSID: <options=bold>'.$this->nsid.'</>');
+        $this->log('Working on NSID: <options=bold>' . $this->nsid . '</>');
         $this->log('Getting all NSID\' photos ...');
         $this->photos = $this->client->flickrPeopleGetAllPhotos($this->nsid);
-        $this->log('Found NSID\' photos: <options=bold>'.count($this->photos).'</>');
+        $this->log('Found NSID\' photos: <options=bold>' . count($this->photos) . '</>');
 
         /**
          * @TODO Support limit
          */
         $this->log('Getting all NSID\' favorites photos ...');
         $favoritePhotos = $this->client->getAllFavorities($this->nsid);
-        $this->log('Found NSID\' fav photos: <options=bold>'.count($favoritePhotos).'</>');
+        $this->log('Found NSID\' fav photos: <options=bold>' . count($favoritePhotos) . '</>');
 
         if ($favoritePhotos) {
             $this->photos = array_merge($this->photos, $favoritePhotos);
         }
 
-        return DefinesCommand::PREPARE_SUCCEED;
+        return self::PREPARE_SUCCEED;
     }
 
     /**

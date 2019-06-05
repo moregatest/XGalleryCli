@@ -18,7 +18,6 @@ use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use XGallery\Command\XCityCommand;
-use XGallery\Defines\DefinesCommand;
 
 /**
  * Class XCityMovies
@@ -26,18 +25,24 @@ use XGallery\Defines\DefinesCommand;
  */
 class XCityMovies extends XCityCommand
 {
+    const IDOLS_LIMIT = 10;
 
     /**
      * Configures the current command.
      */
     protected function configure()
     {
-        $this->setName('xcity:movies')
-            ->setDescription('Fetch movies of idol')
+        $this->setDescription('Fetch movies of idol')
             ->setDefinition(
                 new InputDefinition(
                     [
-                        new InputOption('id', null, InputOption::VALUE_OPTIONAL),
+                        new InputOption(
+                            'limit',
+                            null,
+                            InputOption::VALUE_OPTIONAL,
+                            'Limit idols will be processed',
+                            self::IDOLS_LIMIT
+                        ),
                     ]
                 )
             );
@@ -51,10 +56,10 @@ class XCityMovies extends XCityCommand
      */
     protected function prepareGetMovies()
     {
-        $idols = $this->entityManager->getRepository(JavIdol::class)->getIdols();
+        $idols = $this->entityManager->getRepository(JavIdol::class)->getIdols($this->getOption('limit'));
 
         if (empty($idols)) {
-            return DefinesCommand::PREPARE_FAILED;
+            return self::PREPARE_FAILED;
         }
 
         foreach ($idols as $idol) {
@@ -62,14 +67,17 @@ class XCityMovies extends XCityCommand
             $this->entityManager->persist($idol);
             $this->entityManager->flush();
 
-            $this->log('Working on idol: '.$idol->getName());
+            $this->log('Working on idol: ' . $idol->getName());
             $this->io->newLine();
 
-            $links = $this->client->getProfileFilmLinks('detail/'.$idol->getId());
+            $links = $this->client->getProfileFilmLinks('detail/' . $idol->getId());
 
             $this->io->progressStart(count($links));
 
             foreach ($links as $link) {
+                /**
+                 * @TODO Return entity object
+                 */
                 $movie = $this->client->getFilm($link);
                 $this->insertMovie($movie);
 
@@ -77,12 +85,11 @@ class XCityMovies extends XCityCommand
             }
         }
 
-
-        return DefinesCommand::PREPARE_SUCCEED;
+        return self::PREPARE_SUCCEED;
     }
 
     /**
-     * @param $movie
+     * @param object $movie
      * @return boolean
      */
     protected function insertMovie($movie)

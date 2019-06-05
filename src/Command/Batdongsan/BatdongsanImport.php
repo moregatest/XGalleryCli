@@ -11,33 +11,30 @@
 namespace App\Command\Batdongsan;
 
 use App\Entity\BatdongsanComVn;
-use App\Traits\HasLogger;
 use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\Command\BdsCommand;
+use XGallery\Command\BatdongsanCommand;
 
 /**
  * Class BatdongsanImport
  * @package App\Command\Batdongsan
  */
-class BatdongsanImport extends BdsCommand
+final class BatdongsanImport extends BatdongsanCommand
 {
-    use HasLogger;
 
     /**
      * Configures the current command.
      */
     protected function configure()
     {
-        $this->setName('bds:import')
-            ->setDefinition(
-                new InputDefinition(
-                    [
-                        new InputOption('url', 'url', InputOption::VALUE_OPTIONAL),
-                    ]
-                )
-            );
+        $this->setDefinition(
+            new InputDefinition(
+                [
+                    new InputOption('url', null, InputOption::VALUE_OPTIONAL),
+                ]
+            )
+        );
 
         parent::configure();
     }
@@ -49,7 +46,7 @@ class BatdongsanImport extends BdsCommand
     protected function processInsertItems()
     {
         $url = $this->getOption('url');
-        $this->log('Process on page: '.$url);
+        $this->log('Process on page: ' . $url);
         $items = $this->client->extractItems($url);
 
         if (!$items || empty($items)) {
@@ -58,14 +55,14 @@ class BatdongsanImport extends BdsCommand
             return false;
         }
 
-        $this->log('Total items: '.count($items));
+        $this->log('Total items: ' . count($items));
         $skipped = 0;
 
         foreach ($items as $index => $item) {
             $bdsEntity = $this->entityManager->getRepository(BatdongsanComVn::class)->find($item);
 
             if ($bdsEntity) {
-                $this->log($item.' already exists. We\'ll skip it');
+                $this->log($item . ' already exists. We\'ll skip it');
                 $skipped++;
 
                 continue;
@@ -74,7 +71,7 @@ class BatdongsanImport extends BdsCommand
             $bdsEntity = new BatdongsanComVn;
             $bdsEntity->setUrl($item);
 
-            $itemData = $this->client->extractItem('https://batdongsan.com.vn'.$item);
+            $itemData = $this->client->extractItem('https://batdongsan.com.vn' . $item);
 
             if (!$itemData) {
                 $this->log('Can not extract item', 'notice');
@@ -97,7 +94,7 @@ class BatdongsanImport extends BdsCommand
         $this->entityManager->flush();
         $this->entityManager->clear();
 
-        $this->log('Total skipped: <options=bold>'.$skipped.'</>');
+        $this->log('Total skipped: <options=bold>' . $skipped . '</>');
 
         return true;
     }

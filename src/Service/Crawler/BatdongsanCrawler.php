@@ -18,7 +18,7 @@ use stdClass;
  * Class BdsCrawler
  * @package App\Service\Crawler
  */
-class BdsCrawler extends Crawler
+class BatdongsanCrawler extends Crawler
 {
     /**
      * Return number of pages
@@ -99,24 +99,7 @@ class BdsCrawler extends Crawler
             }
         );
 
-        foreach ($fields as $field) {
-            if (!$field) {
-                continue;
-            }
-            foreach ($field as $key => $value) {
-                if (empty($value)) {
-                    $item->{$key} = null;
-                    continue;
-                }
-
-                if (is_array($value)) {
-                    $item->{$key} = $value;
-                    continue;
-                }
-
-                $item->{$key} = trim($value);
-            }
-        }
+        $this->setItemData($fields, $item);
 
         $contact = $crawler->filter('#divCustomerInfo .right-content')->each(
             function ($el) {
@@ -136,7 +119,18 @@ class BdsCrawler extends Crawler
             }
         );
 
-        foreach ($contact as $field) {
+        $this->setItemData($contact, $item);
+
+        return $item;
+    }
+
+    /**
+     * @param $fields
+     * @param $item
+     */
+    private function setItemData($fields, &$item)
+    {
+        foreach ($fields as $field) {
             if (!$field) {
                 continue;
             }
@@ -155,7 +149,5 @@ class BdsCrawler extends Crawler
                 $item->{$key} = trim($value);
             }
         }
-
-        return $item;
     }
 }

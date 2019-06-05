@@ -10,14 +10,15 @@
 
 namespace XGallery\Command;
 
-use App\Service\Restful\NowClient;
+use App\Service\NowClient;
 use Doctrine\ORM\EntityManagerInterface;
+use XGallery\BaseCommand;
 
 /**
  * Class NowCommand
  * @package XGallery\Command
  */
-class NowCommand extends AbstractCommand
+class NowCommand extends BaseCommand
 {
     /**
      * @var NowClient
