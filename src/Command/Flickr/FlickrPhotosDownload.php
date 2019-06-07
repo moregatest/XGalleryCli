@@ -191,6 +191,9 @@ final class FlickrPhotosDownload extends FlickrCommand
      */
     protected function preparePhotosFromDb()
     {
+        /**
+         * @TODO Get photos with no contact record
+         */
         if (!$this->nsid || ($this->nsid && !$this->getOption('all'))) {
             $this->photos = $this->entityManager->getRepository(FlickrPhoto::class)->getSizedPhotoIds(
                 $this->nsid,
@@ -241,7 +244,7 @@ final class FlickrPhotosDownload extends FlickrCommand
                     [
                         'php',
                         XGALLERY_PATH . '/bin/application',
-                        'flickr:download',
+                        'flickr:photodownload',
                         '--photo_id=' . $photoId,
                     ]
                 );

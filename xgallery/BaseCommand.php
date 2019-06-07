@@ -153,7 +153,6 @@ class BaseCommand extends Command
         $classes = get_class_methods($this);
 
         foreach ($classes as $class) {
-
             if ($class !== 'prepare' && strpos($class, 'prepare') !== false) {
                 $this->prepares[] = $class;
             }

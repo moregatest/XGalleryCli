@@ -46,6 +46,13 @@ final class FlickrPhotos extends FlickrCommand
                     [
                         new InputOption('nsid', 'id', InputOption::VALUE_OPTIONAL, 'Fetch photos from specific NSID'),
                         new InputOption(
+                            'favorites',
+                            'fav',
+                            InputOption::VALUE_OPTIONAL,
+                            'Fetch favorites\' photos from specific NSID',
+                            1
+                        ),
+                        new InputOption(
                             'album',
                             null,
                             InputOption::VALUE_OPTIONAL,
@@ -245,12 +252,15 @@ final class FlickrPhotos extends FlickrCommand
         /**
          * @TODO Support limit
          */
-        $this->log('Getting all NSID\' favorites photos ...');
-        $favoritePhotos = $this->client->getAllFavorities($this->nsid);
-        $this->log('Found NSID\' fav photos: <options=bold>' . count($favoritePhotos) . '</>');
 
-        if ($favoritePhotos) {
-            $this->photos = array_merge($this->photos, $favoritePhotos);
+        if ($this->getOption('favorites')) {
+            $this->log('Getting all NSID\' favorites photos ...');
+            $favoritePhotos = $this->client->getAllFavorities($this->nsid);
+            $this->log('Found NSID\' fav photos: <options=bold>' . count($favoritePhotos) . '</>');
+
+            if ($favoritePhotos) {
+                $this->photos = array_merge($this->photos, $favoritePhotos);
+            }
         }
 
         return self::PREPARE_SUCCEED;
@@ -271,10 +281,9 @@ final class FlickrPhotos extends FlickrCommand
         }
 
         $this->photos = array_unique($this->photos, SORT_REGULAR);
-        $this->totalPhotos = count($this->photos);
 
         $this->io->newLine();
-        $this->io->progressStart($this->totalPhotos);
+        $this->io->progressStart(count($this->photos));
 
         /**
          * @TODO Insert contact if photo owner not found in contacts

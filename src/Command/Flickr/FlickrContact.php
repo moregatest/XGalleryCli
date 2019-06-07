@@ -118,9 +118,9 @@ final class FlickrContact extends FlickrCommand
         $contactEntity->setFriend($this->contact->person->friend);
         $contactEntity->setFamily($this->contact->person->family);
         $contactEntity->setUsername($this->contact->person->username->_content);
-        $contactEntity->setRealname($this->contact->person->realname->_content);
-        $contactEntity->setLocation($this->contact->person->location->_content);
-        $contactEntity->setDescription($this->contact->person->description->_content);
+        $contactEntity->setRealname($this->contact->person->realname->_content ?? null);
+        $contactEntity->setLocation($this->contact->person->location->_content ?? null);
+        $contactEntity->setDescription($this->contact->person->description->_content ?? null);
         $contactEntity->setPhotos($this->contact->person->photos->count->_content);
         $contactEntity->setUpdated(new DateTime);
 
