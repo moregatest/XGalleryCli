@@ -17,7 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * FlickrContact
  *
- * @ORM\Table(name="flickr_contact", uniqueConstraints={@ORM\UniqueConstraint(name="nsid", columns={"nsid", "username"})}, indexes={@ORM\Index(name="nsid_idx", columns={"nsid"})})
+ * @ORM\Table(name="flickr_contacts", uniqueConstraints={@ORM\UniqueConstraint(name="nsid", columns={"nsid", "username"})}, indexes={@ORM\Index(name="nsid_idx", columns={"nsid"})})
  * @ORM\Entity(repositoryClass="App\Repository\FlickrContactRepository")
  */
 class FlickrContact

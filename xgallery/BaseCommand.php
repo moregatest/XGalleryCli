@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  *
  * Copyright (c) 2019 JOOservices Ltd
@@ -14,6 +15,7 @@ use App\Traits\HasConsole;
 use App\Traits\HasEntityManager;
 use App\Traits\HasLogger;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -27,6 +29,7 @@ use XGallery\Defines\DefinesCore;
  */
 class BaseCommand extends Command
 {
+    use LockableTrait;
     use HasLogger;
     use HasConsole;
     use HasEntityManager;
@@ -80,6 +83,15 @@ class BaseCommand extends Command
     private $processes = [];
 
     /**
+     * Clean up
+     */
+    public function __destruct()
+    {
+        $this->entityManager->getConnection()->close();
+        //$this->release();
+    }
+
+    /**
      * Wrapped method to get input option
      *
      * @param      $name
@@ -104,7 +116,7 @@ class BaseCommand extends Command
     {
         $className = get_called_class();
         $className = explode('\\', $className);
-        $command = strtolower($className[2] . ':' . str_replace($className[2], '', end($className)));
+        $command   = strtolower($className[2] . ':' . str_replace($className[2], '', end($className)));
 
         $this->setName($command);
         $this->addOption(
@@ -115,6 +127,14 @@ class BaseCommand extends Command
         );
 
         parent::configure();
+    }
+
+    /**
+     * @return boolean|string
+     */
+    protected function getBinDir()
+    {
+        return realpath(__DIR__ . '/../bin');
     }
 
     /**
@@ -129,7 +149,7 @@ class BaseCommand extends Command
         /**
          * @TODO Use https://symfony.com/doc/current/console/calling_commands.html
          */
-        return new Process($cmd, null, null, null, $timeout);
+        return new Process(array_merge(['php', $this->getBinDir() . '/console'], $cmd), null, null, null, $timeout);
     }
 
     /**
@@ -141,7 +161,13 @@ class BaseCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->input = $input;
+        /*        if (!$this->lock(null, true)) {
+                    $output->writeln('The command is already running in another process.');
+
+                    return 0;
+                }*/
+
+        $this->input  = $input;
         $this->output = $output;
 
         $this->io = new SymfonyStyle($input, $output);

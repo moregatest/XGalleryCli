@@ -24,7 +24,6 @@ use XGallery\Command\FlickrCommand;
  */
 final class FlickrPhotoDownload extends FlickrCommand
 {
-
     /**
      * @var FlickrPhoto
      */
@@ -104,14 +103,7 @@ final class FlickrPhotoDownload extends FlickrCommand
             $this->log('Trying get photo size');
             $retry = true;
 
-            $this->getProcess(
-                [
-                    'php',
-                    XGALLERY_PATH . '/bin/application',
-                    'flickr:photossize',
-                    '--photo_ids=' . $this->photo->getId(),
-                ]
-            )->run();
+            $this->getProcess(['flickr:photossize', '--photo_ids=' . $this->photo->getId()])->run();
 
             $this->entityManager->clear();
 
@@ -135,20 +127,9 @@ final class FlickrPhotoDownload extends FlickrCommand
             return self::PREPARE_FAILED;
         }
 
-        if ($this->photo) {
-            return self::NEXT_PREPARE;
-        }
-
         $this->log('Requesting photo size: <options=bold>' . $photoId . '</>...');
 
-        $this->getProcess(
-            [
-                'php',
-                XGALLERY_PATH . '/bin/application',
-                'flickr:photossize',
-                '--photo_ids=' . $photoId,
-            ]
-        )->run();
+        $this->getProcess(['flickr:photossize', '--photo_ids=' . $photoId])->run();
 
         // Try to get it again
         $this->entityManager->clear();
@@ -173,10 +154,10 @@ final class FlickrPhotoDownload extends FlickrCommand
     {
         // Prepare
         $targetDir = getenv('flickr_storage') . '/' . $this->photo->getOwner();
-        $fileName = basename($this->photo->getUrl());
-        $fileName = explode('?', $fileName);
-        $fileName = $fileName[0];
-        $saveTo = $targetDir . '/' . $fileName;
+        $fileName  = basename($this->photo->getUrl());
+        $fileName  = explode('?', $fileName);
+        $fileName  = $fileName[0];
+        $saveTo    = $targetDir . '/' . $fileName;
 
         $this->log('URL: ' . $this->photo->getUrl());
         $this->log('Save file to: ' . $saveTo);
@@ -197,8 +178,6 @@ final class FlickrPhotoDownload extends FlickrCommand
             if ($this->photo->getUrl() === null || empty($this->photo->getUrl())) {
                 $this->getProcess(
                     [
-                        'php',
-                        XGALLERY_PATH . '/bin/application',
                         'flickr:photossize',
                         '--photo_ids=' . $this->photo->getId(),
                     ]
@@ -209,7 +188,7 @@ final class FlickrPhotoDownload extends FlickrCommand
 
             // Verify load and re-download if file is corrupted
             $originalFilesize = filesize($saveTo);
-            $remoteFilesize = HttpClient::getFilesize($this->photo->getUrl());
+            $remoteFilesize   = HttpClient::getFilesize($this->photo->getUrl());
 
             // Than we only re-download if corrupted and re-download is required
             if ($originalFilesize !== $remoteFilesize) {

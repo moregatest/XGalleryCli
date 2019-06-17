@@ -15,7 +15,6 @@ use RuntimeException;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use XGallery\Command\FlickrCommand;
-use XGallery\Defines\DefinesFlickr;
 
 /**
  * Class FlickrPhotosDownload
@@ -175,9 +174,7 @@ final class FlickrPhotosDownload extends FlickrCommand
             return self::NEXT_PREPARE;
         }
 
-        $this->getProcess(
-            ['php', XGALLERY_PATH . '/bin/application', 'flickr:photos', '--photo_ids=' . $photoIds]
-        )->run();
+        $this->getProcess(['flickr:photos', '--photo_ids=' . $photoIds])->run();
 
         $this->photos = explode(',', $photoIds);
 
@@ -240,14 +237,7 @@ final class FlickrPhotosDownload extends FlickrCommand
              * @TODO Prevent flickr:photodownload query again
              */
             try {
-                $processes[$photoId] = $this->getProcess(
-                    [
-                        'php',
-                        XGALLERY_PATH . '/bin/application',
-                        'flickr:photodownload',
-                        '--photo_id=' . $photoId,
-                    ]
-                );
+                $processes[$photoId] = $this->getProcess(['flickr:photodownload', '--photo_id=' . $photoId]);
                 $processes[$photoId]->start();
             } catch (RuntimeException $exception) {
                 $this->log($exception->getMessage(), 'error');

@@ -22,12 +22,12 @@ use XGallery\Command\BatdongsanCommand;
  */
 final class BatdongsanImport extends BatdongsanCommand
 {
-
     /**
      * Configures the current command.
      */
     protected function configure()
     {
+        $this->setDescription('Import BDS detail data');
         $this->setDefinition(
             new InputDefinition(
                 [
@@ -47,31 +47,36 @@ final class BatdongsanImport extends BatdongsanCommand
     {
         $url = $this->getOption('url');
         $this->log('Process on page: ' . $url);
-        $items = $this->client->extractItems($url);
 
-        if (!$items || empty($items)) {
+        $urls = $this->client->extractItems($url);
+
+        if (!$urls || empty($urls)) {
             $this->log('Can not extract items', ' notice');
 
             return false;
         }
 
-        $this->log('Total items: ' . count($items));
+        $this->log('Total items: ' . count($urls));
         $skipped = 0;
 
-        foreach ($items as $index => $item) {
-            $bdsEntity = $this->entityManager->getRepository(BatdongsanComVn::class)->find($item);
+        /**
+         * @TODO Check URls exists in database before process
+         */
+
+        foreach ($urls as $index => $url) {
+            $bdsEntity = $this->entityManager->getRepository(BatdongsanComVn::class)->find($url);
 
             if ($bdsEntity) {
-                $this->log($item . ' already exists. We\'ll skip it');
+                $this->log($url . ' already exists. We\'ll skip it');
                 $skipped++;
 
                 continue;
             }
 
             $bdsEntity = new BatdongsanComVn;
-            $bdsEntity->setUrl($item);
+            $bdsEntity->setUrl($url);
 
-            $itemData = $this->client->extractItem('https://batdongsan.com.vn' . $item);
+            $itemData = $this->client->extractItem('https://batdongsan.com.vn' . $url);
 
             if (!$itemData) {
                 $this->log('Can not extract item', 'notice');

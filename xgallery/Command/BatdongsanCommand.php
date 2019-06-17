@@ -10,7 +10,6 @@
 
 namespace XGallery\Command;
 
-
 use App\Service\Crawler\BatdongsanCrawler;
 use Doctrine\ORM\EntityManagerInterface;
 use XGallery\BaseCommand;
@@ -33,7 +32,7 @@ class BatdongsanCommand extends BaseCommand
      */
     public function __construct(BatdongsanCrawler $client, EntityManagerInterface $entityManager)
     {
-        $this->client = $client;
+        $this->client        = $client;
         $this->entityManager = $entityManager;
 
         parent::__construct();

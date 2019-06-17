@@ -13,6 +13,10 @@ namespace App\Traits;
 use Doctrine\ORM\EntityManagerInterface;
 use XGallery\Defines\DefinesCore;
 
+/**
+ * Trait HasEntityManager
+ * @package App\Traits
+ */
 trait HasEntityManager
 {
     /**

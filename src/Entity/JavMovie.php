@@ -22,6 +22,7 @@ class JavMovie
     /**
      * @ORM\Id()
      * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
 
@@ -29,6 +30,16 @@ class JavMovie
      * @ORM\Column(type="text")
      */
     private $name;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $url;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $source;
 
     /**
      * @ORM\Column(type="date", nullable=true)
@@ -56,22 +67,21 @@ class JavMovie
     private $time;
 
     /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $updated;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $filename;
+
+    /**
      * @return int|null
      */
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    /**
-     * @param int|null $id
-     * @return JavMovie|null
-     */
-    public function setItem(?int $id): ?self
-    {
-        $this->id = $id;
-
-        return $this;
     }
 
     /**
@@ -89,6 +99,44 @@ class JavMovie
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    /**
+     * @param string $url
+     * @return JavMovie
+     */
+    public function setUrl(string $url): self
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getSource(): ?string
+    {
+        return $this->source;
+    }
+
+    /**
+     * @param string $source
+     * @return JavMovie
+     */
+    public function setSource(string $source): self
+    {
+        $this->source = $source;
 
         return $this;
     }
@@ -184,6 +232,44 @@ class JavMovie
     public function setTime(?int $time): self
     {
         $this->time = $time;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getUpdated(): ?DateTimeInterface
+    {
+        return $this->updated;
+    }
+
+    /**
+     * @param DateTimeInterface|null $updated
+     * @return JavMovie
+     */
+    public function setUpdated(?DateTimeInterface $updated): self
+    {
+        $this->updated = $updated;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getFilename(): ?string
+    {
+        return $this->filename;
+    }
+
+    /**
+     * @param string|null $filename
+     * @return JavMovie
+     */
+    public function setFilename(?string $filename): self
+    {
+        $this->filename = $filename;
 
         return $this;
     }

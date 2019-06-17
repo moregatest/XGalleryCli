@@ -149,8 +149,8 @@ class FlickrClient extends OAuthClient
      */
     public function getAlbumPhotos($albumUrl)
     {
-        $parts = explode('/', $albumUrl);
-        $nsid = $this->getNsid($albumUrl);
+        $parts   = explode('/', $albumUrl);
+        $nsid    = $this->getNsid($albumUrl);
         $albumId = end($parts);
 
         return [

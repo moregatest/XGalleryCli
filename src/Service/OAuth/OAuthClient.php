@@ -76,10 +76,10 @@ class OAuthClient
      */
     protected function setCredential($consumerKey, $consumerSecretKey, $token, $tokenSecret)
     {
-        $this->credential['consumerKey'] = $consumerKey;
+        $this->credential['consumerKey']       = $consumerKey;
         $this->credential['consumerSecretKey'] = $consumerSecretKey;
-        $this->credential['token'] = $token;
-        $this->credential['tokenSecret'] = $tokenSecret;
+        $this->credential['token']             = $token;
+        $this->credential['tokenSecret']       = $tokenSecret;
     }
 
     /**
@@ -119,7 +119,7 @@ class OAuthClient
         $parameters['oauth_signature'] = $this->getSignature($baseSignature);
 
         // For header we'll use encode for signature
-        $this->oauthParameters = $parameters;
+        $this->oauthParameters                    = $parameters;
         $this->oauthParameters['oauth_signature'] = $this->encode($parameters['oauth_signature']);
 
         return $parameters;
@@ -251,7 +251,7 @@ class OAuthClient
      */
     public function getRequestToken($callback)
     {
-        $this->credential['token'] = '';
+        $this->credential['token']       = '';
         $this->credential['tokenSecret'] = '';
 
         return $this->request(

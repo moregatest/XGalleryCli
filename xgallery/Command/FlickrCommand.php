@@ -66,7 +66,7 @@ class FlickrCommand extends BaseCommand
      */
     public function __construct(FlickrClient $client, EntityManagerInterface $entityManager)
     {
-        $this->client = $client;
+        $this->client        = $client;
         $this->entityManager = $entityManager;
 
         parent::__construct();

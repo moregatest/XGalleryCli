@@ -1,63 +1,54 @@
 <?php
-/**
- *
- * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
- * @package XGallery
- * @license GPL
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
- */
 
 namespace App\Entity;
 
-use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Nct
- *
- * @ORM\Table(name="nct")
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\NctRepository")
  */
 class Nct
 {
     /**
-     * @var string
-     *
-     * @ORM\Column(name="url", type="string", length=255, nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="NONE")
+     * @ORM\Id()
+     * @ORM\GeneratedValue()
+     * @ORM\Column(type="integer")
+     */
+    private $id;
+
+    /**
+     * @ORM\Column(type="string", length=255)
      */
     private $url;
 
     /**
-     * @var DateTime|null
-     *
-     * @ORM\Column(name="created", type="datetime", nullable=true)
+     * @ORM\Column(type="datetime", nullable=true)
      */
     private $created;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="title", type="string", length=255, nullable=false)
+     * @ORM\Column(type="string", length=255)
      */
     private $title;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="flash_link", type="string", length=255, nullable=true)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $flashLink;
+    private $download_link;
 
     /**
-     * @var int|null
-     *
-     * @ORM\Column(name="status", type="smallint", nullable=true)
+     * @ORM\Column(type="smallint", nullable=true)
      */
     private $status;
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     /**
      * @return string|null
@@ -87,10 +78,10 @@ class Nct
     }
 
     /**
-     * @param DateTimeInterface|null $created
+     * @param DateTimeInterface $created
      * @return Nct
      */
-    public function setCreated(?DateTimeInterface $created): self
+    public function setCreated(DateTimeInterface $created): self
     {
         $this->created = $created;
 
@@ -119,18 +110,18 @@ class Nct
     /**
      * @return string|null
      */
-    public function getFlashLink(): ?string
+    public function getDownloadLink(): ?string
     {
-        return $this->flashLink;
+        return $this->download_link;
     }
 
     /**
-     * @param string $flashLink
+     * @param string $download_link
      * @return Nct
      */
-    public function setFlashLink(string $flashLink): self
+    public function setDownloadLink(string $download_link): self
     {
-        $this->flashLink = $flashLink;
+        $this->download_link = $download_link;
 
         return $this;
     }
@@ -144,10 +135,10 @@ class Nct
     }
 
     /**
-     * @param int|null $status
+     * @param int $status
      * @return Nct
      */
-    public function setStatus(?int $status): self
+    public function setStatus(int $status): self
     {
         $this->status = $status;
 

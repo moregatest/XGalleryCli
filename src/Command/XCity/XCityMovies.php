@@ -10,9 +10,9 @@
 
 namespace App\Command\XCity;
 
-use App\Entity\JavGenre;
 use App\Entity\JavIdol;
 use App\Entity\JavMovie;
+use App\Traits\HasMovies;
 use DateTime;
 use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Input\InputDefinition;
@@ -23,9 +23,10 @@ use XGallery\Command\XCityCommand;
  * Class XCityMovies
  * @package App\Command\XCity
  */
-class XCityMovies extends XCityCommand
+final class XCityMovies extends XCityCommand
 {
-    const IDOLS_LIMIT = 10;
+    use HasMovies;
+    const IDOLS_LIMIT = 100;
 
     /**
      * Configures the current command.
@@ -56,21 +57,26 @@ class XCityMovies extends XCityCommand
      */
     protected function prepareGetMovies()
     {
-        $idols = $this->entityManager->getRepository(JavIdol::class)->getIdols($this->getOption('limit'));
+        $idols = $this->entityManager->getRepository(JavIdol::class)->findBy(
+            ['source' => 'xcity'],
+            ['updated' => 'ASC'],
+            self::IDOLS_LIMIT
+        );
 
         if (empty($idols)) {
             return self::PREPARE_FAILED;
         }
 
         foreach ($idols as $idol) {
+            // Update idol
             $idol->setUpdated(new DateTime());
-            $this->entityManager->persist($idol);
-            $this->entityManager->flush();
+            // $this->entityManager->persist($idol);
+            //$this->entityManager->flush();
 
             $this->log('Working on idol: ' . $idol->getName());
             $this->io->newLine();
 
-            $links = $this->client->getProfileFilmLinks('detail/' . $idol->getId());
+            $links = $this->client->getMovieLinks('detail/' . $idol->getId());
 
             $this->io->progressStart(count($links));
 
@@ -78,9 +84,9 @@ class XCityMovies extends XCityCommand
                 /**
                  * @TODO Return entity object
                  */
-                $movie = $this->client->getFilm($link);
-                $this->insertMovie($movie);
-
+                $movie       = $this->client->getMovieDetail($link);
+                $movieEntity = $this->insertMovie($movie);
+                $this->insertXRef($movie->genres, $movieEntity);
                 $this->io->progressAdvance();
             }
         }
@@ -98,14 +104,20 @@ class XCityMovies extends XCityCommand
             return false;
         }
 
-        $movieEntity = $this->entityManager->getRepository(JavMovie::class)->find($movie->id);
+        $movieEntity = $this->entityManager->getRepository(JavMovie::class)->findOneBy(
+            ['item_number' => $movie->item_number, 'source' => 'xcity']
+        );
 
-        if (!$movieEntity) {
-            $movieEntity = new JavMovie;
-            $movieEntity->setItem($movie->id);
+        // Movie already exists
+        if ($movieEntity) {
+            return $movieEntity;
         }
 
+        $movieEntity = new JavMovie;
+
         $movieEntity->setName($movie->name);
+        $movieEntity->setUrl($movie->url);
+        $movieEntity->setSource('xcity');
 
         if (isset($movie->sales_date) && $movie->sales_date && !empty($movie->sales_date)) {
             $movieEntity->setSalesDate(DateTime::createFromFormat('Y-m-d', $movie->sales_date));
@@ -120,25 +132,11 @@ class XCityMovies extends XCityCommand
         $movieEntity->setTime($movie->time);
 
         $this->entityManager->persist($movieEntity);
+
+        $this->insertGenres($movie->genres);
+
         $this->entityManager->flush();
 
-        // Extra data
-
-        foreach ($movie->genres as $genre) {
-            $genreEntity = $this->entityManager->getRepository(JavGenre::class)->findOneBy(
-                array('name' => $genre)
-            );
-
-            if ($genreEntity) {
-                continue;
-            }
-
-            $genreEntity = new JavGenre;
-            $genreEntity->setName($genre);
-            $this->entityManager->persist($genreEntity);
-            $this->entityManager->flush();
-        }
-
-        return true;
+        return $movieEntity;
     }
 }

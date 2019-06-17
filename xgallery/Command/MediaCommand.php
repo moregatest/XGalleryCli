@@ -10,29 +10,22 @@
 
 namespace XGallery\Command;
 
-use App\Service\LinksysClient;
 use Doctrine\ORM\EntityManagerInterface;
 use XGallery\BaseCommand;
 
 /**
- * Class LinksysCommand
+ * Class MediaCommand
  * @package XGallery\Command
  */
-class LinksysCommand extends BaseCommand
+class MediaCommand extends BaseCommand
 {
-    /**
-     * @var LinksysClient
-     */
-    protected $client;
 
     /**
-     * LinksysCommand constructor.
-     * @param LinksysClient $client
+     * XMedia constructor.
      * @param EntityManagerInterface $entityManager
      */
-    public function __construct(LinksysClient $client, EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        $this->client        = $client;
         $this->entityManager = $entityManager;
 
         parent::__construct();

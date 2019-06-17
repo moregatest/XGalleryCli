@@ -10,7 +10,6 @@
 
 namespace App\Service\Crawler;
 
-use App\Service\Crawler;
 use GuzzleHttp\Exception\GuzzleException;
 use stdClass;
 
@@ -18,21 +17,22 @@ use stdClass;
  * Class BdsCrawler
  * @package App\Service\Crawler
  */
-class BatdongsanCrawler extends Crawler
+class BatdongsanCrawler extends BaseCrawler
 {
     /**
      * Return number of pages
      *
-     * @param $url
+     * @param string $url
      * @return integer
      * @throws GuzzleException
      */
     public function getPages($url)
     {
-        $crawler = $this->request('GET', $url);
+        $crawler = $this->getCrawler('GET', $url);
+
         $pages = $crawler->filter('.background-pager-right-controls a')->last()->attr('href');
         $pages = explode('/', $pages);
-        $page = str_replace('p', '', end($pages));
+        $page  = str_replace('p', '', end($pages));
 
         return (int)$page;
     }
@@ -40,14 +40,20 @@ class BatdongsanCrawler extends Crawler
     /**
      * Extract all items on page
      *
-     * @param $url
+     * @param string $url
      * @return array
      * @throws GuzzleException
      */
     public function extractItems($url)
     {
-        $crawler = $this->request('GET', $url);
-        $result = [];
+        $crawler = $this->getCrawler('GET', $url);
+        $result  = [];
+
+        $nodes = $crawler->filter('.search-productItem .p-title h3 a');
+
+        if ($nodes->count() === 0) {
+            return $result;
+        }
 
         foreach ($crawler->filter('.search-productItem .p-title h3 a') as $node) {
             $result[] = $node->getAttribute('href');
@@ -59,26 +65,24 @@ class BatdongsanCrawler extends Crawler
     /**
      * Extract object of item in a page
      *
-     * @param $url
+     * @param string $url
      * @return boolean|stdClass
      * @throws GuzzleException
      */
     public function extractItem($url)
     {
-        $crawler = $this->request('GET', $url);
+        $crawler = $this->getCrawler('GET', $url);
 
         if (!$crawler) {
             return false;
         }
 
-        $item = new stdClass;
-
-        $item->name = trim($crawler->filter('.pm-title h1')->text());
-        $item->price = trim($crawler->filter('.gia-title.mar-right-15 strong')->text());
-        $item->size = trim($crawler->filter('.gia-title')->nextAll()->filter('strong')->text());
+        $item          = new stdClass;
+        $item->name    = trim($crawler->filter('.pm-title h1')->text());
+        $item->price   = trim($crawler->filter('.gia-title.mar-right-15 strong')->text());
+        $item->size    = trim($crawler->filter('.gia-title')->nextAll()->filter('strong')->text());
         $item->content = $crawler->filter('.pm-content .pm-desc')->html();
-
-        $fields = $crawler->filter('.table-detail')->each(
+        $fields        = $crawler->filter('.table-detail')->each(
             function ($row) {
                 $label = $row->filter('.left')->text();
                 if (strpos($label, 'Loại tin rao') !== false) {
@@ -98,10 +102,8 @@ class BatdongsanCrawler extends Crawler
                 }
             }
         );
-
-        $this->setItemData($fields, $item);
-
-        $contact = $crawler->filter('#divCustomerInfo .right-content')->each(
+        $item          = $this->assignFields($fields, $item);
+        $contact       = $crawler->filter('#divCustomerInfo .right-content')->each(
             function ($el) {
                 $label = $el->filter('div')->text();
 
@@ -118,36 +120,8 @@ class BatdongsanCrawler extends Crawler
                 }
             }
         );
-
-        $this->setItemData($contact, $item);
+        $item          = $this->assignFields($contact, $item);
 
         return $item;
-    }
-
-    /**
-     * @param $fields
-     * @param $item
-     */
-    private function setItemData($fields, &$item)
-    {
-        foreach ($fields as $field) {
-            if (!$field) {
-                continue;
-            }
-
-            foreach ($field as $key => $value) {
-                if (empty($value)) {
-                    $item->{$key} = null;
-                    continue;
-                }
-
-                if (is_array($value)) {
-                    $item->{$key} = $value;
-                    continue;
-                }
-
-                $item->{$key} = trim($value);
-            }
-        }
     }
 }

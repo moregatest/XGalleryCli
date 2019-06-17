@@ -24,7 +24,6 @@ use XGallery\Command\FlickrCommand;
  */
 final class FlickrPhotos extends FlickrCommand
 {
-
     /**
      * @var object[]
      */
@@ -116,7 +115,7 @@ final class FlickrPhotos extends FlickrCommand
         $this->nsid = $data['nsid'];
 
         foreach ($data['photos'] as $index => $photo) {
-            $photo->owner = $this->nsid;
+            $photo->owner   = $this->nsid;
             $this->photos[] = $photo;
         }
 
@@ -186,13 +185,13 @@ final class FlickrPhotos extends FlickrCommand
                 continue;
             }
 
-            $photo = new stdClass;
-            $photo->id = $photoId;
-            $photo->owner = $flickrPhoto->photo->owner->nsid;
-            $photo->secret = $flickrPhoto->photo->secret;
-            $photo->server = $flickrPhoto->photo->server;
-            $photo->farm = $flickrPhoto->photo->farm;
-            $photo->title = $flickrPhoto->photo->title->_content;
+            $photo           = new stdClass;
+            $photo->id       = $photoId;
+            $photo->owner    = $flickrPhoto->photo->owner->nsid;
+            $photo->secret   = $flickrPhoto->photo->secret;
+            $photo->server   = $flickrPhoto->photo->server;
+            $photo->farm     = $flickrPhoto->photo->farm;
+            $photo->title    = $flickrPhoto->photo->title->_content;
             $photo->ispublic = $flickrPhoto->photo->visibility->ispublic;
             $photo->isfriend = $flickrPhoto->photo->visibility->isfriend;
             $photo->isfamily = $flickrPhoto->photo->visibility->isfamily;
@@ -275,7 +274,7 @@ final class FlickrPhotos extends FlickrCommand
     protected function processInsertPhotos()
     {
         if (!$this->photos || empty($this->photos)) {
-            $this->log('There are not photos', 'notice');
+            $this->log('There are no photos', 'notice');
 
             return false;
         }

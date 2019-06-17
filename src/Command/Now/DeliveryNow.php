@@ -15,6 +15,7 @@ use App\Entity\DeliveryNowCategory;
 use App\Entity\DeliveryNowCity;
 use App\Entity\DeliveryNowDistrict;
 use App\Entity\DeliveryNowService;
+use GuzzleHttp\Exception\GuzzleException;
 use XGallery\Command\NowCommand;
 
 /**
@@ -24,15 +25,8 @@ use XGallery\Command\NowCommand;
 class DeliveryNow extends NowCommand
 {
     /**
-     * Configures the current command.
+     * @throws GuzzleException
      */
-    protected function configure()
-    {
-        $this->setName('delivery:now');
-
-        parent::configure();
-    }
-
     protected function prepareImport()
     {
         $deliveryNowMeta = $this->client->getDeliveryNowMetadata();

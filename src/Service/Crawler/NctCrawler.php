@@ -10,14 +10,14 @@
 
 namespace App\Service\Crawler;
 
-use App\Service\Crawler;
+use App\Service\HttpClient;
 use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * Class Nct
  * @package App\Service\Crawler
  */
-class NctCrawler extends Crawler
+class NctCrawler extends HttpClient
 {
     /**
      * Endpoint
@@ -33,7 +33,7 @@ class NctCrawler extends Crawler
      */
     public function search($conditions)
     {
-        $crawler = $this->request('GET', $this->endpoint . '/tim-nang-cao?' . http_build_query($conditions));
+        $crawler = $this->getCrawler('GET', $this->endpoint . '/tim-nang-cao?' . http_build_query($conditions));
 
         $pagesUrl = $crawler->filter('div.box_pageview a')->last()->attr('href');
         parse_str(parse_url($pagesUrl)['query'], $queries);
@@ -41,11 +41,11 @@ class NctCrawler extends Crawler
         $songs = $this->extractSongsInSearchView($crawler);
 
         for ($page = 2; $page < $queries['page']; $page++) {
-            $crawler = $this->request(
+            $crawler = $this->getCrawler(
                 'GET',
                 $this->endpoint . '/tim-nang-cao?' . http_build_query($conditions) . '&page=' . $page
             );
-            $songs = array_merge($songs, $this->extractSongsInSearchView($crawler));
+            $songs   = array_merge($songs, $this->extractSongsInSearchView($crawler));
         }
 
         return $songs;
@@ -58,25 +58,16 @@ class NctCrawler extends Crawler
      */
     public function getTop20($url)
     {
-        $crawler = $this->request('GET', $url);
+        $crawler = $this->getCrawler('GET', $url);
 
         $songs = [];
 
         foreach ($crawler->filter('.box_info_field h3 a') as $index => $node) {
-            $songs[$index]['url'] = $node->getAttribute('href');
+            $songs[$index]['href']  = $node->getAttribute('href');
             $songs[$index]['title'] = $node->nodeValue;
         }
 
         return $songs;
-    }
-
-    /**
-     * @param string $url
-     * @throws GuzzleException
-     */
-    public function getLatestSongs($url = 'https://www.nhaccuatui.com/bai-hat/bai-hat-moi.html')
-    {
-        $crawler = $this->request('GET', $url);
     }
 
     /**
@@ -88,9 +79,9 @@ class NctCrawler extends Crawler
         $result = [];
 
         foreach ($crawler->filter('ul.search_returns_list li.list_song div.item_content a.name_song') as $node) {
-            $song['name'] = $node->nodeValue;
-            $song['href'] = $node->getAttribute('href');
-            $result[] = $song;
+            $song['title'] = $node->nodeValue;
+            $song['href']  = $node->getAttribute('href');
+            $result[]      = $song;
         }
 
         return $result;
@@ -105,17 +96,19 @@ class NctCrawler extends Crawler
     public function extractItem($url)
     {
         try {
-            $crawler = $this->request('GET', $url);
-            $text = $crawler->text();
+            $crawler = $this->getCrawler('GET', $url);
+            $text    = $crawler->text();
 
             $start = strpos($text, 'https://www.nhaccuatui.com/flash/xml?html5=true&key1=');
-            $end = strpos($text, '"', $start);
+            $end   = strpos($text, '"', $start);
+            $url   = substr($text, $start, $end - $start);
 
             $xml = simplexml_load_string(
-                $this->client->request('GET', substr($text, $start, $end - $start))->getBody()->getContents()
+                $this->client->request('GET', $url)->getBody()->getContents()
             );
 
             return [
+                'url' => $url,
                 'title' => trim((string)$xml->track->title),
                 'creator' => trim((string)$xml->track->creator),
                 'download' => trim((string)$xml->track->location),

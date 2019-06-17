@@ -67,7 +67,7 @@ trait HasPhotoSets
         }
 
         $photos = $response->photoset->photo;
-        $pages = $response->photoset->pages;
+        $pages  = $response->photoset->pages;
 
         if ($pages === 1) {
             return $photos;

@@ -31,6 +31,7 @@ final class BatdongsanFetch extends BatdongsanCommand
      */
     protected function configure()
     {
+        $this->setDescription('Fetch BDS URLs');
         $this->setDefinition(
             new InputDefinition(
                 [
@@ -38,13 +39,8 @@ final class BatdongsanFetch extends BatdongsanCommand
                         'url',
                         null,
                         InputOption::VALUE_OPTIONAL,
-                        '',
+                        'Index URL',
                         'https://batdongsan.com.vn/nha-dat-ban'
-                    ),
-                    new InputOption(
-                        'limit',
-                        null,
-                        InputOption::VALUE_OPTIONAL
                     ),
                 ]
             )
@@ -78,16 +74,7 @@ final class BatdongsanFetch extends BatdongsanCommand
          * @TODO Support multi pages at same time
          */
         for ($page = 1; $page <= $this->pages; $page++) {
-            $url = $this->getOption('url') . '/p' . $page;
-
-            $this->getProcess(
-                [
-                    'php',
-                    XGALLERY_PATH . '/bin/application',
-                    'batdongsan:import',
-                    '--url=' . $url,
-                ]
-            )->run();
+            $this->getProcess(['batdongsan:import', '--url=' . $this->getOption('url') . '/p' . $page])->run();
 
             $this->io->progressAdvance();
         }

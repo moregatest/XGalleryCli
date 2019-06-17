@@ -10,8 +10,7 @@
 
 namespace XGallery\Command;
 
-
-use App\Service\Crawler\XCityCrawler;
+use App\Service\Crawler\Jav\XCityCrawler;
 use Doctrine\ORM\EntityManagerInterface;
 use XGallery\BaseCommand;
 
@@ -38,7 +37,7 @@ class XCityCommand extends BaseCommand
      */
     public function __construct(XCityCrawler $client, EntityManagerInterface $entityManager)
     {
-        $this->client = $client;
+        $this->client        = $client;
         $this->entityManager = $entityManager;
 
         parent::__construct();

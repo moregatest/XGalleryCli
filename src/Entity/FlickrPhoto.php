@@ -17,7 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * FlickrPhoto
  *
- * @ORM\Table(name="flickr_photo", uniqueConstraints={@ORM\UniqueConstraint(name="id", columns={"id"}), @ORM\UniqueConstraint(name="unique_idx", columns={"id", "owner", "secret", "server", "farm"})})
+ * @ORM\Table(name="flickr_photos", uniqueConstraints={@ORM\UniqueConstraint(name="id", columns={"id"}), @ORM\UniqueConstraint(name="unique_idx", columns={"id", "owner", "secret", "server", "farm"})})
  * @ORM\Entity(repositoryClass="App\Repository\FlickrPhotoRepository")
  */
 class FlickrPhoto

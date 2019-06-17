@@ -10,10 +10,9 @@
 
 namespace App\Command\Nct;
 
-use App\Entity\Nct;
+use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use XGallery\Command\NctCommand;
-use XGallery\Defines\DefinesCore;
 
 /**
  * Class NctTop20
@@ -57,43 +56,20 @@ final class NctTop20 extends NctCommand
 
     /**
      * @return boolean
+     * @throws Exception
      */
     protected function processInsertSongs()
     {
+        $this->io->newLine();
         $this->io->progressStart(count($this->songs));
 
-        $batchSize = DefinesCore::BATCH_SIZE;
-
         foreach ($this->songs as $index => $song) {
-            $nctEntity = $this->entityManager
-                ->getRepository(Nct::class)
-                ->find($song['url']);
-
-            if ($nctEntity !== null) {
-                $this->io->progressAdvance();
-                continue;
-            }
-
-            $nctEntity = new Nct();
-            $nctEntity->setUrl($song['url']);
-            $nctEntity->setTitle($song['title']);
-            $this->entityManager->persist($nctEntity);
-
-            // flush everything to the database every 100 inserts
-            if (($index % $batchSize) == 0) {
-                $this->entityManager->flush();
-                $this->entityManager->clear();
-            }
-
-            $this->io->progressAdvance();
+            $this->insertEntity($song, $index);
         }
 
         $this->entityManager->flush();
         $this->entityManager->clear();
 
-        /**
-         * @TODO Console output blank page before Process succeed
-         */
         return true;
     }
 }

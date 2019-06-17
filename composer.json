@@ -9,6 +9,7 @@
         "ext-json": "^1.6",
         "doctrine/annotations": "^1.6",
         "guzzlehttp/guzzle": "^6.3",
+        "php-ffmpeg/php-ffmpeg": "^0.14.0",
         "phpmailer/phpmailer": "^6.0",
         "sensio/framework-extra-bundle": "^5.3",
         "squizlabs/php_codesniffer": "*",
@@ -23,18 +24,19 @@
         "symfony/flex": "^1.2",
         "symfony/form": "4.2.*",
         "symfony/framework-bundle": "4.2.*",
+        "symfony/lock": "4.3.*",
         "symfony/monolog-bundle": "^3.3",
         "symfony/orm-pack": "^1.0",
         "symfony/process": "4.2.*",
         "symfony/security-bundle": "4.2.*",
         "symfony/serializer-pack": "*",
-
         "symfony/templating": "4.2.*",
         "symfony/translation": "4.2.*",
         "symfony/twig-bundle": "4.2.*",
         "symfony/validator": "4.2.*",
         "symfony/web-link": "4.2.*",
-        "symfony/yaml": "4.2.*"
+        "symfony/yaml": "4.2.*",
+        "wapmorgan/media-file": "^0.1.4"
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^3.1",
@@ -89,7 +91,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "4.4.*"
+            "require": "4.3.*"
         }
     }
 }

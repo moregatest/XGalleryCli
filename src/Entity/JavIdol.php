@@ -17,7 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * JavIdol
  *
- * @ORM\Table(name="jav_idol")
+ * @ORM\Table(name="jav_idols")
  * @ORM\Entity(repositoryClass="App\Repository\JavIdolRepository")
  */
 class JavIdol
@@ -27,8 +27,23 @@ class JavIdol
      *
      * @ORM\Column(name="id", type="integer", nullable=false)
      * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="source", type="string", length=125, nullable=false)
+     */
+    private $source;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="xid", type="integer", nullable=false)
+     */
+    private $xid;
 
     /**
      * @var string
@@ -109,12 +124,39 @@ class JavIdol
     }
 
     /**
-     * @param int|null $id
+     * @return string|null
+     */
+    public function getSource(): ?string
+    {
+        return $this->source;
+    }
+
+    /**
+     * @param string|null $source
      * @return JavIdol
      */
-    public function setId(?int $id): self
+    public function setSource(?string $source): self
     {
-        $this->id = $id;
+        $this->source = $source;
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getXId(): ?int
+    {
+        return $this->xid;
+    }
+
+    /**
+     * @param int|null $xid
+     * @return JavIdol
+     */
+    public function setXId(?int $xid): self
+    {
+        $this->xid = $xid;
 
         return $this;
     }

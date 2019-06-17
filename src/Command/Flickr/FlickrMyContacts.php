@@ -68,7 +68,7 @@ final class FlickrMyContacts extends FlickrCommand
         $this->io->newLine();
         $this->io->progressStart(count($this->contacts));
 
-        $now = new DateTime();
+        $now = new DateTime;
 
         foreach ($this->contacts as $index => $contact) {
             /**

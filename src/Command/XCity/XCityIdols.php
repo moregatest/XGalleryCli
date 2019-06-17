@@ -19,7 +19,7 @@ use XGallery\Command\XCityCommand;
  * Class XCityIdols
  * @package App\Command\XCity
  */
-class XCityIdols extends XCityCommand
+final class XCityIdols extends XCityCommand
 {
     /**
      * @var array
@@ -39,7 +39,7 @@ class XCityIdols extends XCityCommand
      */
     protected function prepareGetProfileUrls()
     {
-        $this->urls = $this->client->getProfiles();
+        $this->urls = $this->client->getProfileLinks();
 
         return self::PREPARE_SUCCEED;
     }
@@ -58,20 +58,23 @@ class XCityIdols extends XCityCommand
         $this->io->progressStart(count($this->urls));
 
         foreach ($this->urls as $index => $url) {
-            $profile = $this->client->getProfile($url);
+            $profile = $this->client->getProfileDetail($url);
 
             if (!$profile) {
                 $this->log('Can not get profile: ' . $url);
                 continue;
             }
 
-            $profileEntity = $this->entityManager->getRepository(JavIdol::class)->find($profile->xid);
+            $profileEntity = $this->entityManager->getRepository(JavIdol::class)->findOneBy(
+                ['xid' => $profile->xid, 'source' => 'xcity']
+            );
 
             if (!$profileEntity) {
                 $profileEntity = new JavIdol;
-                $profileEntity->setId($profile->xid);
             }
 
+            $profileEntity->setSource('xcity');
+            $profileEntity->setXId($profile->xid);
             $profileEntity->setBirthday($profile->birthday ? new DateTime($profile->birthday) : null);
             $profileEntity->setBloodType($profile->blood_type ?? null);
             $profileEntity->setCity($profile->city ?? null);

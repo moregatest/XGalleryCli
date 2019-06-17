@@ -17,8 +17,11 @@ use XGallery\Command\LinksysCommand;
  * Class LinksysDevices
  * @package App\Command\Linksys
  */
-class LinksysDevices extends LinksysCommand
+final class LinksysDevices extends LinksysCommand
 {
+    /**
+     * @var array
+     */
     private $devices;
 
     /**
@@ -26,7 +29,7 @@ class LinksysDevices extends LinksysCommand
      */
     protected function configure()
     {
-        $this->setDescription('Show list of connected devices');
+        $this->setDescription('Verify list of connected devices');
 
         parent::configure();
     }
@@ -37,19 +40,19 @@ class LinksysDevices extends LinksysCommand
      */
     public function prepareGetDevices()
     {
-        $devices = $this->client->jNapCoreTransaction();
+        $this->devices = $this->client->jNapCoreTransaction();
 
-        if (!$devices) {
+        if (!$this->devices) {
             return self::PREPARE_FAILED;
         }
 
-        $this->devices = $devices[0]->output->devices;
+        $this->devices = $this->devices[0]->output->devices;
 
         return self::PREPARE_SUCCEED;
     }
 
     /**
-     *
+     * @return boolean
      */
     public function processVerify()
     {
@@ -80,7 +83,11 @@ class LinksysDevices extends LinksysCommand
             return true;
         }
 
-        $this->log('Illegal devices are connected', 'warning', $illegalDevices);
+        $this->log('Illegal devices are connected', 'warning');
+
+        foreach ($illegalDevices as $illegalDevice) {
+            $this->log('<options=bold>' . reset($illegalDevice->knownMACAddresses) . '</>', 'warning');
+        }
 
         return true;
     }

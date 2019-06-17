@@ -38,7 +38,7 @@ class NowCommand extends BaseCommand
      */
     public function __construct(NowClient $client, EntityManagerInterface $entityManager)
     {
-        $this->client = $client;
+        $this->client        = $client;
         $this->entityManager = $entityManager;
 
         parent::__construct();

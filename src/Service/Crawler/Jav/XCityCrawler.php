@@ -8,9 +8,10 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace App\Service\Crawler;
+namespace App\Service\Crawler\Jav;
 
-use App\Service\Crawler;
+use App\Service\Crawler\BaseCrawler;
+use App\Service\Crawler\JavCrawlerInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use RuntimeException;
 use stdClass;
@@ -19,7 +20,7 @@ use stdClass;
  * Class XCityCrawler
  * @package App\Service\Crawler
  */
-class XCityCrawler extends Crawler
+class XCityCrawler extends BaseCrawler implements JavCrawlerInterface
 {
     /**
      * Endpoint
@@ -70,13 +71,15 @@ class XCityCrawler extends Crawler
      */
     public function getPages($indexUrl)
     {
-        $crawler = $this->request('GET', $indexUrl);
+        $crawler = $this->getCrawler('GET', $indexUrl);
 
         if (!$crawler) {
             return false;
         }
 
-        if ($crawler->filter('ul.pageScrl li.next')->previousAll()->filter('li a')->count() === 0) {
+        $nodes = $crawler->filter('ul.pageScrl li.next');
+
+        if ($nodes->count() === 0 || $nodes->previousAll()->filter('li a')->count() === 0) {
             return 1;
         }
 
@@ -84,12 +87,12 @@ class XCityCrawler extends Crawler
     }
 
     /**
-     * Return array of profile urls
+     * Get all profile links
      *
-     * @return array
+     * @return array|boolean
      * @throws GuzzleException
      */
-    public function getProfiles()
+    public function getProfileLinks()
     {
         static $pages;
 
@@ -97,19 +100,23 @@ class XCityCrawler extends Crawler
             return $pages;
         }
 
-        $list = [];
+        $list  = [];
+        $limit = 90;
 
         foreach ($this->kana as $kana) {
-            $totalPages = $this->getPages($this->endpoint . '/idol/?kana=' . $kana . '&num=90&page=1');
+            $url        = $this->endpoint . '/idol/?kana=' . $kana . '&num=' . $limit;
+            $totalPages = $this->getPages($url . '&page=1');
 
             for ($page = 1; $page <= $totalPages; $page++) {
-                $crawler = $this->request('GET', $this->endpoint . '/idol/?kana=' . $kana . '&num=100&page=' . $page);
-
-                if (!$crawler) {
+                if (!$crawler = $this->getCrawler('GET', $url . '&page=' . $page)) {
                     continue;
                 }
 
                 $domElement = $crawler->filter('.itemBox p.tn a');
+
+                if ($domElement->count() === 0) {
+                    continue;
+                }
 
                 foreach ($domElement as $domProfile) {
                     $list [] = $domProfile->attributes[0]->value;
@@ -127,26 +134,17 @@ class XCityCrawler extends Crawler
      * @return stdClass|boolean
      * @throws GuzzleException
      */
-    public function getProfile($url)
+    public function getProfileDetail($url)
     {
-        $crawler = $this->request('GET', $this->endpoint . '/idol/' . $url . '?style=simple');
+        $crawler = $this->getCrawler('GET', $this->endpoint . '/idol/' . $url . '?style=simple');
 
         if (!$crawler) {
             return false;
         }
 
-        $model = new stdClass;
-        $model->birthday = null;
-        $model->blood_type = null;
-        $model->city = null;
-        $model->height = null;
-
         try {
-            $model->name = $crawler->filter('.itemBox h1')->text();
-            $model->xid = explode('/', trim($url, '/'));
-            $model->xid = end($model->xid);
-
-            $fields = $crawler->filter('#avidolDetails dl.profile dd')->each(
+            $model             = new stdClass;
+            $fields            = $crawler->filter('#avidolDetails dl.profile dd')->each(
                 function ($dd) {
                     $text = $dd->text();
 
@@ -161,7 +159,7 @@ class XCityCrawler extends Crawler
                             return null;
                         }
 
-                        $days = explode(' ', $birthday);
+                        $days  = explode(' ', $birthday);
                         $month = $this->getMonth($days[1]);
 
                         if (!$month) {
@@ -197,13 +195,13 @@ class XCityCrawler extends Crawler
                         foreach ($sizes as $index => $size) {
                             switch ($index) {
                                 case 0:
-                                    $size = str_replace('B', '', $size);
-                                    $size = explode('(', $size);
+                                    $size   = str_replace('B', '', $size);
+                                    $size   = explode('(', $size);
                                     $breast = empty(trim($size[0])) ? null : (int)$size[0];
                                     break;
                                 case 1:
-                                    $size = str_replace('W', '', $size);
-                                    $size = explode('(', $size);
+                                    $size  = str_replace('W', '', $size);
+                                    $size  = explode('(', $size);
                                     $waist = empty(trim($size[0])) ? null : (int)$size[0];
                                     break;
                                 case 2:
@@ -224,48 +222,21 @@ class XCityCrawler extends Crawler
                     }
                 }
             );
+            $model             = $this->assignFields($fields, $model);
+            $model->name       = $crawler->filter('.itemBox h1')->text();
+            $model->xid        = explode('/', trim($url, '/'));
+            $model->xid        = end($model->xid);
+            $model->birthday   = $model->birthday ?? null;
+            $model->blood_type = $model->blood_type ?? null;
+            $model->city       = $model->city ?? null;
+            $model->height     = $model->height ?? null;
 
-            if (empty($fields)) {
-                return $model;
-            }
-
-            // Assign fields to object
-            foreach ($fields as $field) {
-                if (!$field) {
-                    continue;
-                }
-                foreach ($field as $key => $value) {
-                    if (empty($value)) {
-                        $model->{$key} = null;
-                        continue;
-                    }
-
-                    if (is_array($value)) {
-                        foreach ($value as $subKey => $subValue) {
-                            $model->{$subKey} = $subValue;
-                        }
-                        continue;
-                    }
-                    $model->{$key} = trim($value);
-                }
-            }
+            return $model;
         } catch (RuntimeException $exception) {
             $this->logError($exception->getMessage());
+
+            return false;
         }
-
-        return $model;
-    }
-
-    /**
-     * Get number of film pages
-     *
-     * @param string $url
-     * @return boolean|integer
-     * @throws GuzzleException
-     */
-    public function getProfileFilmPages($url)
-    {
-        return $this->getPages($this->endpoint . '/idol/' . $url);
     }
 
     /**
@@ -275,23 +246,24 @@ class XCityCrawler extends Crawler
      * @return array|boolean
      * @throws GuzzleException
      */
-    public function getProfileFilmLinks($profileUrl)
+    public function getMovieLinks($profileUrl)
     {
-        $totalPages = $this->getProfileFilmPages($profileUrl);
+        $totalPages = $this->getPages($this->endpoint . '/idol/' . $profileUrl . '?page=1');
+
         $list = [];
 
         for ($page = 1; $page <= $totalPages; $page++) {
-            if ($page === 1) {
-                $crawler = $this->request('GET', $this->endpoint . '/idol/' . $profileUrl);
-            } else {
-                $crawler = $this->request('GET', $this->endpoint . '/idol/' . $profileUrl . '?page=' . $page);
-            }
+            $crawler = $this->getCrawler('GET', $this->endpoint . '/idol/' . $profileUrl . '?page=' . $page);
 
             if (!$crawler) {
                 return false;
             }
 
             $domElement = $crawler->filter('.x-itemBox .x-itemBox-title a');
+
+            if ($domElement->count() === 0) {
+                continue;
+            }
 
             foreach ($domElement as $domProfile) {
                 $list [] = $domProfile->attributes[0]->value;
@@ -308,20 +280,22 @@ class XCityCrawler extends Crawler
      * @return stdClass|boolean
      * @throws GuzzleException
      */
-    public function getFilm($url)
+    public function getMovieDetail($url)
     {
-        $crawler = $this->request('GET', $this->endpoint . $url);
+        $url     = $this->endpoint . $url;
+        $crawler = $this->getCrawler('GET', $url);
 
         if (!$crawler) {
             return false;
         }
 
-        $film = new stdClass;
-
         try {
+            $film = new stdClass;
+
             $film->name = $crawler->filter('#program_detail_title')->text();
-            $filmXId = explode('=', $url);
-            $film->id = (int)end($filmXId);
+            $film->url  = $url;
+            $filmXId    = explode('=', $url);
+            $film->id   = (int)end($filmXId);
 
             // Get all fields
             $fields = $crawler->filter('.bodyCol ul li')->each(
@@ -382,26 +356,7 @@ class XCityCrawler extends Crawler
                     }
                 }
             );
-
-            // Assign fields to object
-            foreach ($fields as $field) {
-                if (!$field) {
-                    continue;
-                }
-                foreach ($field as $key => $value) {
-                    if (empty($value)) {
-                        $film->{$key} = null;
-                        continue;
-                    }
-
-                    if (is_array($value)) {
-                        $film->{$key} = $value;
-                        continue;
-                    }
-
-                    $film->{$key} = trim($value);
-                }
-            }
+            $film   = $this->assignFields($fields, $film);
         } catch (RuntimeException $exception) {
             $this->logError($exception->getMessage());
 

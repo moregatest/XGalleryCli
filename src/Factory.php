@@ -15,6 +15,7 @@ use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Adapter\MemcachedAdapter;
+use Symfony\Component\Cache\Adapter\RedisAdapter;
 use XGallery\Defines\DefinesCore;
 
 /**
@@ -50,6 +51,17 @@ class Factory
                     return false;
                 }
                 break;
+            case 'redis':
+                try {
+                    $instance = new RedisAdapter(
+                        RedisAdapter::createConnection(getenv('redis_cache')),
+                        DefinesCore::APPLICATION,
+                        $defaultLifetime
+                    );
+                } catch (ErrorException $exception) {
+                    return false;
+                }
+                break;
             default:
             case'filesystem':
                 $instance = new FilesystemAdapter(
@@ -73,16 +85,16 @@ class Factory
         $mailer = new PHPMailer;
         $mailer->IsSMTP();
 
-        $mailer->SMTPDebug = 2;
-        $mailer->SMTPAuth = true;
+        $mailer->SMTPDebug  = 2;
+        $mailer->SMTPAuth   = true;
         $mailer->SMTPSecure = getenv('smtp_secure');
-        $mailer->Host = getenv('smtp_host');
-        $mailer->Port = getenv('smtp_port');
+        $mailer->Host       = getenv('smtp_host');
+        $mailer->Port       = getenv('smtp_port');
         $mailer->IsHTML(true);
         $mailer->Username = getenv('smtp_username');
         $mailer->Password = getenv('smtp_password');
         $mailer->SetFrom(getenv('smtp_username'));
-        $mailer->CharSet = 'UTF-8';
+        $mailer->CharSet  = 'UTF-8';
         $mailer->Encoding = 'base64';
 
         return $mailer;

@@ -41,7 +41,7 @@ trait HasLogger
         }
 
         $loggers[$name] = new Logger(DefinesCore::APPLICATION);
-        $logFile = str_replace('\\', DIRECTORY_SEPARATOR, strtolower($name));
+        $logFile        = str_replace('\\', DIRECTORY_SEPARATOR, strtolower($name));
 
         try {
             $loggers[$name]->pushHandler(

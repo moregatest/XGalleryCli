@@ -69,7 +69,7 @@ trait HasContacts
         }
 
         $contacts = $response->contacts->contact;
-        $pages = $response->contacts->pages;
+        $pages    = $response->contacts->pages;
 
         if ($pages === 1) {
             return $contacts;

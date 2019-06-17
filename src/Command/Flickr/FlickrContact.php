@@ -10,12 +10,10 @@
 
 namespace App\Command\Flickr;
 
-use App\Traits\HasLogger;
 use DateTime;
 use Exception;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Question\Question;
 use XGallery\Command\FlickrCommand;
 
 /**
@@ -24,8 +22,6 @@ use XGallery\Command\FlickrCommand;
  */
 final class FlickrContact extends FlickrCommand
 {
-    use HasLogger;
-
     /**
      * @var object
      */
@@ -56,9 +52,10 @@ final class FlickrContact extends FlickrCommand
     protected function prepareContact()
     {
         if (!$nsid = $this->getOption('nsid')) {
-            $helper = $this->getHelper('question');
-            $question = new Question("\nPlease enter NSID: ");
-            $question->setValidator(
+            $this->io->newLine();
+            $nsid = $this->io->ask(
+                'Please enter NSID',
+                null,
                 function ($value) {
                     $value = trim($value);
 
@@ -69,10 +66,6 @@ final class FlickrContact extends FlickrCommand
                     return $value;
                 }
             );
-
-            $question->setMaxAttempts(1);
-
-            $nsid = $helper->ask($this->input, $this->output, $question);
         }
 
         $this->contact = $this->client->flickrPeopleGetInfo($this->client->getNsid($nsid));
@@ -102,7 +95,7 @@ final class FlickrContact extends FlickrCommand
         $contactEntity = $this->entityManager
             ->getRepository(\App\Entity\FlickrContact::class)
             ->find($this->contact->person->nsid);
-        $now = new DateTime();
+        $now           = new DateTime();
 
         // Contact not found
         if ($contactEntity === null) {

@@ -134,14 +134,7 @@ final class FlickrPhotosSize extends FlickrCommand
             return self::NEXT_PREPARE;
         }
 
-        $this->getProcess(
-            [
-                'php',
-                XGALLERY_PATH . '/bin/application',
-                'flickr:photos',
-                '--photo_ids=' . $photoIds,
-            ]
-        )->run();
+        $this->getProcess(['flickr:photos', '--photo_ids=' . $photoIds])->run();
 
         $this->photos = explode(',', $photoIds);
 
@@ -161,7 +154,7 @@ final class FlickrPhotosSize extends FlickrCommand
         }
 
         /**
-         * @todo Lock all these photos until sized
+         * @TODO Lock all these photos until sized
          */
         if ($this->nsid === null || ($this->nsid && !$this->getOption('all'))) {
             $this->photos = $this->entityManager->getRepository(FlickrPhoto::class)->getFreePhotoIds(
@@ -178,14 +171,7 @@ final class FlickrPhotosSize extends FlickrCommand
             $this->log('There are no photos', 'notice');
             $this->log('Trying to fetch photos from NSID: ' . $this->nsid);
 
-            $this->getProcess(
-                [
-                    'php',
-                    XGALLERY_PATH . '/bin/application',
-                    'flickr:photos',
-                    '--nsid=' . $this->nsid,
-                ]
-            )->run();
+            $this->getProcess(['flickr:photos', '--nsid=' . $this->nsid])->run();
 
             $this->preparePhotosFromDb();
         }
@@ -225,8 +211,6 @@ final class FlickrPhotosSize extends FlickrCommand
             if (!$photoEntity) {
                 $this->getProcess(
                     [
-                        'php',
-                        XGALLERY_PATH . '/bin/application',
                         'flickr:photos',
                         '--photo_ids=' . $photoId,
                     ]

@@ -20,6 +20,7 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Exception\TransferException;
 use Psr\Cache\InvalidArgumentException;
+use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -37,10 +38,11 @@ class HttpClient
 
     /**
      * HttpClient constructor.
+     * @param array $options
      */
-    public function __construct()
+    public function __construct($options = ['verify' => false])
     {
-        $this->client = new Client(['verify' => false]);
+        $this->client = new Client($options);
     }
 
     /**
@@ -54,7 +56,7 @@ class HttpClient
     {
         try {
             $cache = Factory::getCache();
-            $item = $cache->getItem(md5(serialize(func_get_args())));
+            $item  = $cache->getItem(md5(serialize(func_get_args())));
 
             if ($item->isHit()) {
                 $this->logNotice('Request have cached', func_get_args());
@@ -69,6 +71,7 @@ class HttpClient
             }
 
             $item->set($response->getBody()->getContents());
+            $item->expiresAfter(86400);
             $cache->save($item);
 
             return $item->get();
@@ -77,6 +80,24 @@ class HttpClient
 
             return false;
         }
+    }
+
+    /**
+     * @param $method
+     * @param $uri
+     * @param array $options
+     * @return bool|Crawler
+     * @throws GuzzleException
+     */
+    public function getCrawler($method, $uri, array $options = [])
+    {
+        $response = $this->request($method, $uri, $options);
+
+        if (!$response) {
+            return false;
+        }
+
+        return new Crawler($response);
     }
 
     /**
@@ -109,17 +130,17 @@ class HttpClient
     public static function download($url, $saveTo)
     {
         if ((new Filesystem())->exists($saveTo)) {
-            chmod($saveTo, 755);
+            chmod($saveTo, 0755);
         }
 
         try {
-            $client = new Client;
+            $client   = new Client;
             $response = $client->request('GET', $url, ['sink' => $saveTo]);
         } catch (GuzzleException $exception) {
             return false;
         }
 
-        $orgFileSize = (int)$response->getHeader('Content-Length')[0];
+        $orgFileSize        = (int)$response->getHeader('Content-Length')[0];
         $downloadedFileSize = filesize($saveTo);
 
         if ($orgFileSize !== $downloadedFileSize) {

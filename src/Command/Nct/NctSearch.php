@@ -10,12 +10,11 @@
 
 namespace App\Command\Nct;
 
-use App\Entity\Nct;
+use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use XGallery\Command\NctCommand;
-use XGallery\Defines\DefinesCore;
 
 /**
  * Class NctSearch
@@ -53,10 +52,7 @@ final class NctSearch extends NctCommand
     protected function prepareSongs()
     {
         $this->songs = $this->client->search(
-            [
-                'title' => $this->getOption('title'),
-                'singer' => $this->getOption('singer'),
-            ]
+            ['title' => $this->getOption('title'), 'singer' => $this->getOption('singer')]
         );
 
         if (empty($this->songs)) {
@@ -68,43 +64,20 @@ final class NctSearch extends NctCommand
 
     /**
      * @return boolean
+     * @throws Exception
      */
     protected function processInsertSongs()
     {
+        $this->io->newLine();
         $this->io->progressStart(count($this->songs));
 
-        $batchSize = DefinesCore::BATCH_SIZE;
-
         foreach ($this->songs as $index => $song) {
-            $nctEntity = $this->entityManager
-                ->getRepository(Nct::class)
-                ->find($song['href']);
-
-            if ($nctEntity !== null) {
-                $this->io->progressAdvance();
-                continue;
-            }
-
-            $nctEntity = new Nct();
-            $nctEntity->setUrl($song['href']);
-            $nctEntity->setTitle($song['name']);
-            $this->entityManager->persist($nctEntity);
-
-            // flush everything to the database every 100 inserts
-            if (($index % $batchSize) == 0) {
-                $this->entityManager->flush();
-                $this->entityManager->clear();
-            }
-
-            $this->io->progressAdvance();
+            $this->insertEntity($song, $index);
         }
 
         $this->entityManager->flush();
         $this->entityManager->clear();
 
-        /**
-         * @TODO Console output blank page before Process succeed
-         */
         return true;
     }
 }

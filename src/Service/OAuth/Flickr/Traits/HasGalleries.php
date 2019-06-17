@@ -56,7 +56,7 @@ trait HasGalleries
         }
 
         $photos = $response->photos->photo;
-        $pages = $response->photos->pages;
+        $pages  = $response->photos->pages;
 
         if ($pages === 1) {
             return $photos;
