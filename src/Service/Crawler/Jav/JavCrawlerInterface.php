@@ -8,13 +8,13 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace App\Service\Crawler;
+namespace App\Service\Crawler\Jav;
 
 use stdClass;
 
 /**
  * Interface JavCrawlerInterface
- * @package App\Service\Crawler
+ * @package App\Service\Crawler\Jav
  */
 interface JavCrawlerInterface
 {

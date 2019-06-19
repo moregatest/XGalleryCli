@@ -10,10 +10,10 @@
 
 namespace App\Traits;
 
+use App\DefinesCore;
 use Exception;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
-use XGallery\Defines\DefinesCore;
 
 /**
  * Trait HasLogger

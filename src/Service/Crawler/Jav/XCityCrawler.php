@@ -11,7 +11,6 @@
 namespace App\Service\Crawler\Jav;
 
 use App\Service\Crawler\BaseCrawler;
-use App\Service\Crawler\JavCrawlerInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use RuntimeException;
 use stdClass;

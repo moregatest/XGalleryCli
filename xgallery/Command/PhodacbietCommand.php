@@ -11,27 +11,23 @@
 namespace XGallery\Command;
 
 
-use App\Service\Router\LinksysClient;
+use App\Service\Crawler\Forums\PhodacbietCrawler;
 use Doctrine\ORM\EntityManagerInterface;
 use XGallery\BaseCommand;
 
-/**
- * Class LinksysCommand
- * @package XGallery\Command
- */
-class LinksysCommand extends BaseCommand
+class PhodacbietCommand extends BaseCommand
 {
     /**
-     * @var LinksysClient
+     * @var PhodacbietCrawler
      */
     protected $client;
 
     /**
-     * LinksysCommand constructor.
-     * @param LinksysClient $client
+     * PhodacbietCommand constructor.
+     * @param PhodacbietCrawler $client
      * @param EntityManagerInterface $entityManager
      */
-    public function __construct(LinksysClient $client, EntityManagerInterface $entityManager)
+    public function __construct(PhodacbietCrawler $client, EntityManagerInterface $entityManager)
     {
         $this->client        = $client;
         $this->entityManager = $entityManager;

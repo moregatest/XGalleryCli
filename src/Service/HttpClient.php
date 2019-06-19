@@ -36,13 +36,23 @@ class HttpClient
      */
     protected $client;
 
+    private $options = [
+        'verify' => false,
+        'headers' => [
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.90 Safari/537.36',
+            'Connection' => 'keep-alive',
+            'Cache-Control' => 'no-cache',
+            'Accept-Encoding' => 'gzip, deflate',
+        ],
+    ];
+
     /**
      * HttpClient constructor.
      * @param array $options
      */
-    public function __construct($options = ['verify' => false])
+    public function __construct($options = [])
     {
-        $this->client = new Client($options);
+        $this->client = new Client(array_merge($this->options, $options));
     }
 
     /**
@@ -59,9 +69,9 @@ class HttpClient
             $item  = $cache->getItem(md5(serialize(func_get_args())));
 
             if ($item->isHit()) {
-                $this->logNotice('Request have cached', func_get_args());
+                //$this->logNotice('Request have cached', func_get_args());
 
-                return $item->get();
+                //return $item->get();
             }
 
             $response = $this->client->request(strtoupper($method), $uri, $options);
@@ -70,7 +80,14 @@ class HttpClient
                 return false;
             }
 
-            $item->set($response->getBody()->getContents());
+            $header  = $response->getHeader('Content-Type')[0];
+            $content = $response->getBody()->getContents();
+
+            if (strpos($header, 'application/json') !== false) {
+                $content = json_decode($content);
+            }
+
+            $item->set($content);
             $item->expiresAfter(86400);
             $cache->save($item);
 
@@ -89,7 +106,7 @@ class HttpClient
      * @return bool|Crawler
      * @throws GuzzleException
      */
-    public function getCrawler($method, $uri, array $options = [])
+    protected function getCrawler($method, $uri, array $options = [])
     {
         $response = $this->request($method, $uri, $options);
 
@@ -123,20 +140,23 @@ class HttpClient
     }
 
     /**
-     * @param $url
-     * @param $saveTo
+     * @param string $url
+     * @param string $saveTo
      * @return boolean
      */
-    public static function download($url, $saveTo)
+    public function download($url, $saveTo)
     {
+        // Local file already exists
         if ((new Filesystem())->exists($saveTo)) {
             chmod($saveTo, 0755);
         }
 
         try {
-            $client   = new Client;
-            $response = $client->request('GET', $url, ['sink' => $saveTo]);
+            $response = $this->client->request('GET', $url, ['sink' => $saveTo]);
+
         } catch (GuzzleException $exception) {
+            $this->logError($exception->getMessage());
+
             return false;
         }
 
@@ -144,6 +164,8 @@ class HttpClient
         $downloadedFileSize = filesize($saveTo);
 
         if ($orgFileSize !== $downloadedFileSize) {
+            $this->logError('Downloaded filesize is not matched remote file');
+
             return false;
         }
 
@@ -157,14 +179,11 @@ class HttpClient
     /**
      * Get remote file size
      *
-     * @param $url
-     * @return int
+     * @param string $url
+     * @return integer
      */
-    public static function getFilesize($url)
+    public function getFilesize($url)
     {
-        $client = new Client();
-        $client->head($url);
-
-        return (int)(new Client)->head($url)->getHeader('Content-Length')[0];
+        return (int)$this->client->head($url)->getHeader('Content-Length')[0];
     }
 }

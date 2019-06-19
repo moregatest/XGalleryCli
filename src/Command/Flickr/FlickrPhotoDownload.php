@@ -12,6 +12,7 @@ namespace App\Command\Flickr;
 
 use App\Entity\FlickrPhoto;
 use App\Service\HttpClient;
+use App\Traits\HasStorage;
 use Exception;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
@@ -24,6 +25,8 @@ use XGallery\Command\FlickrCommand;
  */
 final class FlickrPhotoDownload extends FlickrCommand
 {
+    use HasStorage;
+
     /**
      * @var FlickrPhoto
      */
@@ -153,7 +156,7 @@ final class FlickrPhotoDownload extends FlickrCommand
     protected function processDownload()
     {
         // Prepare
-        $targetDir = getenv('flickr_storage') . '/' . $this->photo->getOwner();
+        $targetDir = $this->getStorage('flickr') . '/' . $this->photo->getOwner();
         $fileName  = basename($this->photo->getUrl());
         $fileName  = explode('?', $fileName);
         $fileName  = $fileName[0];
@@ -204,7 +207,7 @@ final class FlickrPhotoDownload extends FlickrCommand
 
                 $this->log('Local file is corrupted: ' . $saveTo . '. Re-downloading ...', 'notice');
 
-                if (!HttpClient::download($this->photo->getUrl(), $saveTo)) {
+                if (!$this->client->client->download($this->photo->getUrl(), $saveTo)) {
                     $this->photo->setStatus(self::PHOTO_STATUS_ERROR_REDOWNLOAD_FAILED);
                     $this->entityManager->persist($this->photo);
                     $this->entityManager->flush();
@@ -236,7 +239,7 @@ final class FlickrPhotoDownload extends FlickrCommand
             return true;
         }
 
-        if (!HttpClient::download($this->photo->getUrl(), $saveTo)) {
+        if (!$this->client->client->download($this->photo->getUrl(), $saveTo)) {
             $this->photo->setStatus(self::PHOTO_STATUS_ERROR_DOWNLOAD_FAILED);
             $this->entityManager->persist($this->photo);
             $this->entityManager->flush();

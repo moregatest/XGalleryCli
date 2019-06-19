@@ -10,7 +10,7 @@
 
 namespace App\Command\Nct;
 
-use App\Service\HttpClient;
+use App\Traits\HasStorage;
 use SplFileInfo;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
@@ -23,6 +23,8 @@ use XGallery\Command\NctCommand;
  */
 final class NctDownload extends NctCommand
 {
+    use HasStorage;
+
     /**
      * Configures the current command.
      */
@@ -31,9 +33,7 @@ final class NctDownload extends NctCommand
         $this->setDescription('Download song')
             ->setDefinition(
                 new InputDefinition(
-                    [
-                        new InputOption('url', null, InputOption::VALUE_OPTIONAL),
-                    ]
+                    [new InputOption('url', null, InputOption::VALUE_OPTIONAL)]
                 )
             );
 
@@ -53,10 +53,9 @@ final class NctDownload extends NctCommand
             return false;
         }
 
-        $this->log('Download file: ' . $url);
-        $download = $this->client->extractItem($url);
+        $this->log('Download url ' . $url);
 
-        if (!$download) {
+        if (!$download = $this->client->extractItem($url)) {
             $this->logError('Can not extract item');
 
             return false;
@@ -64,13 +63,14 @@ final class NctDownload extends NctCommand
 
         $info   = new SplFileInfo($download['download']);
         $parts  = explode('?', $info->getBasename());
-        $saveTo = getenv('nct_storage') . '/' . $download['creator'];
+        $saveTo = $this->getStorage('nct') . '/' . $download['creator'];
 
         if (!file_exists($saveTo) || !is_dir($saveTo)) {
             (new Filesystem())->mkdir($saveTo);
         }
 
-        if (!HttpClient::download($download['download'], $saveTo . '/' . $parts[0])) {
+        $this->log('Download to ' . $saveTo . '/' . $parts[0]);
+        if (!$this->client->download($download['download'], $saveTo . '/' . $parts[0])) {
             return false;
         }
 

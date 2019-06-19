@@ -10,8 +10,8 @@
 
 namespace App\Traits;
 
+use App\DefinesCore;
 use Doctrine\ORM\EntityManagerInterface;
-use XGallery\Defines\DefinesCore;
 
 /**
  * Trait HasEntityManager

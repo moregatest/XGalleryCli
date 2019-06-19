@@ -97,7 +97,12 @@ class NctCrawler extends HttpClient
     {
         try {
             $crawler = $this->getCrawler('GET', $url);
-            $text    = $crawler->text();
+
+            if (!$crawler) {
+                return false;
+            }
+
+            $text = $crawler->text();
 
             $start = strpos($text, 'https://www.nhaccuatui.com/flash/xml?html5=true&key1=');
             $end   = strpos($text, '"', $start);

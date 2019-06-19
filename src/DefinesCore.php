@@ -8,12 +8,8 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace XGallery\Defines;
+namespace App;
 
-/**
- * Class DefinesCore
- * @package XGallery\Defines
- */
 class DefinesCore
 {
     /**

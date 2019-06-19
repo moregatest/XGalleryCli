@@ -43,7 +43,7 @@ class OAuthClient
     /**
      * @var HttpClient
      */
-    private $client;
+    public $client;
 
     /**
      * @var array

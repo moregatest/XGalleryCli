@@ -30,6 +30,10 @@ class BatdongsanCrawler extends BaseCrawler
     {
         $crawler = $this->getCrawler('GET', $url);
 
+        if (!$crawler) {
+            return false;
+        }
+
         $pages = $crawler->filter('.background-pager-right-controls a')->last()->attr('href');
         $pages = explode('/', $pages);
         $page  = str_replace('p', '', end($pages));
@@ -47,7 +51,12 @@ class BatdongsanCrawler extends BaseCrawler
     public function extractItems($url)
     {
         $crawler = $this->getCrawler('GET', $url);
-        $result  = [];
+
+        if (!$crawler) {
+            return false;
+        }
+
+        $result = [];
 
         $nodes = $crawler->filter('.search-productItem .p-title h3 a');
 

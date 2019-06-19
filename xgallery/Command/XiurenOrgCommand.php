@@ -10,28 +10,23 @@
 
 namespace XGallery\Command;
 
-
-use App\Service\Router\LinksysClient;
+use App\Service\Crawler\Xiuren\XiurenOrgCrawler;
 use Doctrine\ORM\EntityManagerInterface;
 use XGallery\BaseCommand;
 
-/**
- * Class LinksysCommand
- * @package XGallery\Command
- */
-class LinksysCommand extends BaseCommand
+class XiurenOrgCommand extends BaseCommand
 {
     /**
-     * @var LinksysClient
+     * @var XiurenOrgCrawler
      */
     protected $client;
 
     /**
-     * LinksysCommand constructor.
-     * @param LinksysClient $client
+     * XiurenOrgCommand constructor.
+     * @param XiurenOrgCrawler $client
      * @param EntityManagerInterface $entityManager
      */
-    public function __construct(LinksysClient $client, EntityManagerInterface $entityManager)
+    public function __construct(XiurenOrgCrawler $client, EntityManagerInterface $entityManager)
     {
         $this->client        = $client;
         $this->entityManager = $entityManager;

@@ -1,4 +1,13 @@
 <?php
+/**
+ *
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @package XGallery
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
+
 declare(strict_types=1);
 /**
  *
@@ -11,6 +20,7 @@ declare(strict_types=1);
 
 namespace XGallery;
 
+use App\DefinesCore;
 use App\Traits\HasConsole;
 use App\Traits\HasEntityManager;
 use App\Traits\HasLogger;
@@ -20,8 +30,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Lock\Factory;
+use Symfony\Component\Lock\Store\FlockStore;
 use Symfony\Component\Process\Process;
-use XGallery\Defines\DefinesCore;
 
 /**
  * Class BaseCommand
@@ -161,11 +172,13 @@ class BaseCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /*        if (!$this->lock(null, true)) {
-                    $output->writeln('The command is already running in another process.');
+        $store      = new FlockStore;
+        $factory    = new Factory($store);
+        $this->lock = $factory->createLock($this->getName());
 
-                    return 0;
-                }*/
+        if (!$this->lock->acquire()) {
+            return 0;
+        }
 
         $this->input  = $input;
         $this->output = $output;

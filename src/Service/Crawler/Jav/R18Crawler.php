@@ -11,7 +11,6 @@
 namespace App\Service\Crawler\Jav;
 
 use App\Service\Crawler\BaseCrawler;
-use App\Service\Crawler\JavCrawlerInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use RuntimeException;
 use stdClass;
@@ -54,7 +53,7 @@ class R18Crawler extends BaseCrawler implements JavCrawlerInterface
     }
 
     /**
-     * @param $url
+     * @param string $url
      * @return stdClass
      */
     public function getProfileDetail($url)
@@ -63,7 +62,7 @@ class R18Crawler extends BaseCrawler implements JavCrawlerInterface
     }
 
     /**
-     * @param $url
+     * @param string $url
      * @return array|boolean
      * @throws GuzzleException
      */
@@ -90,7 +89,7 @@ class R18Crawler extends BaseCrawler implements JavCrawlerInterface
     }
 
     /**
-     * @param $url
+     * @param string $url
      * @return boolean|stdClass
      * @throws GuzzleException
      */

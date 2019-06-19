@@ -16,7 +16,6 @@ use PHPMailer\PHPMailer\PHPMailer;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Adapter\MemcachedAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
-use XGallery\Defines\DefinesCore;
 
 /**
  * Class Factory
@@ -27,7 +26,7 @@ class Factory
     /**
      * Get cache instance
      *
-     * @return boolean|FilesystemAdapter|MemcachedAdapter
+     * @return boolean|FilesystemAdapter|MemcachedAdapter|RedisAdapter
      */
     public static function getCache()
     {
@@ -43,7 +42,7 @@ class Factory
             case 'memcached':
                 try {
                     $instance = new MemcachedAdapter(
-                        MemcachedAdapter::createConnection(getenv('memcached')),
+                        MemcachedAdapter::createConnection(getenv('memcached_host')),
                         DefinesCore::APPLICATION,
                         $defaultLifetime
                     );
@@ -54,7 +53,7 @@ class Factory
             case 'redis':
                 try {
                     $instance = new RedisAdapter(
-                        RedisAdapter::createConnection(getenv('redis_cache')),
+                        RedisAdapter::createConnection(getenv('redis_host')),
                         DefinesCore::APPLICATION,
                         $defaultLifetime
                     );
@@ -63,7 +62,7 @@ class Factory
                 }
                 break;
             default:
-            case'filesystem':
+            case 'filesystem':
                 $instance = new FilesystemAdapter(
                     DefinesCore::APPLICATION,
                     $defaultLifetime,

@@ -8,8 +8,9 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace App\Service;
+namespace App\Service\Router;
 
+use App\Service\HttpClient;
 use GuzzleHttp\Exception\GuzzleException;
 use stdClass;
 
@@ -62,10 +63,7 @@ class LinksysClient extends HttpClient
             [
                 'headers' => ['X-JNAP-Action' => 'http://cisco.com/jnap/core/Transaction'],
                 'json' => [
-                    [
-                        'action' => 'http://linksys.com/jnap/devicelist/GetDevices',
-                        'request' => new stdClass,
-                    ],
+                    ['action' => 'http://linksys.com/jnap/devicelist/GetDevices', 'request' => new stdClass],
                 ],
             ]
         );
