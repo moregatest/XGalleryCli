@@ -56,26 +56,22 @@ abstract class AbstractCommand extends Command
      * @var SymfonyStyle
      */
     protected $io;
-
-    /**
-     * @var InputInterface
-     */
-    private $input;
-
-    /**
-     * @var array
-     */
-    private $prepares = [];
-
-    /**
-     * @var array
-     */
-    private $processes = [];
-
     /**
      * @var EntityManagerInterface
      */
     protected $entityManager;
+    /**
+     * @var InputInterface
+     */
+    private $input;
+    /**
+     * @var array
+     */
+    private $prepares = [];
+    /**
+     * @var array
+     */
+    private $processes = [];
 
     /**
      * BaseCommand constructor.
@@ -88,8 +84,6 @@ abstract class AbstractCommand extends Command
         parent::__construct();
     }
 
-    abstract protected function getClient($name = '');
-
     /**
      * Clean up
      */
@@ -98,23 +92,7 @@ abstract class AbstractCommand extends Command
         $this->entityManager->getConnection()->close();
     }
 
-    /**
-     * Wrapped method to get input option
-     *
-     * @param      $name
-     * @param null $default
-     * @return boolean|string|string[]|null
-     */
-    protected function getOption($name, $default = null)
-    {
-        $value = $this->input->getOption($name);
-
-        if (!$value) {
-            return $default;
-        }
-
-        return $value;
-    }
+    abstract protected function getClient($name = '');
 
     /**
      * Configures the current command.
@@ -137,14 +115,6 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * @return boolean|string
-     */
-    protected function getBinDir()
-    {
-        return realpath(__DIR__ . '/../bin');
-    }
-
-    /**
      * Wrapped method to get Process
      *
      * @param array $cmd
@@ -163,6 +133,14 @@ abstract class AbstractCommand extends Command
             null,
             (float)$timeout
         );
+    }
+
+    /**
+     * @return boolean|string
+     */
+    protected function getBinDir()
+    {
+        return realpath(__DIR__ . '/../bin');
     }
 
     /**
@@ -265,6 +243,107 @@ abstract class AbstractCommand extends Command
     }
 
     /**
+     * Execute completed
+     *
+     * @param boolean $status
+     * @return mixed|integer
+     */
+    protected function executeComplete($status)
+    {
+        if ($status === true) {
+            $this->io->success('Completed ' . $this->getName() . ': ' . (int)$status);
+
+            return self::EXECUTE_SUCCEED;
+        }
+
+        $this->io->error('Completed ' . $this->getName() . ': ' . (int)$status);
+
+        return $status;
+    }
+
+    /**
+     * Process endpoint
+     *
+     * @return boolean
+     */
+    protected function process()
+    {
+        $task = $this->getOption('task');
+
+        if ($task && method_exists($this, $task)) {
+            return $this->{$task}();
+        }
+
+        if (empty($this->processes)) {
+            $this->io->writeln("\n");
+
+            return true;
+        }
+
+        $this->log('Process: ' . implode(',', $this->processes));
+
+        foreach ($this->processes as $process) {
+            $this->log('<stage>' . $process . ' ...</stage>', 'info');
+            $result = call_user_func([$this, $process]);
+
+            if (!$result) {
+                $this->log($process . ' failed', 'error');
+
+                return false;
+            }
+
+            $this->log('Process succeed', 'succeed', [], true);
+        }
+
+        $this->io->newLine();
+
+        return true;
+    }
+
+    /**
+     * Wrapped method to get input option
+     *
+     * @param      $name
+     * @param null $default
+     * @return boolean|string|string[]|null
+     */
+    protected function getOption($name, $default = null)
+    {
+        $value = $this->input->getOption($name);
+
+        if (!$value) {
+            return $default;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Wrapped method to display console output and log to file
+     *
+     * @param string $message
+     * @param string $type
+     * @param array $context
+     * @param boolean $newLine
+     */
+    protected function log($message, $type = 'info', $context = [], $newLine = false)
+    {
+        $this->io->write("\n<$type>$message</$type>");
+
+        if (!method_exists($this, 'log' . ucfirst($type))) {
+            $type = 'info';
+        }
+
+        $this->{'log' . ucfirst($type)}(strip_tags($message), $context);
+
+        if ($newLine === false) {
+            return;
+        }
+
+        $this->io->newLine();
+    }
+
+    /**
      * Prepare data before execute command
      *
      * @return boolean
@@ -291,88 +370,5 @@ abstract class AbstractCommand extends Command
         }
 
         return true;
-    }
-
-    /**
-     * Process endpoint
-     *
-     * @return boolean
-     */
-    protected function process()
-    {
-        $task = $this->getOption('task');
-
-        if ($task && method_exists($this, $task)) {
-            return $this->{$task}();
-        }
-
-        if (empty($this->processes)) {
-            $this->output->writeln("\n");
-
-            return true;
-        }
-
-        $this->log('Process: ' . implode(',', $this->processes));
-
-        foreach ($this->processes as $process) {
-            $this->log('<stage>' . $process . ' ...</stage>', 'info');
-            $result = call_user_func([$this, $process]);
-
-            if (!$result) {
-                $this->log($process . ' failed', 'error');
-
-                return false;
-            }
-
-            $this->log('Process succeed', 'succeed', [], true);
-        }
-
-        $this->io->newLine();
-
-        return true;
-    }
-
-    /**
-     * Execute completed
-     *
-     * @param boolean $status
-     * @return mixed|integer
-     */
-    protected function executeComplete($status)
-    {
-        if ($status === true) {
-            $this->io->success('Completed ' . $this->getName() . ': ' . (int)$status);
-
-            return self::EXECUTE_SUCCEED;
-        }
-
-        $this->io->error('Completed ' . $this->getName() . ': ' . (int)$status);
-
-        return $status;
-    }
-
-    /**
-     * Wrapped method to display console output and log to file
-     *
-     * @param string $message
-     * @param string $type
-     * @param array $context
-     * @param boolean $newLine
-     */
-    protected function log($message, $type = 'info', $context = [], $newLine = false)
-    {
-        $this->io->write("\n<$type>$message</$type>");
-
-        if (!method_exists($this, 'log' . ucfirst($type))) {
-            $type = 'info';
-        }
-
-        $this->{'log' . ucfirst($type)}(strip_tags($message), $context);
-
-        if ($newLine === false) {
-            return;
-        }
-
-        $this->io->newLine();
     }
 }

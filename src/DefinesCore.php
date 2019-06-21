@@ -10,6 +10,10 @@
 
 namespace App;
 
+/**
+ * Class DefinesCore
+ * @package App
+ */
 class DefinesCore
 {
     /**

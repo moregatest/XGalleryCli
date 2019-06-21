@@ -54,6 +54,10 @@ final class XCityCrawler extends AbstractCrawler
         $this->indexUrl = self::IDOL_URL . $profile;
     }
 
+    /**
+     * @return int
+     * @throws GuzzleException
+     */
     public function getIndexPages()
     {
         $crawler = $this->getCrawler('GET', $this->getIndexUrl(1));
@@ -77,6 +81,11 @@ final class XCityCrawler extends AbstractCrawler
         return $this->indexUrl . '/?page=' . $page;
     }
 
+    /**
+     * @param string $url
+     * @return array|bool
+     * @throws GuzzleException
+     */
     public function getIndexDetailLinks($url)
     {
         if (!$crawler = $this->getCrawler('GET', $url)) {
@@ -98,6 +107,11 @@ final class XCityCrawler extends AbstractCrawler
         return $list;
     }
 
+    /**
+     * @param $url
+     * @return bool|mixed|stdClass
+     * @throws GuzzleException
+     */
     public function getDetail($url)
     {
         if (!$crawler = $this->getCrawler('GET', $url)) {
@@ -181,6 +195,11 @@ final class XCityCrawler extends AbstractCrawler
         return $film;
     }
 
+    /**
+     * @param $url
+     * @return bool|stdClass
+     * @throws GuzzleException
+     */
     public function getProfileDetail($url)
     {
         return $this->profileCrawler->getDetail($url);

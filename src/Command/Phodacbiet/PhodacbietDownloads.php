@@ -39,6 +39,9 @@ final class PhodacbietDownloads extends CrawlerCommand
         parent::configure();
     }
 
+    /**
+     * @return boolean
+     */
     protected function processDownloads()
     {
         $this->client = $this->getClient();

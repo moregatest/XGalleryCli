@@ -22,6 +22,24 @@ class LinksysClient extends HttpClient
 {
 
     /**
+     * @return boolean|string
+     * @throws GuzzleException
+     */
+    public function jNapCoreTransaction()
+    {
+        return $this->request(
+            'POST',
+            'http://192.168.1.1/JNAP/',
+            [
+                'headers' => ['X-JNAP-Action' => 'http://cisco.com/jnap/core/Transaction'],
+                'json' => [
+                    ['action' => 'http://linksys.com/jnap/devicelist/GetDevices', 'request' => new stdClass],
+                ],
+            ]
+        );
+    }
+
+    /**
      * @param string $method
      * @param string $uri
      * @param array $options
@@ -43,23 +61,5 @@ class LinksysClient extends HttpClient
         }
 
         return $response->responses;
-    }
-
-    /**
-     * @return boolean|string
-     * @throws GuzzleException
-     */
-    public function jNapCoreTransaction()
-    {
-        return $this->request(
-            'POST',
-            'http://192.168.1.1/JNAP/',
-            [
-                'headers' => ['X-JNAP-Action' => 'http://cisco.com/jnap/core/Transaction'],
-                'json' => [
-                    ['action' => 'http://linksys.com/jnap/devicelist/GetDevices', 'request' => new stdClass],
-                ],
-            ]
-        );
     }
 }

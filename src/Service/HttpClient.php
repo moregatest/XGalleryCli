@@ -19,7 +19,9 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Exception\TransferException;
+use Psr\Cache\InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriInterface;
 
 /**
  * Class HttpClient
@@ -52,10 +54,11 @@ class HttpClient extends Client
     }
 
     /**
-     * @param string $uri
+     * @param UriInterface|string $uri
      * @param array $options
-     * @return boolean|string
+     * @return boolean|mixed|ResponseInterface|string
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function post($uri, $options = [])
     {
@@ -66,8 +69,9 @@ class HttpClient extends Client
      * @param $method
      * @param string $uri
      * @param array $options
-     * @return bool|mixed|ResponseInterface
+     * @return boolean|mixed|ResponseInterface|string
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function request($method, $uri = '', array $options = [])
     {
@@ -107,10 +111,11 @@ class HttpClient extends Client
     }
 
     /**
-     * @param string $uri
+     * @param UriInterface|string $uri
      * @param array $options
-     * @return boolean|string
+     * @return boolean|mixed|ResponseInterface|string
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function get($uri, $options = [])
     {
@@ -156,6 +161,6 @@ class HttpClient extends Client
      */
     public function getFilesize($url)
     {
-        return (int)$this->client->head($url)->getHeader('Content-Length')[0];
+        return (int)$this->head($url)->getHeader('Content-Length')[0];
     }
 }

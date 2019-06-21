@@ -12,6 +12,7 @@ namespace App\Service;
 
 use App\Traits\HasLogger;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use stdClass;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -23,6 +24,9 @@ abstract class AbstractCrawler extends HttpClient implements CrawlerInterface
 {
     use HasLogger;
 
+    /**
+     * @var string
+     */
     protected $indexUrl = '';
 
     /**
@@ -86,10 +90,11 @@ abstract class AbstractCrawler extends HttpClient implements CrawlerInterface
     abstract protected function getIndexUrl($page = null);
 
     /**
-     * @param string $url
-     * @param string $filter
-     * @return array|boolean
+     * @param $url
+     * @param $filter
+     * @return array|bool
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     protected function extractLinks($url, $filter)
     {
@@ -120,6 +125,7 @@ abstract class AbstractCrawler extends HttpClient implements CrawlerInterface
      * @param array $options
      * @return boolean|Crawler
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     protected function getCrawler($method, $uri, array $options = [])
     {

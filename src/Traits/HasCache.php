@@ -13,8 +13,18 @@ namespace App\Traits;
 use App\Factory;
 use Psr\Cache\InvalidArgumentException;
 
+/**
+ * Trait HasCache
+ * @package App\Traits
+ */
 trait HasCache
 {
+    /**
+     * @param $id
+     * @param $data
+     * @return bool
+     * @throws InvalidArgumentException
+     */
     protected function isHit($id, &$data)
     {
         $item = $this->getCacheItem($id);
@@ -56,6 +66,13 @@ trait HasCache
         return $instances[$id];
     }
 
+    /**
+     * @param $id
+     * @param $data
+     * @param int $expire
+     * @return bool
+     * @throws InvalidArgumentException
+     */
     protected function saveCache($id, $data, $expire = 86400)
     {
         $item = $this->getCacheItem($id);

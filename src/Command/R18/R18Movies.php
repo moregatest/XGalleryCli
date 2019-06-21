@@ -34,6 +34,9 @@ final class R18Movies extends CrawlerCommand
         parent::configure();
     }
 
+    /**
+     * @return boolean
+     */
     protected function processFetchMovies()
     {
         $this->getClient()->getAllDetailLinks(

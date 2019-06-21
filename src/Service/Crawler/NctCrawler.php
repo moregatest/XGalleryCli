@@ -149,6 +149,10 @@ class NctCrawler extends AbstractCrawler
         }
     }
 
+    /**
+     * @param null $page
+     * @return string|void
+     */
     protected function getIndexUrl($page = null)
     {
         return;

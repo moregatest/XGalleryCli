@@ -52,7 +52,8 @@ final class XCityIdols extends CrawlerCommand
                 $this->io->progressStart(array_sum($pages));
             },
             function ($links) {
-                if (!$links) {
+
+                if (!$links || empty($links)) {
                     return;
                 }
 
@@ -65,6 +66,8 @@ final class XCityIdols extends CrawlerCommand
                     );
 
                     if ($profileEntity) {
+                        $this->logNotice('Profile already exists ' . $link);
+
                         continue;
                     }
 

@@ -17,7 +17,6 @@ use SplFileInfo;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use XGallery\AbstractCommand;
-use XGallery\Command\MediaCommand;
 
 /**
  * Class MediaFiles
@@ -97,9 +96,9 @@ final class MediaFiles extends AbstractCommand
             }
 
             $newFileName = str_replace(
-                ['[HD]', '(HD)', '[FHD]', '(CEN)', '[Thz.la]'],
-                '',
-                $file->getFilenameWithoutExtension()
+                    ['[HD]', '(HD)', '[FHD]', '(CEN)', '[Thz.la]'],
+                    '',
+                    $file->getFilenameWithoutExtension()
                 ) . '.' . $ext;
             $newFilePath = $file->getPath() . DIRECTORY_SEPARATOR . $newFileName;
 

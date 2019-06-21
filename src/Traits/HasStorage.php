@@ -10,8 +10,16 @@
 
 namespace App\Traits;
 
+/**
+ * Trait HasStorage
+ * @package App\Traits
+ */
 trait HasStorage
 {
+    /**
+     * @param $name
+     * @return array|false|string
+     */
     protected function getStorage($name)
     {
         $name    = strtolower($name);

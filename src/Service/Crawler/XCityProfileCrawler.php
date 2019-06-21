@@ -243,6 +243,7 @@ final class XCityProfileCrawler extends AbstractCrawler
     /**
      * Get all profile links
      *
+     * @param string $url
      * @return array|boolean
      * @throws GuzzleException
      */

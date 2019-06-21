@@ -48,5 +48,10 @@ interface CrawlerInterface
      */
     public function getAllDetailLinks($callbackPagesCount = null, $callback = null);
 
+    /**
+     * @param null $offset
+     * @param null $limit
+     * @return mixed
+     */
     public function getAllDetail($offset = null, $limit = null);
 }

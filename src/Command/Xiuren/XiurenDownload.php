@@ -53,6 +53,9 @@ final class XiurenDownload extends CrawlerCommand
         parent::configure();
     }
 
+    /**
+     * @return boolean
+     */
     protected function prepareGetImageLinks()
     {
         $this->images = $this->getClient()->getDetail($this->getOption('url'));
@@ -64,6 +67,9 @@ final class XiurenDownload extends CrawlerCommand
         return self::PREPARE_SUCCEED;
     }
 
+    /**
+     * @return boolean
+     */
     protected function processDownloads()
     {
         /**

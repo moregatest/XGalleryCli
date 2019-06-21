@@ -31,6 +31,10 @@ final class LinksysDevices extends AbstractCommand
      */
     private $devices;
 
+    /**
+     * LinksysDevices constructor.
+     * @param EntityManagerInterface $entityManager
+     */
     public function __construct(EntityManagerInterface $entityManager)
     {
         parent::__construct($entityManager);
@@ -38,6 +42,20 @@ final class LinksysDevices extends AbstractCommand
         $this->client = $this->getClient();
     }
 
+    /**
+     * Configures the current command.
+     */
+    protected function configure()
+    {
+        $this->setDescription('Verify list of connected devices');
+
+        parent::configure();
+    }
+
+    /**
+     * @param string $name
+     * @return LinksysClient
+     */
     protected function getClient($name = '')
     {
         static $instance;
@@ -49,16 +67,6 @@ final class LinksysDevices extends AbstractCommand
         $instance = new LinksysClient;
 
         return $instance;
-    }
-
-    /**
-     * Configures the current command.
-     */
-    protected function configure()
-    {
-        $this->setDescription('Verify list of connected devices');
-
-        parent::configure();
     }
 
     /**
