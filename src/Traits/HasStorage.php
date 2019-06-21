@@ -10,7 +10,6 @@
 
 namespace App\Traits;
 
-
 trait HasStorage
 {
     protected function getStorage($name)

@@ -8,9 +8,9 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace App\Service\Crawler\Jav;
+namespace App\Service\Crawler;
 
-use App\Service\Crawler\BaseCrawler;
+use App\Service\AbstractCrawler;
 use GuzzleHttp\Exception\GuzzleException;
 use RuntimeException;
 use stdClass;
@@ -19,18 +19,20 @@ use stdClass;
  * Class R18Crawler
  * @package App\Service\Crawler\Jav
  */
-class R18Crawler extends BaseCrawler implements JavCrawlerInterface
+final class R18Crawler extends AbstractCrawler
 {
     /**
-     * Get number of pages
-     *
-     * @param string $indexUrl
+     * @var string|null
+     */
+    protected $indexUrl = 'https://www.r18.com/videos/vod/movies/list/pagesize=120/price=all/sort=new/type=all/page=';
+
+    /**
      * @return boolean|integer
      * @throws GuzzleException
      */
-    public function getPages($indexUrl)
+    public function getIndexPages()
     {
-        $crawler = $this->getCrawler('GET', $indexUrl);
+        $crawler = $this->getCrawler('GET', $this->getIndexUrl(1));
 
         if (!$crawler) {
             return false;
@@ -43,22 +45,13 @@ class R18Crawler extends BaseCrawler implements JavCrawlerInterface
         return (int)$crawler->filter('li.next')->previousAll()->filter('a')->text();
     }
 
-
     /**
-     * @return array|bool
+     * @param null $page
+     * @return string
      */
-    public function getProfileLinks()
+    protected function getIndexUrl($page = null)
     {
-        return [];
-    }
-
-    /**
-     * @param string $url
-     * @return stdClass
-     */
-    public function getProfileDetail($url)
-    {
-        return new stdClass;
+        return $this->indexUrl . $page;
     }
 
     /**
@@ -66,26 +59,9 @@ class R18Crawler extends BaseCrawler implements JavCrawlerInterface
      * @return array|boolean
      * @throws GuzzleException
      */
-    public function getMovieLinks($url)
+    public function getIndexDetailLinks($url)
     {
-        $crawler = $this->getCrawler('GET', $url);
-
-        if (!$crawler) {
-            return false;
-        }
-
-        $items = [];
-        $nodes = $crawler->filter('.cmn-list-product01 li');
-
-        if ($nodes->count() === 0) {
-            return false;
-        }
-
-        foreach ($nodes as $item) {
-            $items [] = $item->childNodes[1]->getAttribute('href');
-        }
-
-        return $items;
+        return $this->extractLinks($url, '.cmn-list-product01 li');
     }
 
     /**
@@ -93,7 +69,7 @@ class R18Crawler extends BaseCrawler implements JavCrawlerInterface
      * @return boolean|stdClass
      * @throws GuzzleException
      */
-    public function getMovieDetail($url)
+    public function getDetail($url)
     {
         $crawler = $this->getCrawler('GET', $url);
 
@@ -103,7 +79,7 @@ class R18Crawler extends BaseCrawler implements JavCrawlerInterface
 
         try {
             $movieDetail             = new stdClass;
-            $movieDetail->name       = $crawler->filter('.product-details-page h1')->text();
+            $movieDetail->name       = trim($crawler->filter('.product-details-page h1')->text());
             $movieDetail->categories = $crawler->filter('.product-categories-list a')->each(
                 function ($el) {
                     return trim($el->text());
@@ -111,7 +87,7 @@ class R18Crawler extends BaseCrawler implements JavCrawlerInterface
             );
             $fields                  = $crawler->filter('.product-onload .product-details dt')->each(
                 function ($dt) {
-                    $text = $dt->text();
+                    $text = trim($dt->text());
 
                     $value = str_replace(['-'], [''], $dt->nextAll()->text());
 
@@ -126,6 +102,8 @@ class R18Crawler extends BaseCrawler implements JavCrawlerInterface
             return $movieDetail;
         } catch (RuntimeException $exception) {
             $this->logError($exception->getMessage());
+
+            return false;
         }
     }
 }

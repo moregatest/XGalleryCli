@@ -16,7 +16,7 @@ use Exception;
 use stdClass;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\Command\FlickrCommand;
+use XGallery\FlickrCommand;
 
 /**
  * Class FlickrPhotos

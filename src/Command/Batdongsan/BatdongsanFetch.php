@@ -10,74 +10,87 @@
 
 namespace App\Command\Batdongsan;
 
-use GuzzleHttp\Exception\GuzzleException;
-use Symfony\Component\Console\Input\InputDefinition;
-use Symfony\Component\Console\Input\InputOption;
-use XGallery\Command\BatdongsanCommand;
+use App\Entity\BatdongsanComVn;
+use XGallery\CrawlerCommand;
 
 /**
  * Class BatdongsanFetch
  * @package App\Command\Batdongsan
  */
-final class BatdongsanFetch extends BatdongsanCommand
+final class BatdongsanFetch extends CrawlerCommand
 {
-    /**
-     * @var integer
-     */
-    private $pages;
-
     /**
      * Configures the current command.
      */
     protected function configure()
     {
-        $this->setDescription('Fetch BDS URLs');
-        $this->setDefinition(
-            new InputDefinition(
-                [
-                    new InputOption(
-                        'url',
-                        null,
-                        InputOption::VALUE_OPTIONAL,
-                        'Index URL',
-                        'https://batdongsan.com.vn/nha-dat-ban'
-                    ),
-                ]
-            )
-        );
+        $this->setDescription('Fetch BDS data');
 
         parent::configure();
     }
 
     /**
      * @return boolean
-     * @throws GuzzleException
      */
-    protected function prepareGetPages()
+    protected function processFetch()
     {
-        $this->pages = $this->client->getPages($this->getOption('url'));
-        $this->log('Total pages: <options=bold>' . $this->pages . '</>');
+        $this->getClient()->getAllDetailLinks(
+            function ($pages) {
+                $this->io->newLine();
+                $this->io->progressStart($pages);
+            },
+            function ($links) {
+                if (!$links || empty($links)) {
+                    return;
+                }
+                foreach ($links as $link) {
+                    $itemDetail = $this->getClient()->getDetail($link);
 
-        return self::PREPARE_SUCCEED;
+                    if (!$itemDetail) {
+                        $this->logWarning('Can not extract item detail ' . $link);
+                        continue;
+                    }
+
+                    $this->insertDetail($link, $itemDetail);
+                }
+
+                $this->entityManager->flush();
+                $this->io->progressAdvance();
+            }
+        );
+
+        return true;
     }
 
     /**
-     * Process insert items for all pages
+     * @param mixed $link
+     * @param $itemDetail
+     * @return boolean|void
      */
-    protected function processInsertItems()
+    protected function insertDetail($link, $itemDetail)
     {
-        $this->io->newLine();
-        $this->io->progressStart($this->pages);
+        $link       = str_replace(['https://batdongsan.com.vn', 'http://batdongsan.com.vn'], '', $link);
+        $itemEntity = $this->entityManager->getRepository(BatdongsanComVn::class)->find($link);
 
-        /**
-         * Process extract items & import for each page
-         * @TODO Support multi pages at same time
-         */
-        for ($page = 1; $page <= $this->pages; $page++) {
-            $this->getProcess(['batdongsan:import', '--url=' . $this->getOption('url') . '/p' . $page])->run();
+        if ($itemEntity) {
+            $this->logNotice($link . ' already exists. We\'ll skip it');
 
-            $this->io->progressAdvance();
+            return;
         }
+
+        $itemEntity = new BatdongsanComVn;
+        $itemEntity->setUrl($link);
+
+        $itemEntity->setName($itemDetail->price);
+        $itemEntity->setSize($itemDetail->size ?? null);
+        $itemEntity->setContent($itemDetail->content ?? null);
+        $itemEntity->setType($itemDetail->type ?? null);
+        $itemEntity->setProject($itemDetail->project ?? null);
+        $itemEntity->setContactName($itemDetail->contact_name ?? null);
+        $itemEntity->setPhone($itemDetail->phone ?? null);
+        $itemEntity->setEmail($itemDetail->email ?? null);
+
+        $this->entityManager->persist($itemEntity);
 
         return true;
     }

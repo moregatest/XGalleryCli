@@ -8,19 +8,19 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace XGallery\Command;
+namespace XGallery;
 
 use App\Entity\FlickrContact;
 use App\Service\OAuth\Flickr\FlickrClient;
 use Doctrine\ORM\EntityManagerInterface;
-use XGallery\BaseCommand;
 
 /**
  * Class FlickrCommand
  * @package XGallery\Command
  */
-class FlickrCommand extends BaseCommand
+class FlickrCommand extends AbstractCommand
 {
+
     /**
      * Default limit number of requests to get photo sizes
      */
@@ -54,22 +54,24 @@ class FlickrCommand extends BaseCommand
      */
     protected $client;
 
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $entityManager;
-
-    /**
-     * FlickrCommand constructor.
-     * @param FlickrClient $client
-     * @param EntityManagerInterface $entityManager
-     */
-    public function __construct(FlickrClient $client, EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        $this->client        = $client;
-        $this->entityManager = $entityManager;
+        parent::__construct($entityManager);
 
-        parent::__construct();
+        $this->client = $this->getClient();
+    }
+
+    protected function getClient($name = '')
+    {
+        static $instance;
+
+        if ($instance) {
+            return $instance;
+        }
+
+        $instance = new FlickrClient;
+
+        return $instance;
     }
 
     /**

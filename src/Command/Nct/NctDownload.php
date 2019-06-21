@@ -10,18 +10,19 @@
 
 namespace App\Command\Nct;
 
+use App\Service\Crawler\NctCrawler;
 use App\Traits\HasStorage;
 use SplFileInfo;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
-use XGallery\Command\NctCommand;
+use XGallery\CrawlerCommand;
 
 /**
  * Class NctDownload
  * @package App\Command\Nct
  */
-final class NctDownload extends NctCommand
+final class NctDownload extends CrawlerCommand
 {
     use HasStorage;
 
@@ -30,7 +31,7 @@ final class NctDownload extends NctCommand
      */
     protected function configure()
     {
-        $this->setDescription('Download song')
+        $this->setDescription('Download NCT song')
             ->setDefinition(
                 new InputDefinition(
                     [new InputOption('url', null, InputOption::VALUE_OPTIONAL)]
@@ -53,9 +54,14 @@ final class NctDownload extends NctCommand
             return false;
         }
 
+        /**
+         * @var NctCrawler $client
+         */
+        $client = $this->getClient();
+
         $this->log('Download url ' . $url);
 
-        if (!$download = $this->client->extractItem($url)) {
+        if (!$download = $client->getDetail($url)) {
             $this->logError('Can not extract item');
 
             return false;
@@ -70,7 +76,9 @@ final class NctDownload extends NctCommand
         }
 
         $this->log('Download to ' . $saveTo . '/' . $parts[0]);
-        if (!$this->client->download($download['download'], $saveTo . '/' . $parts[0])) {
+
+        // Use wget instead
+        if (!$client->download($download['download'], $saveTo . '/' . $parts[0])) {
             return false;
         }
 

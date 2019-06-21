@@ -28,19 +28,13 @@ class LinksysClient extends HttpClient
      * @return boolean|string
      * @throws GuzzleException
      */
-    public function request($method, $uri, array $options = [])
+    public function request($method, $uri = '', array $options = [])
     {
         $response = parent::request($method, $uri, $options);
 
         if (!$response) {
             $this->logNotice('Fetch failed: ' . $response);
 
-            return false;
-        }
-
-        $response = json_decode($response, false);
-
-        if (!$response) {
             return false;
         }
 

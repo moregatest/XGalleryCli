@@ -19,16 +19,6 @@ trait HasPhotos
 {
 
     /**
-     * Call RESTful
-     *
-     * @param array $parameters
-     * @param array $options
-     *
-     * @return mixed
-     */
-    abstract public function get($parameters, $options = []);
-
-    /**
      * Search photos
      *
      * @param string $keyword
@@ -46,6 +36,16 @@ trait HasPhotos
             )
         );
     }
+
+    /**
+     * Call RESTful
+     *
+     * @param array $parameters
+     * @param array $options
+     *
+     * @return mixed
+     */
+    abstract public function get($parameters, $options = []);
 
     /**
      * Get photo sizes

@@ -8,38 +8,53 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace App\Service\Crawler\Forums;
+namespace App\Service\Crawler;
 
-use App\Service\Crawler\BaseCrawler;
+use App\Service\AbstractCrawler;
 use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * Class PhodacbietCrawler
  * @package App\Service\Crawler\Forums
  */
-class PhodacbietCrawler extends BaseCrawler
+final class PhodacbietCrawler extends AbstractCrawler
 {
+    /**
+     * @var string
+     */
+    protected $indexUrl = 'https://phodacbiet.info/forums/anh-hotgirl-nguoi-mau.43/';
 
     /**
+     * @return boolean|integer
+     * @throws GuzzleException
+     */
+    public function getIndexPages()
+    {
+        if (!$crawler = $this->getCrawler('GET', $this->indexUrl)) {
+            return false;
+        }
+
+        return (int)$crawler->filter('.pageNav ul li a')->last()->text();
+    }
+
+    /**
+     * Return array of thread URLs
+     *
      * @param string $url
      * @return array|boolean
      * @throws GuzzleException
      */
-    public function getThreads($url)
+    public function getIndexDetailLinks($url)
     {
-        $crawler = $this->getCrawler('GET', $url);
-
-        if (!$crawler) {
+        if (!$crawler = $this->getCrawler('GET', $url)) {
             return false;
         }
 
-        $urls = $crawler->filter('.cate.post.thread a')->each(
+        return $crawler->filter('.cate.post.thread a')->each(
             function ($a) {
                 return $a->attr('href');
             }
         );
-
-        return $urls;
     }
 
     /**
@@ -47,7 +62,7 @@ class PhodacbietCrawler extends BaseCrawler
      * @return array|boolean
      * @throws GuzzleException
      */
-    public function getThreadImages($url)
+    public function getDetail($url)
     {
         $crawler = $this->getCrawler('GET', $url);
 
@@ -62,5 +77,14 @@ class PhodacbietCrawler extends BaseCrawler
         );
 
         return $images;
+    }
+
+    /**
+     * @param null $page
+     * @return string
+     */
+    protected function getIndexUrl($page = null)
+    {
+        return $this->indexUrl . 'page-' . $page;
     }
 }

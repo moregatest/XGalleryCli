@@ -12,28 +12,35 @@ namespace App\Command\XCity;
 
 use App\Entity\JavIdol;
 use App\Entity\JavMovie;
+use App\Service\Crawler\XCityCrawler;
 use App\Traits\HasMovies;
 use DateTime;
-use GuzzleHttp\Exception\GuzzleException;
+use Exception;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\Command\XCityCommand;
+use XGallery\CrawlerCommand;
 
 /**
  * Class XCityMovies
  * @package App\Command\XCity
  */
-final class XCityMovies extends XCityCommand
+final class XCityMovies extends CrawlerCommand
 {
     use HasMovies;
-    const IDOLS_LIMIT = 100;
+
+    const IDOLS_LIMIT = 200;
+
+    /**
+     * @var XCityCrawler
+     */
+    private $client;
 
     /**
      * Configures the current command.
      */
     protected function configure()
     {
-        $this->setDescription('Fetch movies of idol')
+        $this->setDescription('Fetch movies of idols')
             ->setDefinition(
                 new InputDefinition(
                     [
@@ -53,89 +60,96 @@ final class XCityMovies extends XCityCommand
 
     /**
      * @return boolean
-     * @throws GuzzleException
+     * @throws Exception
      */
     protected function prepareGetMovies()
     {
-        $idols = $this->entityManager->getRepository(JavIdol::class)->findBy(
-            ['source' => 'xcity'],
-            ['updated' => 'ASC'],
-            self::IDOLS_LIMIT
-        );
+        $idols = $this->entityManager->getRepository(JavIdol::class)
+            ->findBy(['source' => 'xcity'], ['updated' => 'ASC'], self::IDOLS_LIMIT);
 
         if (empty($idols)) {
             return self::PREPARE_FAILED;
         }
 
+        $this->client = $this->getClient('XCity');
+
         foreach ($idols as $idol) {
             // Update idol
             $idol->setUpdated(new DateTime());
-            // $this->entityManager->persist($idol);
-            //$this->entityManager->flush();
+            $this->entityManager->persist($idol);
+            $this->entityManager->flush();
 
             $this->log('Working on idol: ' . $idol->getName());
-            $this->io->newLine();
 
-            $links = $this->client->getMovieLinks('detail/' . $idol->getId());
+            $this->client->setProfile('detail/' . $idol->getXId() . '/');
+            $this->client->getAllDetailLinks(
+                function ($pages) {
+                    $this->io->newLine();
+                    $this->io->progressStart($pages);
+                },
+                function ($links) {
+                    foreach ($links as $link) {
+                        $this->logInfo('Working on movie: ' . $link);
+                        $movieDetail = $this->client->getDetail('https://xxx.xcity.jp' . $link);
 
-            $this->io->progressStart(count($links));
+                        if (!$movieDetail) {
+                            continue;
+                        }
 
-            foreach ($links as $link) {
-                /**
-                 * @TODO Return entity object
-                 */
-                $movie       = $this->client->getMovieDetail($link);
-                $movieEntity = $this->insertMovie($movie);
-                $this->insertXRef($movie->genres, $movieEntity);
-                $this->io->progressAdvance();
-            }
+                        $this->insertXRef($movieDetail->genres, $this->insertMovie($movieDetail));
+                    }
+
+                    $this->io->progressAdvance();
+                }
+            );
         }
 
         return self::PREPARE_SUCCEED;
     }
 
     /**
-     * @param object $movie
-     * @return boolean
+     * @param $movieDetail
+     * @return JavMovie|boolean|object|null
+     * @throws Exception
      */
-    protected function insertMovie($movie)
+    protected function insertMovie($movieDetail)
     {
-        if (!$movie) {
+        if (!$movieDetail) {
             return false;
         }
 
         $movieEntity = $this->entityManager->getRepository(JavMovie::class)->findOneBy(
-            ['item_number' => $movie->item_number, 'source' => 'xcity']
+            ['item_number' => $movieDetail->item_number, 'source' => 'xcity']
         );
 
         // Movie already exists
         if ($movieEntity) {
+            $this->insertGenres($movieDetail->genres);
+
             return $movieEntity;
         }
 
         $movieEntity = new JavMovie;
 
-        $movieEntity->setName($movie->name);
-        $movieEntity->setUrl($movie->url);
+        $movieEntity->setName($movieDetail->name);
+        $movieEntity->setUrl($movieDetail->url);
         $movieEntity->setSource('xcity');
 
-        if (isset($movie->sales_date) && $movie->sales_date && !empty($movie->sales_date)) {
-            $movieEntity->setSalesDate(DateTime::createFromFormat('Y-m-d', $movie->sales_date));
+        if (isset($movieDetail->sales_date) && $movieDetail->sales_date && !empty($movieDetail->sales_date)) {
+            $movieEntity->setSalesDate(DateTime::createFromFormat('Y-m-d', $movieDetail->sales_date));
         }
 
-        if (isset($movie->release_date) && $movie->release_date && !empty($movie->release_date)) {
-            $movieEntity->setReleaseDate(DateTime::createFromFormat('Y-m-d', $movie->release_date));
+        if (isset($movieDetail->release_date) && $movieDetail->release_date && !empty($movieDetail->release_date)) {
+            $movieEntity->setReleaseDate(DateTime::createFromFormat('Y-m-d', $movieDetail->release_date));
         }
 
-        $movieEntity->setItemNumber($movie->item_number);
-        $movieEntity->setDescription($movie->description ?? null);
-        $movieEntity->setTime($movie->time);
+        $movieEntity->setItemNumber($movieDetail->item_number);
+        $movieEntity->setDescription($movieDetail->description ?? null);
+        $movieEntity->setTime($movieDetail->time);
+        $movieEntity->setUpdated(new DateTime);
 
         $this->entityManager->persist($movieEntity);
-
-        $this->insertGenres($movie->genres);
-
-        $this->entityManager->flush();
+        $this->insertGenres($movieDetail->genres);
 
         return $movieEntity;
     }

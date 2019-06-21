@@ -14,7 +14,7 @@ use DateTime;
 use Exception;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\Command\FlickrCommand;
+use XGallery\FlickrCommand;
 
 /**
  * Class FlickrContact
@@ -32,12 +32,10 @@ final class FlickrContact extends FlickrCommand
      */
     protected function configure()
     {
-        $this->setDescription('Manual update contact into database')
+        $this->setDescription('Manual insert a contact')
             ->setDefinition(
                 new InputDefinition(
-                    [
-                        new InputOption('nsid', 'id', InputOption::VALUE_OPTIONAL, 'Specific NSID for process'),
-                    ]
+                    [new InputOption('nsid', 'id', InputOption::VALUE_OPTIONAL, 'Specific NSID for process')]
                 )
             );
 
@@ -51,24 +49,7 @@ final class FlickrContact extends FlickrCommand
      */
     protected function prepareContact()
     {
-        if (!$nsid = $this->getOption('nsid')) {
-            $this->io->newLine();
-            $nsid = $this->io->ask(
-                'Please enter NSID',
-                null,
-                function ($value) {
-                    $value = trim($value);
-
-                    if (empty($value)) {
-                        throw new Exception('The NSID cannot be empty');
-                    }
-
-                    return $value;
-                }
-            );
-        }
-
-        $this->contact = $this->client->flickrPeopleGetInfo($this->client->getNsid($nsid));
+        $this->contact = $this->client->flickrPeopleGetInfo($this->client->getNsid($this->getOption('nsid')));
 
         if (!$this->contact) {
             $this->log('Can not get contact or contact not found', 'notice');

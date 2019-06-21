@@ -10,19 +10,46 @@
 
 namespace App\Command\Linksys;
 
+use App\Service\Router\LinksysClient;
+use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Exception\GuzzleException;
-use XGallery\Command\LinksysCommand;
+use XGallery\AbstractCommand;
 
 /**
  * Class LinksysDevices
  * @package App\Command\Linksys
  */
-final class LinksysDevices extends LinksysCommand
+final class LinksysDevices extends AbstractCommand
 {
+    /**
+     * @var LinksysClient
+     */
+    private $client;
+
     /**
      * @var array
      */
     private $devices;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        parent::__construct($entityManager);
+
+        $this->client = $this->getClient();
+    }
+
+    protected function getClient($name = '')
+    {
+        static $instance;
+
+        if ($instance) {
+            return $instance;
+        }
+
+        $instance = new LinksysClient;
+
+        return $instance;
+    }
 
     /**
      * Configures the current command.

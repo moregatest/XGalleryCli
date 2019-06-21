@@ -17,33 +17,6 @@ namespace App\Service\OAuth\Flickr\Traits;
 trait HasGalleries
 {
     /**
-     * Call RESTful
-     *
-     * @param array $parameters
-     * @param array $options
-     *
-     * @return mixed
-     */
-    abstract public function get($parameters, $options = []);
-
-    /**
-     * flickrGalleriesGetPhotos
-     *
-     * @param string $galleryId
-     * @param array $parameters
-     * @return mixed
-     */
-    public function flickrGalleriesGetPhotos($galleryId, $parameters = [])
-    {
-        return $this->get(
-            array_merge(
-                ['method' => 'flickr.galleries.getPhotos', 'gallery_id' => $galleryId, 'per_page' => 500],
-                $parameters
-            )
-        );
-    }
-
-    /**
      * flickrGalleriesGetAllPhotos
      *
      * @param string $galleryId
@@ -74,4 +47,31 @@ trait HasGalleries
 
         return $photos;
     }
+
+    /**
+     * flickrGalleriesGetPhotos
+     *
+     * @param string $galleryId
+     * @param array $parameters
+     * @return mixed
+     */
+    public function flickrGalleriesGetPhotos($galleryId, $parameters = [])
+    {
+        return $this->get(
+            array_merge(
+                ['method' => 'flickr.galleries.getPhotos', 'gallery_id' => $galleryId, 'per_page' => 500],
+                $parameters
+            )
+        );
+    }
+
+    /**
+     * Call RESTful
+     *
+     * @param array $parameters
+     * @param array $options
+     *
+     * @return mixed
+     */
+    abstract public function get($parameters, $options = []);
 }

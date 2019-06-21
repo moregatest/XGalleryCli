@@ -17,16 +17,6 @@ namespace App\Service\OAuth\Flickr\Traits;
 trait HasContacts
 {
     /**
-     * Call RESTful
-     *
-     * @param array $parameters
-     * @param array $options
-     *
-     * @return mixed
-     */
-    abstract public function get($parameters, $options = []);
-
-    /**
      * flickrContactsGetListRecentlyUploaded
      *
      * @param array $params
@@ -41,21 +31,14 @@ trait HasContacts
     }
 
     /**
-     * flickrContactsGetList
+     * Call RESTful
      *
-     * @param array $params
+     * @param array $parameters
+     * @param array $options
+     *
      * @return mixed
-     * @see https://www.flickr.com/services/api/flickr.contacts.getList.html
      */
-    public function flickrContactsGetList(array $params = [])
-    {
-        return $this->get(
-            array_merge(
-                ['method' => 'flickr.contacts.getList', 'per_page' => 1000, 'page' => 1],
-                $params
-            )
-        );
-    }
+    abstract public function get($parameters, $options = []);
 
     /**
      * flickrContactsGetAll
@@ -86,5 +69,22 @@ trait HasContacts
         }
 
         return $contacts;
+    }
+
+    /**
+     * flickrContactsGetList
+     *
+     * @param array $params
+     * @return mixed
+     * @see https://www.flickr.com/services/api/flickr.contacts.getList.html
+     */
+    public function flickrContactsGetList(array $params = [])
+    {
+        return $this->get(
+            array_merge(
+                ['method' => 'flickr.contacts.getList', 'per_page' => 1000, 'page' => 1],
+                $params
+            )
+        );
     }
 }

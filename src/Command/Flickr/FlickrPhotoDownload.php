@@ -17,7 +17,7 @@ use Exception;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
-use XGallery\Command\FlickrCommand;
+use XGallery\FlickrCommand;
 
 /**
  * Class FlickrPhotoDownload

@@ -23,6 +23,17 @@ trait HasLogger
 {
 
     /**
+     * Log with debug level
+     *
+     * @param string $message
+     * @param array $context
+     */
+    protected function logDebug($message, $context = [])
+    {
+        $this->getLogger()->debug($message, $context);
+    }
+
+    /**
      * getLogger
      *
      * @param string $name
@@ -54,17 +65,6 @@ trait HasLogger
         } catch (Exception $exception) {
             return false;
         }
-    }
-
-    /**
-     * Log with debug level
-     *
-     * @param string $message
-     * @param array $context
-     */
-    protected function logDebug($message, $context = [])
-    {
-        $this->getLogger()->debug($message, $context);
     }
 
     /**

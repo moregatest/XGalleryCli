@@ -8,25 +8,26 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace App\Service\Crawler\Xiuren;
+namespace App\Service\Crawler;
 
-use App\Service\Crawler\BaseCrawler;
+use App\Service\AbstractCrawler;
 use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * Class XiurenOrgCrawler
  * @package App\Service\Crawler\Xiuren
  */
-class XiurenOrgCrawler extends BaseCrawler
+final class XiurenCrawler extends AbstractCrawler
 {
+    protected $indexUrl = 'http://xiuren.org';
+
     /**
-     * @param $indexUrl
-     * @return bool|int
+     * @return boolean|integer
      * @throws GuzzleException
      */
-    public function getPages($indexUrl)
+    public function getIndexPages()
     {
-        $crawler = $this->getCrawler('GET', $indexUrl);
+        $crawler = $this->getCrawler('GET', $this->getIndexUrl(1));
 
         if (!$crawler) {
             return false;
@@ -38,7 +39,21 @@ class XiurenOrgCrawler extends BaseCrawler
         return (int)end($pages);
     }
 
-    public function getItemLinks($indexUrl)
+    /**
+     * @param null $page
+     * @return string
+     */
+    protected function getIndexUrl($page = null)
+    {
+        return $this->indexUrl . '/page-' . $page . '.html';
+    }
+
+    /**
+     * @param $indexUrl
+     * @return array|bool
+     * @throws GuzzleException
+     */
+    public function getIndexDetailLinks($indexUrl)
     {
         $crawler = $this->getCrawler('GET', $indexUrl);
 
@@ -53,7 +68,12 @@ class XiurenOrgCrawler extends BaseCrawler
         );
     }
 
-    public function getImages($detailUrl)
+    /**
+     * @param $detailUrl
+     * @return array|bool
+     * @throws GuzzleException
+     */
+    public function getDetail($detailUrl)
     {
         $crawler = $this->getCrawler('GET', $detailUrl);
 

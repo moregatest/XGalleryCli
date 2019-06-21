@@ -13,7 +13,7 @@ namespace App\Command\Flickr;
 use App\Entity\FlickrPhoto;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\Command\FlickrCommand;
+use XGallery\FlickrCommand;
 
 /**
  * Class FlickrPhotosSize
@@ -197,7 +197,7 @@ final class FlickrPhotosSize extends FlickrCommand
             $this->photos = array_slice($this->photos, 0, 3600);
         }
 
-        $this->log('Working on ' . count($this->photos) . ' photos', 'info', [], true);
+        $this->logInfo('Working on ' . count($this->photos) . ' photos');
         $failed = 0;
 
         $this->io->progressStart(count($this->photos));

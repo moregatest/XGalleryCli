@@ -16,13 +16,14 @@ use FFMpeg\FFProbe;
 use SplFileInfo;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use XGallery\AbstractCommand;
 use XGallery\Command\MediaCommand;
 
 /**
  * Class MediaFiles
  * @package App\Command\Media
  */
-final class MediaFiles extends MediaCommand
+final class MediaFiles extends AbstractCommand
 {
     /**
      * @var Finder
@@ -40,6 +41,14 @@ final class MediaFiles extends MediaCommand
     }
 
     /**
+     * @param string $name
+     */
+    protected function getClient($name = '')
+    {
+        return;
+    }
+
+    /**
      * @return boolean
      */
     protected function prepareGetFiles()
@@ -53,7 +62,7 @@ final class MediaFiles extends MediaCommand
                 }
 
                 // Delete
-                if (in_array($file->getExtension(), ['ini', 'txt', 'torrent', 'url', 'mht', 'gif'])) {
+                if (in_array($file->getExtension(), ['ini', 'txt', 'torrent', 'url', 'mht', 'gif', 'chm'])) {
                     (new Filesystem())->remove($file->getRealPath());
 
                     return self::PREPARE_FAILED;

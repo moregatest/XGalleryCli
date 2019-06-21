@@ -11,49 +11,59 @@
 namespace App\Command\R18;
 
 use App\Entity\JavMovie;
-use GuzzleHttp\Exception\GuzzleException;
-use XGallery\Command\R18Command;
+use XGallery\CrawlerCommand;
 
 /**
- * Class R18InsertMovies
+ * Class R18Movies
  * @package App\Command\R18
  */
-final class R18Movies extends R18Command
+final class R18Movies extends CrawlerCommand
 {
-    private $indexUrl = 'https://www.r18.com/videos/vod/movies/list/pagesize=120/price=all/sort=new/type=all/page=';
+    /**
+     * @var string
+     */
+    private $source = 'r18';
 
     /**
-     * @return boolean
-     * @throws GuzzleException
+     * Configures the current command.
      */
-    protected function processFetchLinks()
+    protected function configure()
     {
-        $pages = $this->client->getPages($this->indexUrl . '1');
+        $this->setDescription('Extract ALL R18 movies.');
 
-        $this->io->newLine();
-        $this->io->progressStart($pages);
+        parent::configure();
+    }
 
-        for ($page = 1; $page <= $pages; $page++) {
-            $items = $this->client->getMovieLinks($this->indexUrl . $page . '/');
+    protected function processFetchMovies()
+    {
+        $this->getClient()->getAllDetailLinks(
+            function ($pages) {
+                $this->io->newLine();
+                $this->io->progressStart($pages);
+            },
+            function ($links) {
+                foreach ($links as $link) {
+                    $this->logInfo('Processing ' . $link);
+                    $javMovieEntity = $this->entityManager
+                        ->getRepository(JavMovie::class)->findOneBy(['url' => $link, 'source' => $this->source]);
 
-            foreach ($items as $item) {
-                $javMovieEntity = $this->entityManager->getRepository(JavMovie::class)->findOneBy(
-                    ['url' => $item, 'source' => 'r18']
-                );
+                    // Movie already exists then skip it
+                    if ($javMovieEntity) {
+                        continue;
+                    }
 
-                if (!$javMovieEntity) {
                     $javMovieEntity = new JavMovie;
+                    $javMovieEntity->setUrl($link);
+                    $javMovieEntity->setSource($this->source);
+                    $this->entityManager->persist($javMovieEntity);
                 }
 
-                $javMovieEntity->setUrl($item);
-                $javMovieEntity->setSource('r18');
-                $this->entityManager->persist($javMovieEntity);
+                // @TODO Try catch
+                $this->entityManager->flush();
+                $this->io->progressAdvance();
             }
+        );
 
-            $this->entityManager->flush();
-            $this->io->progressAdvance();
-        }
-
-        return self::PREPARE_SUCCEED;
+        return true;
     }
 }

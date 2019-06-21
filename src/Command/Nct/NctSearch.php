@@ -10,17 +10,20 @@
 
 namespace App\Command\Nct;
 
+use App\Entity\Nct;
+use App\Service\Crawler\NctCrawler;
+use DateTime;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\Command\NctCommand;
+use XGallery\CrawlerCommand;
 
 /**
  * Class NctSearch
  * @package App\Command\Nct
  */
-final class NctSearch extends NctCommand
+final class NctSearch extends CrawlerCommand
 {
     /**
      * @var array
@@ -38,6 +41,7 @@ final class NctSearch extends NctCommand
                     [
                         new InputOption('title', null, InputOption::VALUE_OPTIONAL, 'Search by keyword'),
                         new InputOption('singer', null, InputOption::VALUE_OPTIONAL, 'Search by singer'),
+                        new InputOption('top20', null, InputOption::VALUE_OPTIONAL, 'Get TOP20'),
                     ]
                 )
             );
@@ -51,7 +55,18 @@ final class NctSearch extends NctCommand
      */
     protected function prepareSongs()
     {
-        $this->songs = $this->client->search(
+        /**
+         * @var NctCrawler $client ;
+         */
+        $client = $this->getClient();
+
+        if ($this->getOption('top20')) {
+            $this->songs = $client->getTop20();
+
+            return self::PREPARE_SUCCEED;
+        }
+
+        $this->songs = $client->search(
             ['title' => $this->getOption('title'), 'singer' => $this->getOption('singer')]
         );
 
@@ -71,8 +86,24 @@ final class NctSearch extends NctCommand
         $this->io->newLine();
         $this->io->progressStart(count($this->songs));
 
+        /**
+         * @TODO Skip storing database if MySQL if not started
+         */
         foreach ($this->songs as $index => $song) {
-            $this->insertEntity($song, $index);
+            $nctEntity = $this->entityManager->getRepository(Nct::class)
+                ->findOneBy(['url' => $song['href']]);
+
+            if ($nctEntity === null) {
+                $nctEntity = new Nct;
+                $nctEntity->setCreated(new DateTime);
+                $nctEntity->setUrl($song['href']);
+                $nctEntity->setTitle($song['title']);
+                $this->entityManager->persist($nctEntity);
+                $this->batchInsert($nctEntity, $index);
+            }
+
+            $this->getProcess(['nct:download', '--url=' . $song['href']])->run();
+            $this->io->progressAdvance();
         }
 
         $this->entityManager->flush();

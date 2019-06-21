@@ -35,6 +35,8 @@ trait HasMovies
             $genreEntity->setName($genre);
             $this->entityManager->persist($genreEntity);
         }
+
+        $this->entityManager->flush();
     }
 
     /**
@@ -44,9 +46,7 @@ trait HasMovies
     protected function insertXRef($genres, $movieEntity)
     {
         foreach ($genres as $genre) {
-            $genreEntity = $this->entityManager->getRepository(JavGenre::class)->findOneBy(
-                ['name' => $genre]
-            );
+            $genreEntity = $this->entityManager->getRepository(JavGenre::class)->findOneBy(['name' => $genre]);
 
             if (!$genreEntity) {
                 continue;

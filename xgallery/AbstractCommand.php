@@ -9,40 +9,28 @@
  */
 
 declare(strict_types=1);
-/**
- *
- * Copyright (c) 2019 JOOservices Ltd
- * @author Viet Vu <jooservices@gmail.com>
- * @package XGallery
- * @license GPL
- * @license http://opensource.org/licenses/gpl-license.php GNU Public License
- */
 
 namespace XGallery;
 
 use App\DefinesCore;
-use App\Traits\HasConsole;
 use App\Traits\HasEntityManager;
 use App\Traits\HasLogger;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Command\LockableTrait;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Lock\Factory;
-use Symfony\Component\Lock\Store\FlockStore;
 use Symfony\Component\Process\Process;
 
 /**
  * Class BaseCommand
  * @package XGallery\Command
  */
-class BaseCommand extends Command
+abstract class AbstractCommand extends Command
 {
-    use LockableTrait;
     use HasLogger;
-    use HasConsole;
     use HasEntityManager;
 
     /**
@@ -65,23 +53,14 @@ class BaseCommand extends Command
     const EXECUTE_SUCCEED = 0;
 
     /**
-     * Input
-     *
-     * @var InputInterface
-     */
-    protected $input;
-
-    /**
-     * Output
-     *
-     * @var OutputInterface
-     */
-    protected $output;
-
-    /**
      * @var SymfonyStyle
      */
     protected $io;
+
+    /**
+     * @var InputInterface
+     */
+    private $input;
 
     /**
      * @var array
@@ -94,12 +73,29 @@ class BaseCommand extends Command
     private $processes = [];
 
     /**
+     * @var EntityManagerInterface
+     */
+    protected $entityManager;
+
+    /**
+     * BaseCommand constructor.
+     * @param EntityManagerInterface $entityManager
+     */
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+
+        parent::__construct();
+    }
+
+    abstract protected function getClient($name = '');
+
+    /**
      * Clean up
      */
     public function __destruct()
     {
         $this->entityManager->getConnection()->close();
-        //$this->release();
     }
 
     /**
@@ -160,7 +156,13 @@ class BaseCommand extends Command
         /**
          * @TODO Use https://symfony.com/doc/current/console/calling_commands.html
          */
-        return new Process(array_merge(['php', $this->getBinDir() . '/console'], $cmd), null, null, null, $timeout);
+        return new Process(
+            array_merge(['php', $this->getBinDir() . '/console'], $cmd),
+            null,
+            null,
+            null,
+            (float)$timeout
+        );
     }
 
     /**
@@ -172,21 +174,65 @@ class BaseCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $store      = new FlockStore;
-        $factory    = new Factory($store);
-        $this->lock = $factory->createLock($this->getName());
+        /**
+         * Custom console
+         */
+        $output->getFormatter()->setStyle(
+            'head',
+            new OutputFormatterStyle('yellow', 'black', ['bold'])
+        );
+        $output->getFormatter()->setStyle(
+            'stage',
+            new OutputFormatterStyle('green', 'black', ['bold'])
+        );
 
-        if (!$this->lock->acquire()) {
-            return 0;
-        }
+        $output->getFormatter()->setStyle(
+            'debug',
+            new OutputFormatterStyle('magenta', 'black', ['bold', 'underscore'])
+        );
 
-        $this->input  = $input;
-        $this->output = $output;
+        $output->getFormatter()->setStyle(
+            'info',
+            new OutputFormatterStyle('white', 'black', [])
+        );
 
-        $this->io = new SymfonyStyle($input, $output);
+        $output->getFormatter()->setStyle(
+            'notice',
+            new OutputFormatterStyle('yellow', 'black', [])
+        );
 
-        $this->initConsoleStyle();
+        $output->getFormatter()->setStyle(
+            'succeed',
+            new OutputFormatterStyle('blue', 'black', ['bold'])
+        );
 
+        $output->getFormatter()->setStyle(
+            'warning',
+            new OutputFormatterStyle('red', 'black', ['bold'])
+        );
+
+        $output->getFormatter()->setStyle(
+            'error',
+            new OutputFormatterStyle('white', 'red', [])
+        );
+
+        $output->getFormatter()->setStyle(
+            'critical',
+            new OutputFormatterStyle('white', 'red', ['bold'])
+        );
+
+        $output->getFormatter()->setStyle(
+            'alert',
+            new OutputFormatterStyle('white', 'red', ['bold', 'underscore'])
+        );
+
+        $output->getFormatter()->setStyle(
+            'emergency',
+            new OutputFormatterStyle('white', 'red', ['bold', 'underscore', 'blink'])
+        );
+
+        $this->input = $input;
+        $this->io    = new SymfonyStyle($input, $output);
         $this->io->title(get_called_class());
 
         $classes = get_class_methods($this);
@@ -225,7 +271,7 @@ class BaseCommand extends Command
      */
     protected function prepare()
     {
-        $this->output->write('Prepares: ' . implode(',', $this->prepares));
+        $this->io->write('Prepares: ' . implode(',', $this->prepares));
 
         foreach ($this->prepares as $prepare) {
             $this->log('<stage>' . $prepare . ' ...</stage>');
@@ -315,7 +361,7 @@ class BaseCommand extends Command
      */
     protected function log($message, $type = 'info', $context = [], $newLine = false)
     {
-        $this->output->write("\n<$type>$message</$type>");
+        $this->io->write("\n<$type>$message</$type>");
 
         if (!method_exists($this, 'log' . ucfirst($type))) {
             $type = 'info';
@@ -327,6 +373,6 @@ class BaseCommand extends Command
             return;
         }
 
-        $this->output->writeln('');
+        $this->io->newLine();
     }
 }

@@ -10,6 +10,7 @@
 
 namespace App\Service\Crawler;
 
+use App\Service\AbstractCrawler;
 use GuzzleHttp\Exception\GuzzleException;
 use stdClass;
 
@@ -17,20 +18,17 @@ use stdClass;
  * Class BdsCrawler
  * @package App\Service\Crawler
  */
-class BatdongsanCrawler extends BaseCrawler
+final class BatdongsanCrawler extends AbstractCrawler
 {
+    protected $indexUrl = 'https://batdongsan.com.vn/nha-dat-ban';
+
     /**
-     * Return number of pages
-     *
-     * @param string $url
-     * @return integer
+     * @return boolean|integer
      * @throws GuzzleException
      */
-    public function getPages($url)
+    public function getIndexPages()
     {
-        $crawler = $this->getCrawler('GET', $url);
-
-        if (!$crawler) {
+        if (!$crawler = $this->getCrawler('GET', $this->getIndexUrl(1))) {
             return false;
         }
 
@@ -42,17 +40,24 @@ class BatdongsanCrawler extends BaseCrawler
     }
 
     /**
+     * @param null $page
+     * @return string
+     */
+    protected function getIndexUrl($page = null)
+    {
+        return $this->indexUrl . '/p' . $page;
+    }
+
+    /**
      * Extract all items on page
      *
      * @param string $url
      * @return array
      * @throws GuzzleException
      */
-    public function extractItems($url)
+    public function getIndexDetailLinks($url)
     {
-        $crawler = $this->getCrawler('GET', $url);
-
-        if (!$crawler) {
+        if (!$crawler = $this->getCrawler('GET', $url)) {
             return false;
         }
 
@@ -65,7 +70,7 @@ class BatdongsanCrawler extends BaseCrawler
         }
 
         foreach ($crawler->filter('.search-productItem .p-title h3 a') as $node) {
-            $result[] = $node->getAttribute('href');
+            $result[] = 'http://batdongsan.com.vn' . $node->getAttribute('href');
         }
 
         return $result;
@@ -78,11 +83,9 @@ class BatdongsanCrawler extends BaseCrawler
      * @return boolean|stdClass
      * @throws GuzzleException
      */
-    public function extractItem($url)
+    public function getDetail($url)
     {
-        $crawler = $this->getCrawler('GET', $url);
-
-        if (!$crawler) {
+        if (!$crawler = $this->getCrawler('GET', $url)) {
             return false;
         }
 

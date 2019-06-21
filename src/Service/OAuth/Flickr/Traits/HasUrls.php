@@ -18,16 +18,6 @@ namespace App\Service\OAuth\Flickr\Traits;
 trait HasUrls
 {
     /**
-     * Call RESTful
-     *
-     * @param array $parameters
-     * @param array $options
-     *
-     * @return mixed
-     */
-    abstract public function get($parameters, $options = []);
-
-    /**
      * flickrUrlsGetGroup
      *
      * @param string $groupId
@@ -37,6 +27,16 @@ trait HasUrls
     {
         return $this->get(['method' => 'flickr.urls.getGroup', 'group_id' => $groupId]);
     }
+
+    /**
+     * Call RESTful
+     *
+     * @param array $parameters
+     * @param array $options
+     *
+     * @return mixed
+     */
+    abstract public function get($parameters, $options = []);
 
     /**
      * flickrUrlsGetUserPhotos

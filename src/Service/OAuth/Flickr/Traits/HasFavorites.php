@@ -18,34 +18,6 @@ namespace App\Service\OAuth\Flickr\Traits;
 trait HasFavorites
 {
     /**
-     * Call RESTful
-     *
-     * @param array $parameters
-     * @param array $options
-     *
-     * @return mixed
-     */
-    abstract public function get($parameters, $options = []);
-
-    /**
-     * Get favorites photos
-     *
-     * @param string $userId
-     * @param array $params
-     * @return mixed|array
-     * @see https://www.flickr.com/services/api/flickr.favorites.getList.html
-     */
-    public function flickrFavoritesGetList($userId, $params = [])
-    {
-        return $this->get(
-            array_merge(
-                ['method' => 'flickr.favorites.getList', 'user_id' => $userId, 'per_page ' => 500],
-                $params
-            )
-        );
-    }
-
-    /**
      * Get all photos in favorites
      *
      * @param string $userId
@@ -76,4 +48,32 @@ trait HasFavorites
 
         return $photos;
     }
+
+    /**
+     * Get favorites photos
+     *
+     * @param string $userId
+     * @param array $params
+     * @return mixed|array
+     * @see https://www.flickr.com/services/api/flickr.favorites.getList.html
+     */
+    public function flickrFavoritesGetList($userId, $params = [])
+    {
+        return $this->get(
+            array_merge(
+                ['method' => 'flickr.favorites.getList', 'user_id' => $userId, 'per_page ' => 500],
+                $params
+            )
+        );
+    }
+
+    /**
+     * Call RESTful
+     *
+     * @param array $parameters
+     * @param array $options
+     *
+     * @return mixed
+     */
+    abstract public function get($parameters, $options = []);
 }

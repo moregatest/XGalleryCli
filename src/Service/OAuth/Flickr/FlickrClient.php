@@ -55,13 +55,6 @@ class FlickrClient extends OAuthClient
     const UPLOAD_METHOD = 'POST';
 
     /**
-     * Flickr response format
-     *
-     * @var string
-     */
-    private $responseFormat = 'json';
-
-    /**
      * FlickrClient constructor.
      */
     public function __construct()
@@ -74,16 +67,6 @@ class FlickrClient extends OAuthClient
         );
 
         parent::__construct();
-    }
-
-    /**
-     * Default parameters for all requests
-     *
-     * @return array
-     */
-    private function getDefaultFlickrParameters()
-    {
-        return ['format' => $this->responseFormat, 'nojsoncallback' => 1];
     }
 
     /**
@@ -105,19 +88,45 @@ class FlickrClient extends OAuthClient
             return false;
         }
 
-        if ($this->responseFormat === 'json') {
-            $response = json_decode($response, false);
-
-            if (isset($response->stat) && $response->stat !== 'fail') {
-                return $response;
-            }
-
-            $this->logNotice($response->message, [$parameters, get_object_vars($response)]);
-
-            return false;
+        if (isset($response->stat) && $response->stat !== 'fail') {
+            return $response;
         }
 
+        $this->logNotice($response->message, [$parameters, get_object_vars($response)]);
+
+        return false;
+
+
         return $response;
+    }
+
+    /**
+     * Default parameters for all requests
+     *
+     * @return array
+     */
+    private function getDefaultFlickrParameters()
+    {
+        return ['format' => 'json', 'nojsoncallback' => 1];
+    }
+
+    /**
+     * Get all photos in Album via URL
+     *
+     * @param string $albumUrl
+     * @return array
+     */
+    public function getAlbumPhotos($albumUrl)
+    {
+        $parts   = explode('/', $albumUrl);
+        $nsid    = $this->getNsid($albumUrl);
+        $albumId = end($parts);
+
+        return [
+            'nsid' => $nsid,
+            'album' => $albumId,
+            'photos' => $this->flickrPhotoSetsGetAllPhotos($albumId, $nsid),
+        ];
     }
 
     /**
@@ -139,25 +148,6 @@ class FlickrClient extends OAuthClient
         }
 
         return $id;
-    }
-
-    /**
-     * Get all photos in Album via URL
-     *
-     * @param string $albumUrl
-     * @return array
-     */
-    public function getAlbumPhotos($albumUrl)
-    {
-        $parts   = explode('/', $albumUrl);
-        $nsid    = $this->getNsid($albumUrl);
-        $albumId = end($parts);
-
-        return [
-            'nsid' => $nsid,
-            'album' => $albumId,
-            'photos' => $this->flickrPhotoSetsGetAllPhotos($albumId, $nsid),
-        ];
     }
 
     /**

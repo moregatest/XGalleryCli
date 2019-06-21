@@ -17,43 +17,6 @@ namespace App\Service\OAuth\Flickr\Traits;
 trait HasPhotoSets
 {
     /**
-     * Call RESTful
-     *
-     * @param array $parameters
-     * @param array $options
-     *
-     * @return mixed
-     */
-    abstract public function get($parameters, $options = []);
-
-    /**
-     * Get photos in an album
-     *
-     * @param       $photoSetId
-     * @param       $userId
-     * @param array $parameters
-     * @return mixed
-     */
-    public function flickrPhotoSetsGetPhotos($photoSetId, $userId, $parameters = [])
-    {
-        if (!$photoSetId || !$userId) {
-            return false;
-        }
-
-        return $this->get(
-            array_merge(
-                [
-                    'method' => 'flickr.photosets.getPhotos',
-                    'photoset_id' => $photoSetId,
-                    'user_id' => $userId,
-                    'per_page' => 500,
-                ],
-                $parameters
-            )
-        );
-    }
-
-    /**
      * Get all photos in an album
      *
      * @param string $photoSetId
@@ -85,4 +48,41 @@ trait HasPhotoSets
 
         return $photos;
     }
+
+    /**
+     * Get photos in an album
+     *
+     * @param       $photoSetId
+     * @param       $userId
+     * @param array $parameters
+     * @return mixed
+     */
+    public function flickrPhotoSetsGetPhotos($photoSetId, $userId, $parameters = [])
+    {
+        if (!$photoSetId || !$userId) {
+            return false;
+        }
+
+        return $this->get(
+            array_merge(
+                [
+                    'method' => 'flickr.photosets.getPhotos',
+                    'photoset_id' => $photoSetId,
+                    'user_id' => $userId,
+                    'per_page' => 500,
+                ],
+                $parameters
+            )
+        );
+    }
+
+    /**
+     * Call RESTful
+     *
+     * @param array $parameters
+     * @param array $options
+     *
+     * @return mixed
+     */
+    abstract public function get($parameters, $options = []);
 }

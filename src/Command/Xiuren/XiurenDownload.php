@@ -8,25 +8,27 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace App\Command\XiurenOrg;
+namespace App\Command\Xiuren;
 
-
+use App\Service\Crawler\XiurenCrawler;
 use App\Traits\HasStorage;
 use SplFileInfo;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
-use XGallery\Command\XiurenOrgCommand;
+use XGallery\CrawlerCommand;
 
 /**
  * Class XiurenOrgDownload
  * @package App\Command\XiurenOrg
  */
-class XiurenOrgDownload extends XiurenOrgCommand
+final class XiurenDownload extends CrawlerCommand
 {
-
     use HasStorage;
 
+    /**
+     * @var array
+     */
     private $images;
 
     /**
@@ -51,9 +53,9 @@ class XiurenOrgDownload extends XiurenOrgCommand
         parent::configure();
     }
 
-    protected function prepareGetLinks()
+    protected function prepareGetImageLinks()
     {
-        $this->images = $this->client->getImages($this->getOption('url'));
+        $this->images = $this->getClient()->getDetail($this->getOption('url'));
 
         if (empty($this->images)) {
             return self::PREPARE_FAILED;
@@ -64,20 +66,33 @@ class XiurenOrgDownload extends XiurenOrgCommand
 
     protected function processDownloads()
     {
+        /**
+         * @var XiurenCrawler $client
+         */
+        $client     = $this->getClient();
+        $fileSystem = new Filesystem;
+
         foreach ($this->images as $image) {
             $splInfo  = new SplFileInfo($image);
             $fileName = $splInfo->getBasename();
 
-            $dirName   = str_replace(
+            $dirName = str_replace(
                 ['https://www.xiuren.org/', 'http://www.xiuren.org/'],
                 '',
                 $this->getOption('url')
             );
+
             $dirSaveTo = $this->getStorage('xiuren.org') . DIRECTORY_SEPARATOR . $dirName;
 
-            (new Filesystem())->mkdir($dirSaveTo);
+            $fileSystem->mkdir($dirSaveTo);
 
-            $this->client->download($image, $dirSaveTo . '/' . $fileName);
+            $saveTo = $dirSaveTo . '/' . $fileName;
+
+            /**
+             * @TODO Use wget
+             */
+            $this->log('Download ' . $image . ' to ' . $saveTo);
+            $client->download($image, $saveTo);
         }
 
         return true;
