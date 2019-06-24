@@ -1,0 +1,76 @@
+{% extends "base/base.html.twig" %}
+{% block title %}XGallery - Onejav - Result of keyword {{ keyword }}{% endblock %}
+{% block body %}
+    <div class="row">
+        {% for result in results %}
+            {% set item = result[0] %}
+            <div class="col-2 mb-5">
+                <div class="card" style="">
+                    <div class="card-header">
+                        <h5>
+                            {% if item['detail'] is null %}
+                                {{ item['title'] }}
+                            {% else %}
+                                {{ item['detail'].dvd_id }}
+                            {% endif %}
+                            <small><span
+                                        class="badge badge-pill badge-dark float-right">{{ item['size'] }}</span></small>
+                        </h5>
+                    </div>
+                    <!-- {{ item['cover'] }} -->
+                    <img src="https://via.placeholder.com/800x560" class="card-img-top" alt="{{ item['title'] }}">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            {% if item['detail'] is null %}
+                            {% else %}
+                                {{ item['detail'].name }}
+                            {% endif %}
+                        </h6>
+                        <p class="card-text">
+                            {% if item['detail'] is null %}
+
+                            {% else %}
+                                {% for category in item['detail'].categories %}
+                                    <span class="badge badge-info">{{ category }}</span>
+                                {% endfor %}
+                            {% endif %}
+                            <footer class="blockquote-footer">
+                                {% if item['detail'] is null %}
+                                    {{ item['title'] }}
+                                {% else %}
+                                    <i class="fas fa-calendar-plus"></i> {{ item['detail'].release_date }} - <a
+                                        href="{{ item['r18'] }}" target="_blank">{{ item['detail'].content_id }}</a>
+                                {% endif %}
+                            </footer>
+                        </p>
+                    </div>
+                    {% if item['detail'] is null %}
+                    {% else %}
+                        <ul class="list-group list-group-flush">
+                            {% for actress in item['detail'].actress %}
+                                <li class="list-group-item">{{ actress }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="card-footer">
+                        <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+                            <div class="btn-group" role="group">
+                                <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle"
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-download"></i> Download</a>
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                    {% for item in result %}
+                                        <a href="https://onejav.com{{ item['download'] }}"
+                                           class="dropdown-item">Size {{ item['size'] }}</a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
