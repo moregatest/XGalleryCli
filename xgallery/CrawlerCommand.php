@@ -16,9 +16,8 @@ use App\Service\CrawlerInterface;
  * Class CrawlerCommand
  * @package XGallery
  */
-class CrawlerCommand extends AbstractCommand
+class CrawlerCommand extends BaseCommand
 {
-
     /**
      * @param null $name
      * @return boolean|CrawlerInterface

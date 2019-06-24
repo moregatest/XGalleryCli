@@ -1,0 +1,24 @@
+{% extends "base/base.html.twig" %}
+{% block title %}
+    XGallery - Onejav
+{% endblock %}
+{% block body %}
+    {% set userguide_content = 'Search OneJAV to get torrent download file and show up with R18 content data. Suggest to use keyword with <strong>movie ID</strong> or <strong>DVD ID</strong>' %}
+    {{ include('base/guide.html.twig') }}
+    <div class="row">
+        <div class="col-8">
+            {{ include('onejav/card.html.twig') }}
+        </div>
+        <div class="col-4">
+            <form class="" action="onejav/search" method="POST">
+                <div class="form-group">
+                    <input type="text" name="keyword" class="form-control" id="inputKeyword"
+                           aria-describedby="keywordHelp"
+                           placeholder="Enter your keyword">
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+

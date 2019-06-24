@@ -28,14 +28,21 @@ final class XiurenDownloads extends CrawlerCommand
         parent::configure();
     }
 
+    /**
+     * @return boolean
+     */
     protected function processDownloads()
     {
-        $this->io->newLine();
         $this->getClient()->getAllDetailLinks(
             function ($pages) {
+                $this->io->newLine();
                 $this->io->progressStart($pages);
             },
             function ($links) {
+                if (!$links || empty($links)) {
+                    return;
+                }
+
                 $processes = [];
 
                 foreach ($links as $index => $link) {
@@ -50,5 +57,7 @@ final class XiurenDownloads extends CrawlerCommand
                 $this->io->progressAdvance();
             }
         );
+
+        return true;
     }
 }

@@ -12,10 +12,10 @@ namespace App\Command\Xiuren;
 
 use App\Service\Crawler\XiurenCrawler;
 use App\Traits\HasStorage;
+use App\Utils\Filesystem;
 use SplFileInfo;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Filesystem\Filesystem;
 use XGallery\CrawlerCommand;
 
 /**
@@ -75,8 +75,7 @@ final class XiurenDownload extends CrawlerCommand
         /**
          * @var XiurenCrawler $client
          */
-        $client     = $this->getClient();
-        $fileSystem = new Filesystem;
+        $client = $this->getClient();
 
         foreach ($this->images as $image) {
             $splInfo  = new SplFileInfo($image);
@@ -90,9 +89,13 @@ final class XiurenDownload extends CrawlerCommand
 
             $dirSaveTo = $this->getStorage('xiuren.org') . DIRECTORY_SEPARATOR . $dirName;
 
-            $fileSystem->mkdir($dirSaveTo);
+            Filesystem::mkdir($dirSaveTo);
 
             $saveTo = $dirSaveTo . '/' . $fileName;
+
+            if (Filesystem::exists($saveTo)) {
+                continue;
+            }
 
             /**
              * @TODO Use wget

@@ -12,10 +12,10 @@ namespace App\Command\Nct;
 
 use App\Service\Crawler\NctCrawler;
 use App\Traits\HasStorage;
+use App\Utils\Filesystem;
 use SplFileInfo;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Filesystem\Filesystem;
 use XGallery\CrawlerCommand;
 
 /**
@@ -72,7 +72,7 @@ final class NctDownload extends CrawlerCommand
         $saveTo = $this->getStorage('nct') . '/' . $download['creator'];
 
         if (!file_exists($saveTo) || !is_dir($saveTo)) {
-            (new Filesystem())->mkdir($saveTo);
+            Filesystem::mkdir($saveTo);
         }
 
         $this->log('Download to ' . $saveTo . '/' . $parts[0]);

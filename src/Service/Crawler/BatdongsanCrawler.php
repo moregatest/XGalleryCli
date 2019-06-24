@@ -12,6 +12,7 @@ namespace App\Service\Crawler;
 
 use App\Service\AbstractCrawler;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use stdClass;
 
 /**
@@ -25,6 +26,7 @@ final class BatdongsanCrawler extends AbstractCrawler
     /**
      * @return boolean|integer
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getIndexPages()
     {

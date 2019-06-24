@@ -12,6 +12,7 @@ namespace App\Service\Crawler;
 
 use App\Service\AbstractCrawler;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use RuntimeException;
 use stdClass;
 
@@ -27,8 +28,9 @@ final class R18Crawler extends AbstractCrawler
     protected $indexUrl = 'https://www.r18.com/videos/vod/movies/list/pagesize=120/price=all/sort=new/type=all/page=';
 
     /**
-     * @return boolean|integer
+     * @return bool|int
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getIndexPages()
     {
@@ -58,6 +60,7 @@ final class R18Crawler extends AbstractCrawler
      * @param string $url
      * @return array|boolean
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getIndexDetailLinks($url)
     {
@@ -65,9 +68,10 @@ final class R18Crawler extends AbstractCrawler
     }
 
     /**
-     * @param string $url
-     * @return boolean|stdClass
+     * @param $url
+     * @return boolean|mixed|stdClass
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getDetail($url)
     {
@@ -97,6 +101,12 @@ final class R18Crawler extends AbstractCrawler
                 }
             );
 
+            $movieDetail->actress = $crawler->filter('.product-actress-list a span')->each(
+                function ($span) {
+                    return trim($span->text());
+                }
+            );
+
             $movieDetail = $this->assignFields($fields, $movieDetail);
 
             return $movieDetail;
@@ -105,5 +115,22 @@ final class R18Crawler extends AbstractCrawler
 
             return false;
         }
+    }
+
+    public function getSearchLinks($keyword)
+    {
+        $url = 'https://www.r18.com/common/search/searchword=' . urlencode($keyword) . '/';
+
+        if (!$crawler = $this->getCrawler('GET', $url)) {
+            return false;
+        }
+
+        return $crawler->filter('.main .cmn-list-product01 li.item-list a')->each(
+            function ($el) {
+                if ($href = $el->attr('href')) {
+                    return $href;
+                }
+            }
+        );
     }
 }

@@ -14,13 +14,12 @@ use App\Traits\HasLogger;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
 use stdClass;
-use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * Class BaseCrawler
  * @package App\Service\Crawler
  */
-abstract class AbstractCrawler extends HttpClient implements CrawlerInterface
+abstract class AbstractCrawler extends BaseCrawler implements CrawlerInterface
 {
     use HasLogger;
 
@@ -117,25 +116,6 @@ abstract class AbstractCrawler extends HttpClient implements CrawlerInterface
         }
 
         return $items;
-    }
-
-    /**
-     * @param $method
-     * @param $uri
-     * @param array $options
-     * @return boolean|Crawler
-     * @throws GuzzleException
-     * @throws InvalidArgumentException
-     */
-    protected function getCrawler($method, $uri, array $options = [])
-    {
-        $response = $this->request($method, $uri, $options);
-
-        if (!$response) {
-            return false;
-        }
-
-        return new Crawler($response);
     }
 
     /**

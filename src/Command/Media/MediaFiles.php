@@ -16,13 +16,13 @@ use FFMpeg\FFProbe;
 use SplFileInfo;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use XGallery\AbstractCommand;
+use XGallery\BaseCommand;
 
 /**
  * Class MediaFiles
  * @package App\Command\Media
  */
-final class MediaFiles extends AbstractCommand
+final class MediaFiles extends BaseCommand
 {
     /**
      * @var Finder
@@ -37,14 +37,6 @@ final class MediaFiles extends AbstractCommand
         $this->setDescription('Scan local media files');
 
         parent::configure();
-    }
-
-    /**
-     * @param string $name
-     */
-    protected function getClient($name = '')
-    {
-        return;
     }
 
     /**
@@ -79,27 +71,27 @@ final class MediaFiles extends AbstractCommand
     {
         $this->io->newLine();
         $this->io->progressStart($this->finder->count());
+        $replaceArray = explode(',', getenv('replace_string'));
 
         foreach ($this->finder as $index => $file) {
-            $ext = strtolower($file->getExtension());
-
-            if (!in_array($ext, ['mp4', 'mkv', 'avi'])) {
+            if (strpos($file->getPath(), '$RECYCLE.BIN') !== false) {
                 continue;
             }
 
-            $movieEntity = $this->entityManager->getRepository(JavMedia::class)->findOneBy(
-                ['filename' => $file->getFilename()]
-            );
+            $ext = strtolower($file->getExtension());
 
-            if (!$movieEntity) {
+            if (!in_array($ext, ['mp4', 'mkv', 'avi'])) {
+                $this->io->progressAdvance();
+                continue;
+            }
+
+            if (!$movieEntity = $this->entityManager->getRepository(JavMedia::class)->findOneBy(
+                ['filename' => $file->getFilename()]
+            )) {
                 $movieEntity = new JavMedia;
             }
 
-            $newFileName = str_replace(
-                    ['[HD]', '(HD)', '[FHD]', '(CEN)', '[Thz.la]'],
-                    '',
-                    $file->getFilenameWithoutExtension()
-                ) . '.' . $ext;
+            $newFileName = str_replace($replaceArray, '', $file->getFilenameWithoutExtension()) . '.' . $ext;
             $newFilePath = $file->getPath() . DIRECTORY_SEPARATOR . $newFileName;
 
             if (!file_exists($newFilePath)) {
@@ -115,6 +107,7 @@ final class MediaFiles extends AbstractCommand
                     ->first()
                     ->all();
             } catch (Exception $exception) {
+                $this->io->progressAdvance();
                 continue;
             }
 

@@ -12,8 +12,8 @@ namespace App\Command\Phodacbiet;
 
 use App\Service\Crawler\PhodacbietCrawler;
 use App\Traits\HasStorage;
+use App\Utils\Filesystem;
 use SplFileInfo;
-use Symfony\Component\Filesystem\Filesystem;
 use XGallery\CrawlerCommand;
 
 /**
@@ -59,7 +59,7 @@ final class PhodacbietDownloads extends CrawlerCommand
                     }
 
                     $saveDir = $this->getStorage('phodacbiet') . '/' . md5($link);
-                    (new Filesystem())->mkdir($saveDir);
+                    Filesystem::mkdir($saveDir);
 
                     foreach ($images as $image) {
                         $info     = new SplFileInfo($image);

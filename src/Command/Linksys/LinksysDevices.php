@@ -13,13 +13,13 @@ namespace App\Command\Linksys;
 use App\Service\Router\LinksysClient;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Exception\GuzzleException;
-use XGallery\AbstractCommand;
+use XGallery\BaseCommand;
 
 /**
  * Class LinksysDevices
  * @package App\Command\Linksys
  */
-final class LinksysDevices extends AbstractCommand
+final class LinksysDevices extends BaseCommand
 {
     /**
      * @var LinksysClient
@@ -39,34 +39,7 @@ final class LinksysDevices extends AbstractCommand
     {
         parent::__construct($entityManager);
 
-        $this->client = $this->getClient();
-    }
-
-    /**
-     * Configures the current command.
-     */
-    protected function configure()
-    {
-        $this->setDescription('Verify list of connected devices');
-
-        parent::configure();
-    }
-
-    /**
-     * @param string $name
-     * @return LinksysClient
-     */
-    protected function getClient($name = '')
-    {
-        static $instance;
-
-        if ($instance) {
-            return $instance;
-        }
-
-        $instance = new LinksysClient;
-
-        return $instance;
+        $this->client = new LinksysClient;
     }
 
     /**
@@ -100,6 +73,8 @@ final class LinksysDevices extends AbstractCommand
             'Workspace' => '30:9C:23:09:2E:26',
             'S8+' => '30:07:4D:58:6A:D0',
             'iPhone 8+' => '3C:2E:F9:09:16:5D',
+            'BlackBerry' => 'A4:E4:B8:7E:6C:83',
+            'HTC' => 'AC:37:43:E6:3A:7A',
         ];
 
         $illegalDevices = [];
@@ -125,5 +100,15 @@ final class LinksysDevices extends AbstractCommand
         }
 
         return true;
+    }
+
+    /**
+     * Configures the current command.
+     */
+    protected function configure()
+    {
+        $this->setDescription('Verify list of connected devices');
+
+        parent::configure();
     }
 }

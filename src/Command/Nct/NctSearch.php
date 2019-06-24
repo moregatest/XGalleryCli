@@ -11,7 +11,6 @@
 namespace App\Command\Nct;
 
 use App\Entity\Nct;
-use App\Service\Crawler\NctCrawler;
 use DateTime;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
@@ -55,18 +54,13 @@ final class NctSearch extends CrawlerCommand
      */
     protected function prepareSongs()
     {
-        /**
-         * @var NctCrawler $client ;
-         */
-        $client = $this->getClient();
-
         if ($this->getOption('top20')) {
-            $this->songs = $client->getTop20();
+            $this->songs = $this->getClient()->getTop20();
 
             return self::PREPARE_SUCCEED;
         }
 
-        $this->songs = $client->search(
+        $this->songs = $this->getClient()->search(
             ['title' => $this->getOption('title'), 'singer' => $this->getOption('singer')]
         );
 

@@ -1,0 +1,29 @@
+<div class="row">
+    {% for item in items %}
+        <div class="col-2 mb-5">
+            <div class="card" style="">
+                <div class="card-header">
+                    <h5>{{ item['title'] }}</h5>
+                </div>
+                <!-- {{ item['cover'] }} -->
+                <img src="https://via.placeholder.com/800x560" class="card-img-top" alt="{{ item['title'] }}">
+                <div class="card-body">
+                    <h6 class="card-title">
+
+                    </h6>
+                    <p class="card-text">
+
+                    </p>
+                </div>
+                {% if item['detail'] is null %}
+                {% else %}
+                    <ul class="list-group list-group-flush">
+                        {% for actress in item['detail'].actress %}
+                            <li class="list-group-item">{{ actress }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>

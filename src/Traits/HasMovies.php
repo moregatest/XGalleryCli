@@ -42,8 +42,9 @@ trait HasMovies
     /**
      * @param $genres
      * @param $movieEntity
+     * @param string $type
      */
-    protected function insertXRef($genres, $movieEntity)
+    protected function insertXRef($genres, $movieEntity, $type = 'genre')
     {
         foreach ($genres as $genre) {
             $genreEntity = $this->entityManager->getRepository(JavGenre::class)->findOneBy(['name' => $genre]);
@@ -56,7 +57,7 @@ trait HasMovies
                 [
                     'movie_id' => $movieEntity->getId(),
                     'xref_id' => $genreEntity->getId(),
-                    'xref_type' => 'genre',
+                    'xref_type' => $type,
                 ]
             );
 
@@ -66,7 +67,7 @@ trait HasMovies
 
             $xRefEntity = new JavMoviesXref;
             $xRefEntity->setXrefId($genreEntity->getId());
-            $xRefEntity->setXrefType('genre');
+            $xRefEntity->setXrefType($type);
             $xRefEntity->setMovieId($movieEntity->getId());
 
             $this->entityManager->persist($xRefEntity);

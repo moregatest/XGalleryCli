@@ -18,7 +18,7 @@ use Doctrine\ORM\EntityManagerInterface;
  * Class FlickrCommand
  * @package XGallery\Command
  */
-class FlickrCommand extends AbstractCommand
+class FlickrCommand extends BaseCommand
 {
 
     /**
@@ -58,20 +58,7 @@ class FlickrCommand extends AbstractCommand
     {
         parent::__construct($entityManager);
 
-        $this->client = $this->getClient();
-    }
-
-    protected function getClient($name = '')
-    {
-        static $instance;
-
-        if ($instance) {
-            return $instance;
-        }
-
-        $instance = new FlickrClient;
-
-        return $instance;
+        $this->client = new FlickrClient;
     }
 
     /**

@@ -8,9 +8,8 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-declare(strict_types=1);
-
 namespace XGallery;
+
 
 use App\DefinesCore;
 use App\Traits\HasEntityManager;
@@ -24,11 +23,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
 
-/**
- * Class BaseCommand
- * @package XGallery\Command
- */
-abstract class AbstractCommand extends Command
+class BaseCommand extends Command
 {
     use HasLogger;
     use HasEntityManager;
@@ -91,8 +86,6 @@ abstract class AbstractCommand extends Command
     {
         $this->entityManager->getConnection()->close();
     }
-
-    abstract protected function getClient($name = '');
 
     /**
      * Configures the current command.
