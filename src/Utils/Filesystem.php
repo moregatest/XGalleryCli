@@ -10,7 +10,10 @@
 
 namespace App\Utils;
 
-
+/**
+ * Class Filesystem
+ * @package App\Utils
+ */
 class Filesystem
 {
     public static function mkdir($dir)

@@ -1,0 +1,45 @@
+{% extends "base/base.html.twig" %}
+{% block title %}
+    XGallery - Flickr
+{% endblock %}
+{% block body %}
+    {% set userguide_content = 'Flickr utilities' %}
+    {{ include('base/guide.html.twig') }}
+    <div class="row">
+        <div class="col-4">
+            <form class="" action="/flickr/contact" method="POST">
+                <div class="form-group">
+                    <input type="text" name="contact" class="form-control" id="inputContact"
+                           aria-describedby="keywordHelp"
+                           placeholder="Enter contact">
+                    <input type="hidden" name="token" value="{{ csrf_token('flickr-contact') }}"/>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add</button>
+            </form>
+        </div>
+        <div class="col-4">
+            <form class="" action="/flickr/photos" method="POST">
+                <div class="form-group">
+                    <input type="text" name="contact" class="form-control" id="inputContact"
+                           aria-describedby="keywordHelp"
+                           placeholder="Enter contact to get photos">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="fetchSizes" name="fetchSizes">
+                        <label class="form-check-label" for="defaultCheck1">Fetch sizes</label>
+                    </div>
+                    <input type="hidden" name="token" value="{{ csrf_token('flickr-photos') }}"/>
+                </div>
+
+                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Submit</button>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            {% if output is defined %}
+                <pre><code>{{ output }}</code></pre>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+

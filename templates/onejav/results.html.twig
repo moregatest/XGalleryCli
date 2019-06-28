@@ -1,0 +1,19 @@
+{% extends "base/base.html.twig" %}
+{% block title %}XGallery - Onejav - Result of keyword {{ keyword }}{% endblock %}
+{% block body %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="card-columns">
+                {% for key, result in results %}
+                    {% set item = result[0] %}
+                    {% set downloads = {} %}
+                    {% for index, download in result %}
+                        {% set downloads = downloads|merge(result) %}
+                    {% endfor %}
+                    {{ include('/onejav/card.html.twig') }}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

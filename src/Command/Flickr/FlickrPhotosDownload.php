@@ -190,6 +190,7 @@ final class FlickrPhotosDownload extends FlickrCommand
     {
         /**
          * @TODO Get photos with no contact record
+         * @TODO Support get size if not get sized ( with NSID param )
          */
         if (!$this->nsid || ($this->nsid && !$this->getOption('all'))) {
             $this->photos = $this->entityManager->getRepository(FlickrPhoto::class)->getSizedPhotoIds(

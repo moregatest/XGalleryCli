@@ -10,9 +10,13 @@
 
 namespace App\Controller;
 
+use App\Entity\JavMedia;
 use App\Service\Crawler\OnejavCrawler;
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -26,6 +30,9 @@ class OnejavController extends AbstractController
      */
     private $crawler;
 
+    /**
+     * OnejavController constructor.
+     */
     public function __construct()
     {
         $this->crawler = new OnejavCrawler;
@@ -36,29 +43,75 @@ class OnejavController extends AbstractController
      */
     public function index()
     {
-        $featuredLinks = $this->crawler->getFeatured();
-
-        return $this->render('onejav/index.html.twig', ['items' => $featuredLinks]);
+        return $this->render('onejav/index.html.twig', ['featured' => $this->crawler->getFeatured()]);
     }
 
     /**
-     * @Route("/onejav/search", name="search", methods="POST")
+     * @Route("/onejav/search", methods="POST")
+     * @param Request $request
+     * @return Response
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function search(Request $request)
     {
-        $results = $this->crawler->search($request->get('keyword'));
+        if (!$this->isCsrfTokenValid('onejav-search', $request->get('token'))) {
+            return;
+        }
+
+        return $this->searchByKeyword($request->get('keyword'));
+    }
+
+    /**
+     * @param $keyword
+     * @return Response
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    private function searchByKeyword($keyword)
+    {
+        $results = $this->crawler->search($keyword);
 
         if (empty($results)) {
-            return $this->render('onejav/empty.html.twig', ['keyword' => $request->get('keyword')]);
+            return $this->render('onejav/empty.html.twig', ['keyword' => $keyword]);
+        }
+
+        $medias = [];
+
+        foreach ($results as $index => $result) {
+            $result  = reset($result);
+            $keyword = $result->itemNumber;
+
+            $medias [$index] = $this->getDoctrine()->getRepository(JavMedia::class)
+                ->createQueryBuilder('media')
+                ->where('LOWER(media.filename) = :keyword1')
+                ->orWhere('LOWER(media.filename) = :keyword2')
+                ->setParameter('keyword1', '%' . $keyword . '%')
+                ->setParameter('keyword2', '%' . str_replace('-', '', $keyword) . '%')
+                ->getQuery()
+                ->getFirstResult();
         }
 
         return $this->render(
-            'onejav/search.html.twig',
+            'onejav/results.html.twig',
             [
-                'keyword' => $request->get('keyword'),
+                'keyword' => $keyword,
                 'results' => $results,
+                'medias' => $medias,
                 'activeMenu' => 'onejav',
             ]
         );
+    }
+
+    /**
+     * @Route("/onejav/search/{slug}", methods="GET")
+     * @param $slug
+     * @return Response
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function searchShow($slug)
+    {
+        return $this->searchByKeyword($slug);
     }
 }

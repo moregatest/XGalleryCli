@@ -24,7 +24,7 @@ class FlickrCommand extends BaseCommand
     /**
      * Default limit number of requests to get photo sizes
      */
-    const REST_LIMIT_PHOTOS_SIZE = 150;
+    const REST_LIMIT_PHOTOS_SIZE = 250;
     /**
      * Default limit downloads / execute
      */

@@ -3,5 +3,14 @@
 {% block description %}Web crawler based on XGalleryCli.{% endblock %}
 
 {% block body %}
-
+    <div class="row">
+        <div class="col-4">
+            <div class="card">
+                <h5 class="card-header">Onejav</h5>
+                <div class="card-body">
+                    {{ include('/onejav/form/search.html.twig') }}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

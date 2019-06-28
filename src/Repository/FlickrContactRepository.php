@@ -61,4 +61,13 @@ class FlickrContactRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function getTotalContacts(): ?int
+    {
+        return $this->createQueryBuilder('c')
+            ->select('COUNT(`c`.`nsid`) AS `total`')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
