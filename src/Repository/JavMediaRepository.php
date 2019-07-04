@@ -12,6 +12,7 @@ namespace App\Repository;
 
 use App\Entity\JavMedia;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
@@ -59,4 +60,28 @@ class JavMediaRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function getItems($page = 1, $limit = 5)
+    {
+        // Create our query
+        $query = $this->createQueryBuilder('m')
+            ->orderBy('m.id', 'ASC')
+            ->addOrderBy('m.directory', 'ASC')
+            ->getQuery();
+
+        // No need to manually get get the result ($query->getResult())
+
+        return $this->paginate($query, $page, $limit);
+    }
+
+    private function paginate($dql, $page = 1, $limit = 5)
+    {
+        $paginator = new Paginator($dql);
+
+        $paginator->getQuery()
+            ->setFirstResult($limit * ($page - 1)) // Offset
+            ->setMaxResults($limit); // Limit
+
+        return $paginator;
+    }
 }

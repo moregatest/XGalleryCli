@@ -7,9 +7,7 @@
                 {% for key, result in results %}
                     {% set item = result[0] %}
                     {% set downloads = {} %}
-                    {% for index, download in result %}
-                        {% set downloads = downloads|merge(result) %}
-                    {% endfor %}
+                    {% set downloads = downloads|merge(result) %}
                     {{ include('/onejav/card.html.twig') }}
                 {% endfor %}
             </div>

@@ -12,9 +12,11 @@ namespace App\Controller;
 
 use App\Entity\JavMedia;
 use App\Service\Crawler\OnejavCrawler;
+use DateTime;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -32,10 +34,11 @@ class OnejavController extends AbstractController
 
     /**
      * OnejavController constructor.
+     * @param OnejavCrawler $crawler
      */
-    public function __construct()
+    public function __construct(OnejavCrawler $crawler)
     {
-        $this->crawler = new OnejavCrawler;
+        $this->crawler = $crawler;
     }
 
     /**
@@ -43,37 +46,113 @@ class OnejavController extends AbstractController
      */
     public function index()
     {
-        return $this->render('onejav/index.html.twig', ['featured' => $this->crawler->getFeatured()]);
+        $featured = $this->crawler->getFeatured();
+
+        // Today
+        $date  = new DateTime;
+        $today = $this->crawler->getAllDetailItems('https://onejav.com/' . $date->format('Y/m/d'));
+        $tags  = [];
+
+        foreach ($featured as $index => $item) {
+            $date                       = DateTime::createFromFormat('F j, Y', $item->date);
+            $featured[$index]->dateSlug = $date->format('Y_m_d');
+            $tags                       = array_merge($tags, $item->tags);
+        }
+
+        foreach ($today as $index => $item) {
+            $date                    = DateTime::createFromFormat('F j, Y', $item->date);
+            $today[$index]->dateSlug = $date->format('Y_m_d');
+            $tags                    = array_merge($tags, $item->tags);
+        }
+
+        $tags = array_unique($tags);
+
+        return $this->render('onejav/index.html.twig', ['featured' => $featured, 'today' => $today, 'tags' => $tags]);
+    }
+
+    /**
+     * @Route("/onejav/daily/{slug}", methods="GET")
+     * @param $slug
+     * @return Response
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function daily($slug)
+    {
+        $slug = str_replace('_', '/', $slug);
+
+        return $this->showResults($this->crawler->getAllDetailItems('https://onejav.com/' . $slug), $slug);
+    }
+
+    /**
+     * @Route("/onejav/tag/{slug}", methods="GET")
+     * @param $slug
+     * @return Response
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function tag($slug)
+    {
+        return $this->showResults($this->crawler->getAllDetailItems('https://onejav.com/tag/' . $slug), $slug);
+    }
+
+    /**
+     * @Route("/onejav/actress/{slug}", methods="GET")
+     * @param $slug
+     * @return Response
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function actress($slug)
+    {
+        return $this->showResults($this->crawler->getAllDetailItems('https://onejav.com/actress/' . $slug), $slug);
     }
 
     /**
      * @Route("/onejav/search", methods="POST")
      * @param Request $request
-     * @return Response
-     * @throws GuzzleException
-     * @throws InvalidArgumentException
+     * @return RedirectResponse
      */
     public function search(Request $request)
     {
         if (!$this->isCsrfTokenValid('onejav-search', $request->get('token'))) {
-            return;
+            return $this->redirect('/onejav');
         }
 
-        return $this->searchByKeyword($request->get('keyword'));
+        return $this->redirect('/onejav/search/' . $request->get('keyword'));
     }
 
     /**
-     * @param $keyword
+     * @Route("/onejav/search/{slug}", methods="GET")
+     * @param $slug
      * @return Response
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
-    private function searchByKeyword($keyword)
+    public function result($slug)
     {
-        $results = $this->crawler->search($keyword);
+        $items = $this->crawler->getAllDetailItems('https://onejav.com/search/' . urlencode($slug));
 
-        if (empty($results)) {
-            return $this->render('onejav/empty.html.twig', ['keyword' => $keyword]);
+        if (empty($items)) {
+            return $this->render('onejav/empty.html.twig', ['keyword' => $slug]);
+        }
+
+        return $this->showResults($items, $slug);
+    }
+
+    /**
+     * @param $items
+     * @param $keyword
+     * @return Response
+     */
+    private function showResults($items, $keyword)
+    {
+        $results = [];
+
+        foreach ($items as $item) {
+            $date                         = DateTime::createFromFormat('F j, Y', $item->date);
+            $item->dateSlug               = $date->format('Y_m_d');
+            $results[$item->itemNumber][] = $item;
         }
 
         $medias = [];
@@ -98,20 +177,7 @@ class OnejavController extends AbstractController
                 'keyword' => $keyword,
                 'results' => $results,
                 'medias' => $medias,
-                'activeMenu' => 'onejav',
             ]
         );
-    }
-
-    /**
-     * @Route("/onejav/search/{slug}", methods="GET")
-     * @param $slug
-     * @return Response
-     * @throws GuzzleException
-     * @throws InvalidArgumentException
-     */
-    public function searchShow($slug)
-    {
-        return $this->searchByKeyword($slug);
     }
 }

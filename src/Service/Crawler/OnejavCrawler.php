@@ -14,6 +14,7 @@ use App\Service\BaseCrawler;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
 use stdClass;
+use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * Class Onejav
@@ -22,77 +23,55 @@ use stdClass;
 class OnejavCrawler extends BaseCrawler
 {
     /**
-     * Search movie by keyword
+     * Return pages number
      *
-     * @param string $keyword
-     * @return array|boolean
+     * @param $indexUrl
+     * @return boolean|integer
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
-    public function search($keyword)
+    public function getIndexPages($indexUrl)
     {
-        if (!$crawler = $this->getCrawler('GET', 'https://onejav.com/search/' . urlencode($keyword))) {
+        if (!$crawler = $this->getCrawler('GET', $indexUrl)) {
             return false;
         }
 
-        $covers = $crawler->filter('.container .card.mb-3 .column img')->each(
-            function ($img) {
-                return $img->attr('src');
-            }
-        );
-
-        $results = $crawler->filter('.container .card.mb-3 .column.is-5')->each(
-            function ($el) {
-                $movie = new stdClass;
-
-                $movie->title = trim($el->filter('h5 a')->text());
-                $movie->size  = (float)(str_replace('GB', '', $el->filter('h5 span')->text()));
-                // Date
-                $movie->date        = trim($el->filter('.subtitle.is-6')->text());
-                $movie->tags        = $el->filter('.tags .tag')->each(
-                    function ($tag) {
-                        return trim($tag->text());
-                    }
-                );
-                $description        = $el->filter('.level.has-text-grey-dark');
-                $movie->description = $description->count() ? trim($description->text()) : null;
-                $movie->actresses   = $el->filter('.panel .panel-block')->each(
-                    function ($actress) {
-                        return trim($actress->text());
-                    }
-                );
-                $movie->torrent     = trim(($el->filter('.control.is-expanded a')->attr('href')));
-                $movie->itemNumber  = implode('-', sscanf(trim($movie->title), "%[A-Z]%d"));
-
-                $crawler     = new R18Crawler;
-                $searchLinks = $crawler->getSearchLinks($movie->itemNumber);
-
-                if (!empty($searchLinks)) {
-                    foreach ($searchLinks as $searchLink) {
-                        if (!$searchLink) {
-                            continue;
-                        }
-
-                        $detail = $crawler->getDetail($searchLink);
-                        break;
-                    }
-                }
-
-                $movie->detail = $detail ?? null;
-                $movie->r18    = reset($searchLinks);
-
-                return $movie;
-            }
-        );
-
-        $list = [];
-
-        foreach ($results as $index => $result) {
-            $result->cover          = $covers[$index];
-            $list[$result->title][] = $result;
+        if ($crawler->filter('ul.pagination-list a')->count() === 0) {
+            return 1;
         }
 
-        return $list;
+        return (int)$crawler->filter('ul.pagination-list a')->last()->text();
+    }
+
+    /**
+     * @param $indexUrl
+     * @return array
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function getAllDetailItems($indexUrl)
+    {
+        $pages = $this->getIndexPages($indexUrl);
+
+        $items = [];
+
+        for ($page = 1; $page <= $pages; $page++) {
+            if (!$crawler = $this->getCrawler('GET', $indexUrl . '?page=' . $page)) {
+                unset($crawler);
+                continue;
+            }
+            $items = array_merge(
+                $items,
+                $crawler->filter('.container .card.mb-3')->each(
+                    function ($el) {
+                        return $this->getDetail($el);
+                    }
+                )
+            );
+            unset($crawler);
+        }
+
+        return $items;
     }
 
     /**
@@ -117,21 +96,27 @@ class OnejavCrawler extends BaseCrawler
         $list = [];
 
         foreach ($links as $index => $link) {
-            $list [] = $this->getDetail('https://onejav.com' . $link);
+            if (!$crawler = $this->getCrawler('GET', $indexUrl . $link)) {
+                unset($crawler);
+                continue;
+            }
+
+            $list [] = $this->getDetail($crawler);
+            unset($crawler);
         }
 
         return $list;
     }
 
     /**
-     * @param string $url
+     * @param Crawler $crawler
      * @return boolean|stdClass
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
-    public function getDetail($url)
+    private function getDetail($crawler)
     {
-        if (!$crawler = $this->getCrawler('GET', $url)) {
+        if (!$crawler) {
             return false;
         }
 
@@ -147,7 +132,8 @@ class OnejavCrawler extends BaseCrawler
                 return trim($tag->text());
             }
         );
-        $movie->description = trim($crawler->filter('.level.has-text-grey-dark')->text());
+        $description        = $crawler->filter('.level.has-text-grey-dark');
+        $movie->description = $description->count() ? trim($description->text()) : null;
         $movie->actresses   = $crawler->filter('.panel .panel-block')->each(
             function ($actress) {
                 return trim($actress->text());

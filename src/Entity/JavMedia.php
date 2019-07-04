@@ -97,6 +97,43 @@ class JavMedia
     }
 
     /**
+     * @return string|null
+     */
+    public function getFilenameWithoutExtension(): ?string
+    {
+        return pathinfo($this->filename, PATHINFO_FILENAME);
+    }
+
+    public function getSuggestFilename(): ?string
+    {
+        $fileInfo         = pathinfo($this->filename);
+        $originalFileName = trim($fileInfo['filename']);
+        $originalFileName = str_replace(
+            [
+                '[HD]',
+                '(HD)',
+                '.HD',
+                '[FHD]',
+                'FHD',
+                '(CEN)',
+                '[Thz.la]',
+                '【Thz.la】',
+                '[ThZu.Cc]',
+                'g-cup.tv',
+                '.1080p',
+                '(ORE)',
+                '-h264',
+                'hjd2048.com-',
+                'www.av9.cc-',
+            ],
+            '',
+            $originalFileName
+        );
+
+        return implode('-', sscanf($originalFileName, "%[A-Z|a-z]%d"));
+    }
+
+    /**
      * @param string|null $filename
      * @return JavMedia
      */

@@ -7,16 +7,26 @@
     {{ include('base/guide.html.twig') }}
     <div class="row">
         <div class="col-8">
-            <div class="row">
-                {% for item in featured %}
-                    <div class="col-4 mb-5">
-                        {{ include('/onejav/card.html.twig') }}
-                    </div>
+            <div class="card-columns">
+                {% for item in today %}
+                    {{ include('/onejav/card.html.twig') }}
                 {% endfor %}
             </div>
         </div>
         <div class="col-4">
             {{ include('/onejav/form/search.html.twig') }}
+            <div class="row">
+                <div class="col-12">
+                    {% for tag in tags %}
+                        <a href="/onejav/tag/{{ tag }}"><span class="badge badge-info">{{ tag }}</span></a>
+                    {% endfor %}
+                </div>
+                {% for item in featured %}
+                    <div class="col-12 mb-2">
+                        {{ include('/onejav/card.html.twig') }}
+                    </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 {% endblock %}

@@ -38,7 +38,8 @@ class FlickrController extends AbstractController
     }
 
     /**
-     * @Route("/flickr")
+     * @Route("/flickr", methods="GET")
+     * @return Response
      */
     public function index()
     {
@@ -100,17 +101,17 @@ class FlickrController extends AbstractController
         return $this->redirect('/flickr');
     }
 
+    /**
+     * @param $contact
+     * @return boolean|mixed
+     */
     protected function getContact($contact)
     {
         if (!$contact || empty($contact)) {
             return false;
         }
 
-        if (filter_var($contact, FILTER_VALIDATE_URL)) {
-            $user = $this->client->flickrUrlsLookupUser($contact);
-
-            $contact = $user->user->id;
-        }
+        $contact = $this->client->getNsid($contact);
 
         return $this->client->flickrPeopleGetInfo($contact);
     }

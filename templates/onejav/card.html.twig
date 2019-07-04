@@ -1,11 +1,13 @@
-<div class="card" style="">
+<div class="card {% if item.detail is null %}text-white bg-dark{% endif %}">
+    <img data-src="{{ item.cover }}" class="card-img-top lazy" alt="{{ item.title }}">
+
     <div class="card-header">
-        <h5 style="text-align: left; display: inline-block">{{ item.title }} <span
+        <h5 style="text-align: left; display: inline-block">{{ item.itemNumber }} <span
                     class="badge badge-secondary">{{ item.size }} GB</span></h5>
-        <span class="float-right"><a href=""><i class="fas fa-calendar-alt"></i> {{ item.date }}</a></span>
+        <span class="float-right"><a href="/onejav/daily/{{ item.dateSlug }}"><i
+                        class="fas fa-calendar-alt"></i> {{ item.date }}</a></span>
     </div>
-    <!-- {{ item.cover }} -->
-    <img src="https://via.placeholder.com/800x560" class="card-img-top" alt="{{ item.title }}">
+
     {% if item.description|length %}
         <div class="card-body">
             <blockquote class="blockquote mb-0">
@@ -13,6 +15,7 @@
             </blockquote>
         </div>
     {% endif %}
+
     {% if item.tags|length > 0 %}
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
@@ -23,10 +26,11 @@
             </li>
         </ul>
     {% endif %}
+
     {% if item.detail is null %}
         <ul class="list-group list-group-flush">
             {% for actress in item.actresses %}
-                <li class="list-group-item"><a href="">{{ actress }}</a></li>
+                <li class="list-group-item"><a href="/onejav/actress/{{ actress }}">{{ actress }}</a></li>
             {% endfor %}
         </ul>
     {% else %}
@@ -36,6 +40,7 @@
             {% endfor %}
         </ul>
     {% endif %}
+
     {% if downloads is defined %}
         <div class="card-footer">
             <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
