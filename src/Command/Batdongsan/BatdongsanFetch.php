@@ -70,7 +70,7 @@ final class BatdongsanFetch extends CrawlerCommand
     protected function insertDetail($link, $itemDetail)
     {
         $link       = str_replace(['https://batdongsan.com.vn', 'http://batdongsan.com.vn'], '', $link);
-        $itemEntity = $this->entityManager->getRepository(BatdongsanComVn::class)->find($link);
+        $itemEntity = $this->entityManager->getRepository(BatdongsanComVn::class)->findOneBy(['url' => $link]);
 
         if ($itemEntity) {
             $this->logNotice($link . ' already exists. We\'ll skip it');
@@ -80,8 +80,8 @@ final class BatdongsanFetch extends CrawlerCommand
 
         $itemEntity = new BatdongsanComVn;
         $itemEntity->setUrl($link);
-
-        $itemEntity->setName($itemDetail->price);
+        $itemEntity->setName($itemDetail->name);
+        $itemEntity->setPrice($itemDetail->price);
         $itemEntity->setSize($itemDetail->size ?? null);
         $itemEntity->setContent($itemDetail->content ?? null);
         $itemEntity->setType($itemDetail->type ?? null);

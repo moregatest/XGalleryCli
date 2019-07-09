@@ -10,7 +10,6 @@
 
 namespace XGallery;
 
-
 use App\DefinesCore;
 use App\Traits\HasEntityManager;
 use App\Traits\HasLogger;
@@ -23,6 +22,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
 
+/**
+ * Class BaseCommand
+ * @package XGallery
+ */
 class BaseCommand extends Command
 {
     use HasLogger;

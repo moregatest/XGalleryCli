@@ -25,20 +25,21 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class MediaController extends AbstractController
 {
-
     /**
      * @Route("/media")
      */
     public function index(Request $request)
     {
-        $pagination = $this->getDoctrine()->getRepository(JavMedia::class)
-            ->getItems($request->get('page', 1), $request->get('limit', 10));
+        $limit       = $request->get('limit', 10);
+        $currentPage = $request->get('page', 1);
 
-        $limit    = $request->get('limit', 10);
+        $pagination = $this->getDoctrine()
+            ->getRepository(JavMedia::class)
+            ->getItems($currentPage, $limit);
+
         $maxPages = ceil($pagination->count() / $limit);
-        $thisPage = $request->get('page', 1);
+        $items    = $pagination->getIterator();
 
-        $items   = $pagination->getIterator();
         $crawler = new R18Crawler;
 
         foreach ($items as $index => $item) {
@@ -63,7 +64,7 @@ class MediaController extends AbstractController
             'media/index.html.twig',
             [
                 'totalPages' => $maxPages,
-                'currentPage' => $thisPage,
+                'currentPage' => $currentPage,
                 'limit' => $limit,
                 'items' => $pagination->getIterator(),
                 'pages' => $maxPages > 10 ? 10 : $maxPages,
@@ -106,6 +107,9 @@ class MediaController extends AbstractController
             return $this->redirect('/media?page=' . $request->get('page'));
         }
 
+        var_dump($mediaEntity->getDirectory() . DIRECTORY_SEPARATOR . $mediaEntity->getFilename());
+        var_dump($mediaEntity->getDirectory() . DIRECTORY_SEPARATOR . $newFileName);
+        exit;
         Filesystem::rename(
             $mediaEntity->getDirectory() . DIRECTORY_SEPARATOR . $mediaEntity->getFilename(),
             $mediaEntity->getDirectory() . DIRECTORY_SEPARATOR . $newFileName
@@ -119,5 +123,10 @@ class MediaController extends AbstractController
         $this->addFlash('success', 'Update success: ' . $originalFile->getFilename() . ' to ' . $newFileName);
 
         return $this->redirect('/media?page=' . $request->get('page'));
+    }
+
+    public function feature()
+    {
+
     }
 }

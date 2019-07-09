@@ -28,15 +28,13 @@ final class R18Crawler extends AbstractCrawler
     protected $indexUrl = 'https://www.r18.com/videos/vod/movies/list/pagesize=120/price=all/sort=new/type=all/page=';
 
     /**
-     * @return bool|int
+     * @return boolean|integer
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
     public function getIndexPages()
     {
-        $crawler = $this->getCrawler('GET', $this->getIndexUrl(1));
-
-        if (!$crawler) {
+        if (!$crawler = $this->getCrawler('GET', $this->getIndexUrl(1))) {
             return false;
         }
 
@@ -83,6 +81,7 @@ final class R18Crawler extends AbstractCrawler
 
         try {
             $movieDetail             = new stdClass;
+            $movieDetail->cover      = $crawler->filter('.detail-single-picture img')->attr('src');
             $movieDetail->name       = trim($crawler->filter('.product-details-page h1')->text());
             $movieDetail->categories = $crawler->filter('.product-categories-list a')->each(
                 function ($el) {

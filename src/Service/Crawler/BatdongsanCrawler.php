@@ -80,10 +80,10 @@ final class BatdongsanCrawler extends AbstractCrawler
 
     /**
      * Extract object of item in a page
-     *
      * @param string $url
-     * @return boolean|stdClass
+     * @return boolean|mixed|stdClass
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getDetail($url)
     {
