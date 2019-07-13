@@ -47,14 +47,14 @@ class FlickrContact
     /**
      * @var int|null
      *
-     * @ORM\Column(name="iconserver", type="integer", nullable=true)
+     * @ORM\Column(name="iconserver", type="integer", nullable=false)
      */
     private $iconserver;
 
     /**
      * @var int|null
      *
-     * @ORM\Column(name="iconfarm", type="integer", nullable=true)
+     * @ORM\Column(name="iconfarm", type="integer", nullable=false)
      */
     private $iconfarm;
 
