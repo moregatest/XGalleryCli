@@ -22,6 +22,7 @@ use GuzzleHttp\Exception\TransferException;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
+use Spatie\Url\Url;
 
 /**
  * Class HttpClient
@@ -76,7 +77,12 @@ class HttpClient extends Client
     public function request($method, $uri = '', array $options = [])
     {
         try {
-            $id = md5(serialize(func_get_args()));
+            $uriWithoutRandom = Url::fromString($uri);
+            $uriWithoutRandom = $uriWithoutRandom->withoutQueryParameter('oauth_signature')
+                ->withoutQueryParameter('oauth_nonce')
+                ->withoutQueryParameter('oauth_timestamp');
+
+            $id = md5(serialize([$method, (string)$uriWithoutRandom, $options]));
 
             if ($this->isHit($id, $response)) {
                 $this->logNotice('Request have cached', func_get_args());
@@ -93,7 +99,7 @@ class HttpClient extends Client
             /**
              * @TODO Support decode content via event
              */
-            $header  = $response->getHeader('Content-Type')[0] ?? '';
+            $header = $response->getHeader('Content-Type')[0] ?? '';
             $content = $response->getBody()->getContents();
 
             if (strpos($header, 'application/json') !== false) {
@@ -137,7 +143,7 @@ class HttpClient extends Client
             return false;
         }
 
-        $orgFileSize        = (int)$response->getHeader('Content-Length')[0];
+        $orgFileSize = (int)$response->getHeader('Content-Length')[0];
         $downloadedFileSize = filesize($saveTo);
 
         if ($orgFileSize !== $downloadedFileSize) {
