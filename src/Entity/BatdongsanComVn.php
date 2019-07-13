@@ -65,21 +65,21 @@ class BatdongsanComVn
     /**
      * @var string
      *
-     * @ORM\Column(name="type", type="string", length=255, nullable=true)
+     * @ORM\Column(name="type", type="string", length=125, nullable=true)
      */
     private $type;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="project", type="string", length=255, nullable=true)
+     * @ORM\Column(name="project", type="string", length=125, nullable=true)
      */
     private $project;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="contact_name", type="text", length=65535, nullable=true)
+     * @ORM\Column(name="contact_name", type="string", length=255, nullable=true)
      */
     private $contactName;
 
