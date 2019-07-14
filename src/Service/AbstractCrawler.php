@@ -71,10 +71,12 @@ abstract class AbstractCrawler extends BaseCrawler implements CrawlerInterface
             $links = $this->getIndexDetailLinks($this->getIndexUrl($page));
 
             if (is_callable($callback)) {
-                call_user_func($callback, $links);
+                if (call_user_func($callback, $links) === false) {
+                    continue;
+                }
             }
 
-            $totalLinks = array_merge($totalLinks, $this->getIndexDetailLinks($this->getIndexUrl($page)));
+            $totalLinks = array_merge($totalLinks, $links);
         }
 
         return $totalLinks;

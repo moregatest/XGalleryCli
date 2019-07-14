@@ -34,6 +34,9 @@ final class BatdongsanFetch extends CrawlerCommand
      */
     protected function processFetch()
     {
+        /**
+         * @TODO Break down process
+         */
         $this->getClient()->getAllDetailLinks(
             function ($pages) {
                 $this->io->newLine();
@@ -56,6 +59,9 @@ final class BatdongsanFetch extends CrawlerCommand
 
                 $this->entityManager->flush();
                 $this->io->progressAdvance();
+
+                // Skip merge array
+                return false;
             }
         );
 
