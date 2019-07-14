@@ -70,6 +70,10 @@ abstract class AbstractCrawler extends BaseCrawler implements CrawlerInterface
         for ($page = 1; $page <= $pages; $page++) {
             $links = $this->getIndexDetailLinks($this->getIndexUrl($page));
 
+            if (!is_array($links)) {
+                continue;
+            }
+
             if (is_callable($callback)) {
                 if (call_user_func($callback, $links) === false) {
                     continue;
