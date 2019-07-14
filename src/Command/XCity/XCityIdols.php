@@ -32,6 +32,9 @@ final class XCityIdols extends CrawlerCommand
      */
     private $idols = 0;
 
+    /**
+     *
+     */
     protected function configure()
     {
         $this->setDescription('Extract ALL XCity idols');
@@ -54,6 +57,8 @@ final class XCityIdols extends CrawlerCommand
             function ($links) {
 
                 if (!$links || empty($links)) {
+                    $this->io->progressAdvance();
+
                     return;
                 }
 
