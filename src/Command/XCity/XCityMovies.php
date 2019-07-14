@@ -79,7 +79,7 @@ final class XCityMovies extends CrawlerCommand
             $this->entityManager->persist($idol);
             $this->entityManager->flush();
 
-            $this->log('Working on idol: ' . $idol->getName());
+            $this->log('Working on idol: ' . $idol->getName() . ' - ' . $idol->getXId());
 
             $this->client->setProfile('detail/' . $idol->getXId() . '/');
             $this->client->getAllDetailLinks(
