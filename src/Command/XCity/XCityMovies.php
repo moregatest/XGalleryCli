@@ -28,7 +28,7 @@ final class XCityMovies extends CrawlerCommand
 {
     use HasMovies;
 
-    const IDOLS_LIMIT = 200;
+    const IDOLS_LIMIT = 10;
 
     /**
      * @var XCityCrawler

@@ -41,7 +41,7 @@ class JavIdol
     /**
      * @var int
      *
-     * @ORM\Column(name="xid", type="integer", nullable=false)
+     * @ORM\Column(name="xid", type="integer", nullable=true)
      */
     private $xid;
 

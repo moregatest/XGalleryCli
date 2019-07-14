@@ -27,7 +27,7 @@ class JavMovie
     private $id;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="text", length=65535, nullable=true)
      */
     private $name;
 
@@ -52,7 +52,7 @@ class JavMovie
     private $release_date;
 
     /**
-     * @ORM\Column(type="string", length=125)
+     * @ORM\Column(type="string", length=125, nullable=true)
      */
     private $item_number;
 

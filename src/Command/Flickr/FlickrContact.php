@@ -49,7 +49,15 @@ final class FlickrContact extends FlickrCommand
      */
     protected function prepareContact()
     {
-        $this->contact = $this->client->flickrPeopleGetInfo($this->client->getNsid($this->getOption('nsid')));
+        if (!$nsid = $this->getOption('nsid')) {
+            $nsid = $this->io->ask('Enter NSID');
+        }
+
+        if (!$nsid) {
+            return self::PREPARE_FAILED;
+        }
+
+        $this->contact = $this->client->flickrPeopleGetInfo($this->client->getNsid($nsid));
 
         if (!$this->contact) {
             $this->log('Can not get contact or contact not found', 'notice');

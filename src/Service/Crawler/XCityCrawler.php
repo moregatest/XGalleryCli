@@ -29,6 +29,9 @@ final class XCityCrawler extends AbstractCrawler
      */
     const IDOL_URL = 'https://xxx.xcity.jp/idol/';
 
+    /**
+     * @var string
+     */
     protected $indexUrl = '';
 
     /**
@@ -87,8 +90,9 @@ final class XCityCrawler extends AbstractCrawler
 
     /**
      * @param string $url
-     * @return array|bool
+     * @return array|boolean
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getIndexDetailLinks($url)
     {
@@ -112,9 +116,10 @@ final class XCityCrawler extends AbstractCrawler
     }
 
     /**
-     * @param $url
-     * @return bool|mixed|stdClass
+     * @param string $url
+     * @return boolean|mixed|stdClass
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getDetail($url)
     {
@@ -201,7 +206,7 @@ final class XCityCrawler extends AbstractCrawler
 
     /**
      * @param $url
-     * @return bool|stdClass
+     * @return boolean|stdClass
      * @throws GuzzleException
      */
     public function getProfileDetail($url)
