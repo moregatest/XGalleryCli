@@ -12,6 +12,7 @@ namespace App\Service\Crawler;
 
 use App\Service\AbstractCrawler;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use RuntimeException;
 use stdClass;
 
@@ -55,12 +56,15 @@ final class XCityCrawler extends AbstractCrawler
     }
 
     /**
-     * @return int
+     * @return integer
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getIndexPages()
     {
-        $crawler = $this->getCrawler('GET', $this->getIndexUrl(1));
+        if (!$crawler = $this->getCrawler('GET', $this->getIndexUrl(1))) {
+            return 1;
+        }
 
         $nodes = $crawler->filter('ul.pageScrl li.next');
 
