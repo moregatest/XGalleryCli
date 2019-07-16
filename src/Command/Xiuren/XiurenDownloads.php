@@ -43,7 +43,8 @@ final class XiurenDownloads extends CrawlerCommand
                     return;
                 }
 
-                $processes = [];
+                $processes   = [];
+                $progressBar = $this->io->createProgressBar(count($links));
 
                 foreach ($links as $index => $link) {
                     $processes[$index] = $this->getProcess(['xiuren:download', '--url=' . $link]);
@@ -52,8 +53,10 @@ final class XiurenDownloads extends CrawlerCommand
 
                 foreach ($processes as $process) {
                     $process->wait();
+                    $progressBar->advance();
                 }
 
+                $progressBar->clear();
                 $this->io->progressAdvance();
             }
         );
