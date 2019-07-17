@@ -21,6 +21,9 @@ use stdClass;
  */
 final class BatdongsanCrawler extends AbstractCrawler
 {
+    /**
+     * @var string
+     */
     protected $indexUrl = 'https://batdongsan.com.vn/nha-dat-ban';
 
     /**
@@ -51,11 +54,10 @@ final class BatdongsanCrawler extends AbstractCrawler
     }
 
     /**
-     * Extract all items on page
-     *
      * @param string $url
-     * @return array
+     * @return array|boolean
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getIndexDetailLinks($url)
     {

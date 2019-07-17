@@ -35,6 +35,17 @@ class PornhubController extends AbstractController
     public function search(Request $request)
     {
         $crawler = new PornhubCrawler;
-        var_dump($crawler->getDetail($request->get('url')));
+        $detail  = $crawler->getDetail($request->get('url'));
+
+        foreach ($detail->mediaDefinitions as $media) {
+            if (empty($media->videoUrl)) {
+                continue;
+            }
+
+            $this->addFlash('info', $media->videoUrl);
+            break;
+        }
+
+        return $this->redirect('/pornhub');
     }
 }

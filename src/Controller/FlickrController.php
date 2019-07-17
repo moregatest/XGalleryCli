@@ -10,9 +10,8 @@
 
 namespace App\Controller;
 
-use App\Entity\FlickrContact;
+
 use App\Service\OAuth\Flickr\FlickrClient;
-use DateTime;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -20,6 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
+
 
 /**
  * Class FlickrController
@@ -49,71 +49,31 @@ class FlickrController extends AbstractController
     /**
      * @Route("/flickr/contact", methods="POST")
      * @param Request $request
-     * @return RedirectResponse
+     * @return Response
      * @throws Exception
      */
     public function contact(Request $request)
     {
-        $contact = $this->getContact($request->get('contact'));
+        $submit  = $request->get('submit');
+        $command = ['flickr:' . $submit];
 
-        if (!$contact) {
-            $this->addFlash('error', 'Can not get contact NSID ' . $request->get('contact'));
-
-            return $this->redirect('/flickr');
+        if ($submit === 'contact') {
+            $command[] = '--nsid=' . $request->get('nsid');
         }
 
-        $contactEntity = $this->getDoctrine()->getRepository(FlickrContact::class)
-            ->find($contact->person->nsid);
+        $process = new Process(
+            array_merge(['php', realpath(__DIR__ . '/../../bin/console')], $command),
+            null,
+            null,
+            null,
+            600
+        );
+        $process->disableOutput();
+        $process->run();
 
-        if ($contactEntity) {
-            $this->addFlash('info', 'NSID ' . $contact->person->nsid . ' already exists');
+        $this->addFlash('info', 'Request succeed: ' . implode(' ', $command));
 
-            return $this->redirect('/flickr');
-        }
-
-        $now = new DateTime();
-
-        // Contact not found
-        if ($contactEntity === null) {
-            $contactEntity = new FlickrContact;
-            $contactEntity->setCreated($now);
-            $contactEntity->setNsid($contact->person->nsid);
-        }
-
-        $contactEntity->setIconserver($contact->person->iconserver);
-        $contactEntity->setIconfarm($contact->person->iconfarm);
-        $contactEntity->setPathAlias($contact->person->path_alias);
-        $contactEntity->setIgnored($contact->person->ignored);
-        $contactEntity->setFriend($contact->person->friend);
-        $contactEntity->setFamily($contact->person->family);
-        $contactEntity->setUsername($contact->person->username->_content);
-        $contactEntity->setRealname($contact->person->realname->_content ?? null);
-        $contactEntity->setLocation($contact->person->location->_content ?? null);
-        $contactEntity->setDescription($contact->person->description->_content ?? null);
-        $contactEntity->setPhotos($contact->person->photos->count->_content);
-        $contactEntity->setUpdated(new DateTime);
-
-        $this->getDoctrine()->getManager()->persist($contactEntity);
-        $this->getDoctrine()->getManager()->flush();
-
-        $this->addFlash('success', 'Added NSID ' . $contact->person->nsid . ' success');
-
-        return $this->redirect('/flickr');
-    }
-
-    /**
-     * @param $contact
-     * @return boolean|mixed
-     */
-    protected function getContact($contact)
-    {
-        if (!$contact || empty($contact)) {
-            return false;
-        }
-
-        $contact = $this->client->getNsid($contact);
-
-        return $this->client->flickrPeopleGetInfo($contact);
+        return $this->redirect('/');
     }
 
     /**
@@ -123,26 +83,119 @@ class FlickrController extends AbstractController
      */
     public function photos(Request $request)
     {
-        $contact = $this->getContact($request->get('contact'));
+        $submit  = $request->get('submit');
+        $data    = $request->get('data');
+        $command = [];
 
-        if (!$contact) {
-            $this->addFlash('error', 'Can not get contact NSID ' . $request->get('contact'));
-
-            return $this->redirect('/flickr');
+        switch ($submit) {
+            case 'nsid':
+                $command = ['flickr:photos', '--nsid=' . $data];
+                break;
+            case 'album':
+                $command = ['flickr:photos', '--album=' . $data];
+                break;
+            case 'gallery':
+                $command = ['flickr:photos', '--gallery=' . $data];
+                break;
+            case 'gallery':
+                $command = ['flickr:photos', '--photo_ids=' . $data];
+                break;
         }
 
         $process = new Process(
-            [
-                'php',
-                $this->getParameter('kernel.project_dir') . '/bin/console',
-                'flickr:photos',
-                '--nsid=' . $contact->person->nsid,
-            ]
+            array_merge(['php', realpath(__DIR__ . '/../../bin/console')], $command),
+            null,
+            null,
+            null,
+            600
         );
-
-
+        $process->disableOutput();
         $process->run();
 
-        return $this->render('flickr/index.html.twig', ['output' => $process->getOutput()]);
+        $this->addFlash('info', 'Request succeed: ' . implode(' ', $command));
+
+        return $this->redirect('/');
+    }
+
+    /**
+     * @Route("/flickr/photossize", methods="POST")
+     * @param Request $request
+     * @return RedirectResponse|Response
+     */
+    public function photosSize(Request $request)
+    {
+        $submit  = $request->get('submit');
+        $data    = $request->get('data');
+        $command = [];
+
+        switch ($submit) {
+            case 'nsid':
+                $command = ['flickr:photossize', '--nsid=' . $data];
+                break;
+            case 'album':
+                $command = ['flickr:photossize', '--album=' . $data];
+                break;
+            case 'gallery':
+                $command = ['flickr:photossize', '--gallery=' . $data];
+                break;
+            case 'gallery':
+                $command = ['flickr:photossize', '--photo_ids=' . $data];
+                break;
+        }
+
+        $process = new Process(
+            array_merge(['php', realpath(__DIR__ . '/../../bin/console')], $command),
+            null,
+            null,
+            null,
+            600
+        );
+        $process->disableOutput();
+        $process->run();
+
+        $this->addFlash('info', 'Request succeed: ' . implode(' ', $command));
+
+        return $this->redirect('/');
+    }
+
+    /**
+     * @Route("/flickr/download", methods="POST")
+     * @param Request $request
+     * @return RedirectResponse|Response
+     */
+    public function download(Request $request)
+    {
+        $submit  = $request->get('submit');
+        $data    = $request->get('data');
+        $command = [];
+
+        switch ($submit) {
+            case 'nsid':
+                $command = ['flickr:photosdownload', '--nsid=' . $data];
+                break;
+            case 'album':
+                $command = ['flickr:photosdownload', '--album=' . $data];
+                break;
+            case 'gallery':
+                $command = ['flickr:photosdownload', '--gallery=' . $data];
+                break;
+            case 'gallery':
+                $command = ['flickr:photosdownload', '--photo_ids=' . $data];
+                break;
+        }
+
+        $process = new Process(
+            array_merge(['php', realpath(__DIR__ . '/../../bin/console')], $command),
+            null,
+            null,
+            null,
+            600
+        );
+        $process->disableOutput();
+        $process->run();
+
+        $this->addFlash('info', 'Request succeed: ' . implode(' ', $command));
+
+        return $this->redirect('/');
     }
 }

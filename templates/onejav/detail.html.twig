@@ -1,0 +1,24 @@
+{% extends "base/base.html.twig" %}
+{% block title %}
+    XGallery - Onejav - {{ detail.name }}
+{% endblock %}
+
+{% block body %}
+    {{ dump(detail) }}
+    <!-- Portfolio Item Heading -->
+    <h1 class="my-4">{{ detail.name }}</h1>
+    <div class="row">
+        <div class="col-4">
+            <img src="https://via.placeholder.com/150" alt="{{ detail.name }}" class="img-thumbnail"/>
+        </div>
+        <div class="col-8">
+            <dl>
+                <dt>Content ID</dt>
+                <dd>{{ detail.content_id }}</dd>
+                <dt>Dvd ID</dt>
+                <dd>{{ detail.dvd_id }}</dd>
+            </dl>
+        </div>
+    </div>
+    <hr/>
+{% endblock %}

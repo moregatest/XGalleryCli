@@ -6,9 +6,28 @@
     <div class="row">
         <div class="col-4">
             <div class="card">
-                <h5 class="card-header">Onejav</h5>
+                <h4 class="card-header">Onejav</h4>
                 <div class="card-body">
                     {{ include('/onejav/form/search.html.twig') }}
+                </div>
+            </div>
+        </div>
+        <div class="col-8">
+            <div class="card">
+                <h4 class="card-header">Flickr</h4>
+                <div class="card-body">
+                    <h5><i class="fas fa-users"></i> Contact</h5>
+                    {{ include('/flickr/form/contact.html.twig') }}
+                    <hr/>
+                    <h5>Photos</h5>
+                    {{ include('/flickr/form/photos.html.twig') }}
+                    <hr/>
+                    <h5>Photos' sizes</h5>
+                    {{ include('/flickr/form/photossize.html.twig') }}
+                    <hr/>
+                    <h5>Photos download</h5>
+                    {{ include('/flickr/form/downloads.html.twig') }}
+                    <hr/>
                 </div>
             </div>
         </div>

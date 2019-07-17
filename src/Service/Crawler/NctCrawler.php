@@ -12,6 +12,7 @@ namespace App\Service\Crawler;
 
 use App\Service\AbstractCrawler;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 
 /**
  * Class Nct
@@ -47,8 +48,9 @@ class NctCrawler extends AbstractCrawler
 
     /**
      * @param $conditions
-     * @return array
+     * @return array|boolean
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function search($conditions)
     {
@@ -92,6 +94,7 @@ class NctCrawler extends AbstractCrawler
     /**
      * @return array
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getTop20()
     {
@@ -116,10 +119,9 @@ class NctCrawler extends AbstractCrawler
     }
 
     /**
-     * Get song detail information for downloading
-     *
-     * @param $url
-     * @return array
+     * @param string $url
+     * @return array|boolean|mixed
+     * @throws InvalidArgumentException
      */
     public function getDetail($url)
     {

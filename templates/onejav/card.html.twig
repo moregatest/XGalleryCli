@@ -1,8 +1,10 @@
 <div class="card {% if item.detail is null %}text-white bg-dark{% endif %}">
-    <img data-src="{{ item.cover }}" class="card-img-top lazy" alt="{{ item.title }}">
+    <img data-src="https://via.placeholder.com/150" class="card-img-top lazy" alt="{{ item.title }}">
+    <!--<img data-src="{{ item.cover }}" class="card-img-top lazy" alt="{{ item.title }}">-->
 
     <div class="card-header">
-        <h5 style="text-align: left; display: inline-block">{{ item.itemNumber }} <span
+        <h5 style="text-align: left; display: inline-block"><a
+                    href="{{ path('app_onejav_detail', {'slug': item.itemNumber}) }}">{{ item.itemNumber }}</a> <span
                     class="badge badge-secondary">{{ item.size }} GB</span></h5>
         <span class="float-right"><a href="/onejav/daily/{{ item.dateSlug }}"><i
                         class="fas fa-calendar-alt"></i> {{ item.date }}</a></span>
@@ -52,7 +54,7 @@
                     </button>
                     <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
                         {% for download in downloads %}
-                            <a href="https://onejav.com{{ download.torrent }}"
+                            <a href="{{ path('app_onejav_downloadtorrent') }}/?url={{ download.torrent }}"
                                class="dropdown-item">Size {{ download.size }}</a>
                         {% endfor %}
                     </div>
@@ -69,7 +71,7 @@
                                 class="badge badge-pill badge-light">1</span></a>
                     </button>
                     <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                        <a href="https://onejav.com{{ item.torrent }}"
+                        <a href="{{ path('app_onejav_downloadtorrent') }}?url={{ item.torrent }}"
                            class="dropdown-item">Size {{ item.size }}</a>
                     </div>
                 </div>

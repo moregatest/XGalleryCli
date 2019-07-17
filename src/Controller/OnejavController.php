@@ -12,6 +12,8 @@ namespace App\Controller;
 
 use App\Entity\JavMedia;
 use App\Service\Crawler\OnejavCrawler;
+use App\Service\Crawler\R18Crawler;
+use App\Service\HttpClient;
 use DateTime;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
@@ -67,7 +69,34 @@ class OnejavController extends AbstractController
 
         $tags = array_unique($tags);
 
-        return $this->render('onejav/index.html.twig', ['featured' => $featured, 'today' => $today, 'tags' => $tags]);
+        return $this->render(
+            'onejav/index.html.twig',
+            [
+                'date' => $date->format('Y_m_d'), 'featured' => $featured, 'today' => $today, 'tags' => $tags
+            ]
+        );
+    }
+
+    /**
+     * @Route("/onejav/detail/{slug}")
+     */
+    public function detail($slug)
+    {
+        $crawler     = new R18Crawler;
+        $searchLinks = $crawler->getSearchLinks($slug);
+
+        if (!empty($searchLinks)) {
+            foreach ($searchLinks as $searchLink) {
+                if (!$searchLink) {
+                    continue;
+                }
+
+                $detail = $crawler->getDetail($searchLink);
+                break;
+            }
+        }
+
+        return $this->render('onejav/detail.html.twig', ['detail' => $detail ?? null]);
     }
 
     /**
@@ -124,7 +153,7 @@ class OnejavController extends AbstractController
 
     /**
      * @Route("/onejav/search/{slug}", methods="GET")
-     * @param $slug
+     * @param string $slug
      * @return Response
      * @throws GuzzleException
      * @throws InvalidArgumentException
@@ -138,6 +167,25 @@ class OnejavController extends AbstractController
         }
 
         return $this->showResults($items, $slug);
+    }
+
+    /**
+     * @Route("/onejav/download/", methods="GET")
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function downloadTorrent(Request $request)
+    {
+        $downloadUrl = 'https://onejav.com/' . ($request->get('url'));
+        $saveTo      = getenv('storage_torrent') . '/' . basename($downloadUrl);
+
+        $client = new HttpClient;
+
+        if ($client->download($downloadUrl, $saveTo)) {
+            $this->addFlash('success', 'Download torrent success: ' . $saveTo);
+        }
+
+        return $this->redirect('/onejav');
     }
 
     /**
