@@ -19,6 +19,9 @@ use XGallery\CrawlerCommand;
  */
 final class BatdongsanDetail extends CrawlerCommand
 {
+    /**
+     * @var array
+     */
     private $data;
 
     /**
@@ -48,6 +51,8 @@ final class BatdongsanDetail extends CrawlerCommand
      */
     protected function processFetch()
     {
+        $this->io->createProgressBar(count($this->data));
+
         foreach ($this->data as $itemEntity) {
             $itemDetail = $this->getClient()->getDetail($itemEntity->getUrl());
 
@@ -62,6 +67,8 @@ final class BatdongsanDetail extends CrawlerCommand
             $itemEntity->setEmail($itemDetail->email ?? null);
 
             $this->entityManager->persist($itemEntity);
+
+            $this->io->progressAdvance();
         }
 
         $this->entityManager->flush();

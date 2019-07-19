@@ -45,10 +45,15 @@ final class R18Movies extends CrawlerCommand
                 $this->io->progressStart($pages);
             },
             function ($links) {
+                if (empty($links)) {
+                    return false;
+                }
+
                 foreach ($links as $link) {
                     $this->logInfo('Processing ' . $link);
                     $javMovieEntity = $this->entityManager
-                        ->getRepository(JavMovie::class)->findOneBy(['url' => $link, 'source' => $this->source]);
+                        ->getRepository(JavMovie::class)
+                        ->findOneBy(['url' => $link, 'source' => $this->source]);
 
                     // Movie already exists then skip it
                     if ($javMovieEntity) {
