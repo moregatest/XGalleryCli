@@ -34,9 +34,6 @@ final class BatdongsanFetch extends CrawlerCommand
      */
     protected function processFetch()
     {
-        /**
-         * @TODO Break down process
-         */
         $this->getClient()->getAllDetailLinks(
             function ($pages) {
                 $this->io->newLine();
@@ -46,15 +43,17 @@ final class BatdongsanFetch extends CrawlerCommand
                 if (!$links || empty($links)) {
                     return;
                 }
-                foreach ($links as $link) {
-                    $itemDetail = $this->getClient()->getDetail($link);
 
-                    if (!$itemDetail) {
-                        $this->logWarning('Can not extract item detail ' . $link);
+                foreach ($links as $link) {
+                    if ($itemEntity = $this->entityManager->getRepository(BatdongsanComVn::class)->findOneBy(['url' => $link])) {
+                        $this->logNotice($link . ' already exists. We\'ll skip it');
+
                         continue;
                     }
 
-                    $this->insertDetail($link, $itemDetail);
+                    $itemEntity = new BatdongsanComVn;
+                    $itemEntity->setUrl($link);
+                    $this->entityManager->persist($itemEntity);
                 }
 
                 $this->entityManager->flush();
@@ -64,39 +63,6 @@ final class BatdongsanFetch extends CrawlerCommand
                 return false;
             }
         );
-
-        return true;
-    }
-
-    /**
-     * @param mixed $link
-     * @param $itemDetail
-     * @return boolean|void
-     */
-    protected function insertDetail($link, $itemDetail)
-    {
-        $link       = str_replace(['https://batdongsan.com.vn', 'http://batdongsan.com.vn'], '', $link);
-        $itemEntity = $this->entityManager->getRepository(BatdongsanComVn::class)->findOneBy(['url' => $link]);
-
-        if ($itemEntity) {
-            $this->logNotice($link . ' already exists. We\'ll skip it');
-
-            return;
-        }
-
-        $itemEntity = new BatdongsanComVn;
-        $itemEntity->setUrl($link);
-        $itemEntity->setName($itemDetail->name);
-        $itemEntity->setPrice($itemDetail->price);
-        $itemEntity->setSize($itemDetail->size ?? null);
-        $itemEntity->setContent($itemDetail->content ?? null);
-        $itemEntity->setType($itemDetail->type ?? null);
-        $itemEntity->setProject($itemDetail->project ?? null);
-        $itemEntity->setContactName($itemDetail->contact_name ?? null);
-        $itemEntity->setPhone($itemDetail->phone ?? null);
-        $itemEntity->setEmail($itemDetail->email ?? null);
-
-        $this->entityManager->persist($itemEntity);
 
         return true;
     }
