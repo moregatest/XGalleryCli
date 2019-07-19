@@ -51,7 +51,7 @@ final class BatdongsanDetail extends CrawlerCommand
      */
     protected function processFetch()
     {
-        $this->io->createProgressBar(count($this->data));
+        $this->io->progressStart(count($this->data));
 
         foreach ($this->data as $itemEntity) {
             $itemDetail = $this->getClient()->getDetail($itemEntity->getUrl());
