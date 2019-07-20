@@ -89,9 +89,14 @@ class AiAnalyze extends BaseCommand
     /**
      * @param $name
      * @param $type
+     * @return boolean
      */
     private function addData($name, $type)
     {
+        if (empty($name) || empty($type)) {
+            return false;
+        }
+
         $entity = new JavMyFavoriteData;
         $entity->setName($name);
         $entity->setType($type);
