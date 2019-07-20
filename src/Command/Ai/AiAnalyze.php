@@ -10,23 +10,41 @@
 
 namespace App\Command\Ai;
 
-
 use App\Entity\JavMyFavorite;
 use App\Entity\JavMyFavoriteData;
 use App\Service\Crawler\R18Crawler;
+use Doctrine\DBAL\DBALException;
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use XGallery\BaseCommand;
 
+/**
+ * Class AiAnalyze
+ * @package App\Command\Ai
+ */
 class AiAnalyze extends BaseCommand
 {
+    /**
+     * @var array
+     */
     private $data;
 
+    /**
+     * @return boolean
+     * @throws DBALException
+     */
     protected function prepareGetData()
     {
         $this->data = $this->entityManager->getRepository(JavMyFavorite::class)->findAll();
+        $this->entityManager->getConnection()->executeQuery('TRUNCATE `jav_my_favorites_data`');
 
         return self::PREPARE_SUCCEED;
     }
 
+    /**
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
     protected function processExtractData()
     {
         $r18 = new R18Crawler;
@@ -50,36 +68,33 @@ class AiAnalyze extends BaseCommand
                 }
 
                 foreach ($detail->categories as $category) {
-                    $entity = new JavMyFavoriteData;
-                    $entity->setName($category);
-                    $entity->setType('genre');
-                    $this->entityManager->persist($entity);
+                    $this->addData($category, 'genre');
                 }
 
                 foreach ($detail->actress as $actress) {
-                    $entity = new JavMyFavoriteData;
-                    $entity->setName($actress);
-                    $entity->setType('actress');
-                    $this->entityManager->persist($entity);
+                    $this->addData($actress, 'actress');
                 }
 
-                $entity = new JavMyFavoriteData;
-                $entity->setName($detail->director);
-                $entity->setType('director');
-                $this->entityManager->persist($entity);
-
-                $entity = new JavMyFavoriteData;
-                $entity->setName($detail->studio);
-                $entity->setType('studio');
-                $this->entityManager->persist($entity);
-
-                $entity = new JavMyFavoriteData;
-                $entity->setName($detail->label);
-                $entity->setType('label');
-                $this->entityManager->persist($entity);
+                $this->addData($detail->director, 'director');
+                $this->addData($detail->studio, 'studio');
+                $this->addData($detail->label, 'label');
             }
 
             $this->entityManager->flush();
+
+            return true;
         }
+    }
+
+    /**
+     * @param $name
+     * @param $type
+     */
+    private function addData($name, $type)
+    {
+        $entity = new JavMyFavoriteData;
+        $entity->setName($name);
+        $entity->setType($type);
+        $this->entityManager->persist($entity);
     }
 }
