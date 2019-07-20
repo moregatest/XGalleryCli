@@ -4,12 +4,10 @@
 {% endblock %}
 
 {% block body %}
-    {{ dump(detail) }}
-    <!-- Portfolio Item Heading -->
-    <h1 class="my-4">{{ detail.name }}</h1>
+    <h2 class="my-4">{{ detail.name }}</h2>
     <div class="row">
         <div class="col-4">
-            <img src="https://via.placeholder.com/150" alt="{{ detail.name }}" class="img-thumbnail"/>
+            <img src="{{ detail.cover }}" alt="{{ detail.name }}" class="img-thumbnail"/>
         </div>
         <div class="col-8">
             <dl>
@@ -17,6 +15,13 @@
                 <dd>{{ detail.content_id }}</dd>
                 <dt>Dvd ID</dt>
                 <dd>{{ detail.dvd_id }}</dd>
+                <dt>Downloads</dt>
+                <dd>
+                    {% for size, torrent in downloads %}
+                        <a href="{{ path('app_onejav_downloadtorrent') }}/?url={{ torrent }}"
+                           class="btn btn-primary"><i class="fas fa-download"></i> Size {{ size }} GB</a>
+                    {% endfor %}
+                </dd>
             </dl>
         </div>
     </div>

@@ -11,10 +11,12 @@
 namespace App\Controller;
 
 use App\Entity\JavMedia;
+use App\Entity\JavMyFavorite;
 use App\Service\Crawler\OnejavCrawler;
 use App\Service\Crawler\R18Crawler;
 use App\Service\HttpClient;
 use DateTime;
+use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -78,6 +80,8 @@ class OnejavController extends AbstractController
     }
 
     /**
+     * Detail page
+     *
      * @Route("/onejav/detail/{slug}")
      */
     public function detail($slug)
@@ -96,7 +100,14 @@ class OnejavController extends AbstractController
             }
         }
 
-        return $this->render('onejav/detail.html.twig', ['detail' => $detail ?? null]);
+        $items     = $this->crawler->getAllDetailItems('https://onejav.com/search/' . urlencode($slug));
+        $downloads = [];
+
+        foreach ($items as $item) {
+            $downloads[$item->size] = $item->torrent;
+        }
+
+        return $this->render('onejav/detail.html.twig', ['detail' => $detail ?? null, 'downloads' => $downloads]);
     }
 
     /**
@@ -189,17 +200,42 @@ class OnejavController extends AbstractController
     }
 
     /**
+     * @Route("/onejav/addFavorite", methods="GET")
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function addFavorite(Request $request)
+    {
+        $itemNumber = $request->get('itemNumber');
+        $entity     = $this->getDoctrine()->getManager()->getRepository(JavMyFavorite::class)->findOneBy(['item_number' => $itemNumber]);
+
+        if ($entity) {
+            $this->addFlash('info', 'Item already exists');
+            return $this->redirect('/onejav');
+        }
+
+        $entity = new JavMyFavorite;
+        $entity->setItemNumber($itemNumber);
+        $this->getDoctrine()->getManager()->persist($entity);
+        $this->getDoctrine()->getManager()->flush();
+
+        $this->addFlash('success', 'Item added success: ' . $itemNumber);
+        return $this->redirect('/onejav');
+    }
+
+    /**
      * @param $items
      * @param $keyword
      * @return Response
+     * @throws Exception
      */
     private function showResults($items, $keyword)
     {
         $results = [];
 
         foreach ($items as $item) {
-            $date                         = DateTime::createFromFormat('F j, Y', $item->date);
-            $item->dateSlug               = $date->format('Y_m_d');
+            $date                         = DateTime::createFromFormat('F j, Y', $item->date ?? null);
+            $item->dateSlug               = $date ? $date->format('Y_m_d') : (new DateTime())->format('Y_m_d');
             $results[$item->itemNumber][] = $item;
         }
 
@@ -229,3 +265,4 @@ class OnejavController extends AbstractController
         );
     }
 }
+

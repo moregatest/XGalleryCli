@@ -108,6 +108,15 @@ class OnejavCrawler extends BaseCrawler
         return $list;
     }
 
+    public function getDetailFromUrl($url)
+    {
+        if (!$crawler = $this->getCrawler('GET', $url)) {
+            return false;
+        }
+
+        return $this->getDetail($crawler);
+    }
+
     /**
      * @param Crawler $crawler
      * @return boolean|stdClass

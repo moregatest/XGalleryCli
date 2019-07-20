@@ -51,6 +51,7 @@ abstract class AbstractCrawler extends BaseCrawler implements CrawlerInterface
     }
 
     /**
+     * Get all detail links for all pages
      * @param null $callbackPagesCount
      * @param null $callback
      * @return array
