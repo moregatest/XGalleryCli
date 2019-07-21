@@ -1,20 +1,21 @@
 {% extends "base/base.html.twig" %}
 {% block title %}
-    XGallery - Onejav - {{ detail.name }}
+    XGallery - Onejav - {{ item.name }}
 {% endblock %}
 
 {% block body %}
-    <h2 class="my-4">{{ detail.name }}</h2>
+    {{ dump(item) }}
+    <h2 class="my-4">{{ item.name }}</h2>
     <div class="row">
         <div class="col-4">
-            <img src="{{ detail.cover }}" alt="{{ detail.name }}" class="img-thumbnail"/>
+            <img src="{{ item.cover }}" alt="{{ item.name }}" class="img-thumbnail"/>
         </div>
         <div class="col-8">
             <dl>
                 <dt>Content ID</dt>
-                <dd>{{ detail.content_id }}</dd>
+                <dd>{{ item.content_id }}</dd>
                 <dt>Dvd ID</dt>
-                <dd>{{ detail.dvd_id }}</dd>
+                <dd>{{ item.dvd_id }}</dd>
                 <dt>Downloads</dt>
                 <dd>
                     {% for size, torrent in downloads %}

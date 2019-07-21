@@ -1,6 +1,9 @@
 <div class="card {% if item.detail is null %}text-white bg-dark{% endif %}">
-    <!--<img data-src="https://via.placeholder.com/150" class="card-img-top lazy" alt="{{ item.title }}">-->
-    <img data-src="{{ item.cover }}" class="card-img-top lazy" alt="{{ item.title }}">
+    {% if app.environment == 'dev' %}
+        <img data-src="https://via.placeholder.com/450" class="card-img-top lazy" alt="{{ item.title }}">
+    {% else %}
+        <img data-src="{{ item.cover }}" class="card-img-top lazy" alt="{{ item.title }}">
+    {% endif %}
 
     <div class="card-header">
         <h5 style="text-align: left; display: inline-block"><a
@@ -30,25 +33,16 @@
         </ul>
     {% endif %}
 
-    {% if item.detail is null %}
-        <ul class="list-group list-group-flush">
-            {% for actress in item.actresses %}
-                <li class="list-group-item"><a href="/onejav/actress/{{ actress }}">{{ actress }}</a></li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <ul class="list-group list-group-flush">
-            {% for actress in item.detail.actress %}
-                <li class="list-group-item"><i class="fas fa-female"></i> <a
-                            href="/onejav/actress/{{ actress }}">{{ actress }}</a></li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+    <ul class="list-group list-group-flush">
+        {% for actress in item.actresses %}
+            <li class="list-group-item"><i class="fas fa-female"></i> <a
+                        href="/onejav/actress/{{ actress }}">{{ actress }}</a></li>
+        {% endfor %}
+    </ul>
 
-    {% if downloads is defined %}
-        <div class="card-footer">
+    <div class="card-footer">
+        {% if downloads is defined %}
             <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-
                 <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <i class="fas fa-download"></i> Download <span
@@ -57,20 +51,12 @@
                 <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
                     {% for download in downloads %}
                         <a href="{{ path('app_onejav_downloadtorrent') }}/?url={{ download.torrent }}"
-                           class="dropdown-item">Size {{ download.size }} GB</a>
+                           class="dropdown-item" target="_blank">Size {{ download.size }} GB</a>
                     {% endfor %}
                 </div>
-
             </div>
-            <div class="btn-group" role="group">
-                <a href="{{ path('app_onejav_addfavorite') }}/?itemNumber={{ item.itemNumber }}"
-                   class="btn btn-secondary"><i class="fas fa-folder-plus"></i> Add</a>
-            </div>
-        </div>
-    {% else %}
-        <div class="card-footer">
+        {% else %}
             <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-
                 <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <i class="fas fa-download"></i> Download <span
@@ -78,14 +64,13 @@
                 </button>
                 <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
                     <a href="{{ path('app_onejav_downloadtorrent') }}?url={{ item.torrent }}"
-                       class="dropdown-item">Size {{ item.size }} GB</a>
+                       class="dropdown-item" target="_blank">Size {{ item.size }} GB</a>
                 </div>
-
             </div>
-            <div class="btn-group" role="group">
-                <a href="{{ path('app_onejav_addfavorite') }}/?itemNumber={{ item.itemNumber }}"
-                   class="btn btn-secondary"><i class="fas fa-folder-plus"></i> Add</a>
-            </div>
+        {% endif %}
+        <div class="btn-group" role="group">
+            <a href="{{ path('app_onejav_addfavorite') }}/?itemNumber={{ item.itemNumber }}"
+               class="btn btn-secondary" target="_blank"><i class="fas fa-heart"></i> Favorite</a>
         </div>
-    {% endif %}
+    </div>
 </div>

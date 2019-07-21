@@ -10,10 +10,10 @@
 
 namespace App\Controller;
 
-use App\Entity\JavMedia;
 use App\Entity\JavMyFavorite;
 use App\Service\Crawler\OnejavCrawler;
 use App\Service\Crawler\R18Crawler;
+use DateInterval;
 use DateTime;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
@@ -35,13 +35,16 @@ class OnejavController extends AbstractController
      */
     private $crawler;
 
+    private $r18Crawler;
+
     /**
      * OnejavController constructor.
      * @param OnejavCrawler $crawler
      */
-    public function __construct(OnejavCrawler $crawler)
+    public function __construct(OnejavCrawler $crawler, R18Crawler $r18Crawler)
     {
-        $this->crawler = $crawler;
+        $this->crawler    = $crawler;
+        $this->r18Crawler = $r18Crawler;
     }
 
     /**
@@ -50,32 +53,37 @@ class OnejavController extends AbstractController
      */
     public function index()
     {
-        $featured = $this->crawler->getFeatured();
-
         // Today
-        $date  = new DateTime;
-        $today = $this->crawler->getAllDetailItems('https://onejav.com/' . $date->format('Y/m/d'));
-        $tags  = [];
+        $date      = new DateTime;
+        $today     = $date->format('Y/m/d');
+        $yesterday = $date->add(DateInterval::createFromDateString('yesterday'))->format('Y/m/d');
 
-        foreach ($featured as $index => $item) {
-            $date                       = DateTime::createFromFormat('F j, Y', $item->date);
-            $featured[$index]->dateSlug = $date->format('Y_m_d');
-            $tags                       = array_merge($tags, $item->tags);
+        $featuredItems     = $this->crawler->getFeatured();
+        $daily[$today]     = $this->crawler->getAllDetailItems('https://onejav.com/' . $today);
+        $daily[$yesterday] = $this->crawler->getAllDetailItems('https://onejav.com/' . $yesterday);
+
+        // Merging tags
+        $tags = [];
+
+        foreach ($featuredItems as $index => $item) {
+            $date                            = DateTime::createFromFormat('F j, Y', $item->date);
+            $featuredItems[$index]->dateSlug = $date->format('Y_m_d');
+            $tags                            = array_merge($tags, $item->tags);
         }
 
-        foreach ($today as $index => $item) {
-            $date                    = DateTime::createFromFormat('F j, Y', $item->date);
-            $today[$index]->dateSlug = $date->format('Y_m_d');
-            $tags                    = array_merge($tags, $item->tags);
+        foreach ($daily as $day => $items) {
+            foreach ($items as $index => $item) {
+                $date                          = DateTime::createFromFormat('F j, Y', $item->date);
+                $daily[$day][$index]->dateSlug = $date->format('Y_m_d');
+                $tags                          = array_merge($tags, $item->tags);
+            }
         }
 
         $tags = array_unique($tags);
 
         return $this->render(
             'onejav/index.html.twig',
-            [
-                'date' => $date->format('Y_m_d'), 'featured' => $featured, 'today' => $today, 'tags' => $tags
-            ]
+            ['featured' => $featuredItems, 'daily' => $daily, 'tags' => $tags]
         );
     }
 
@@ -85,28 +93,14 @@ class OnejavController extends AbstractController
      */
     public function detail($slug)
     {
-        $crawler     = new R18Crawler;
-        $searchLinks = $crawler->getSearchLinks($slug);
-
-        if (!empty($searchLinks)) {
-            foreach ($searchLinks as $searchLink) {
-                if (!$searchLink) {
-                    continue;
-                }
-
-                $detail = $crawler->getDetail($searchLink);
-                break;
-            }
-        }
-
-        $items     = $this->crawler->getAllDetailItems('https://onejav.com/search/' . urlencode($slug));
-        $downloads = [];
+        $item  = $this->crawler->getDetailFromUrl('https://onejav.com/torrent/' . strtolower(str_replace('-', '', $slug)));
+        $items = $this->crawler->getAllDetailItems('https://onejav.com/search/' . urlencode($slug));
 
         foreach ($items as $item) {
-            $downloads[$item->size] = $item->torrent;
+            $item->downloads[$item->size] = $item->torrent;
         }
 
-        return $this->render('onejav/detail.html.twig', ['detail' => $detail ?? null, 'downloads' => $downloads]);
+        return $this->showResults([$item], $slug);
     }
 
     /**
@@ -144,9 +138,18 @@ class OnejavController extends AbstractController
      */
     public function actress($slug)
     {
-        $r18             = new R18Crawler;
-        $items['r18']    = $r18->getSearchDetail($slug);
-        $items['onejav'] = $this->crawler->getAllDetailItems('https://onejav.com/actress/' . $slug);
+        $r18      = new R18Crawler;
+        $r18Items = $r18->getSearchDetail($slug);
+        $items    = [];
+
+        foreach ($r18Items as $item) {
+            if (!$item = $this->crawler->getDetailFromUrl('https://onejav.com/torrent/' . strtolower(str_replace('-', '', $item->dvd_id)))) {
+                continue;
+            }
+            $items [] = $item;
+        }
+
+        $items = array_merge($items, $this->crawler->getAllDetailItems('https://onejav.com/actress/' . $slug));
 
         return $this->showResults($items, $slug);
     }
@@ -234,37 +237,18 @@ class OnejavController extends AbstractController
     {
         $onejavItems = [];
 
-        foreach ($items['onejav'] as $item) {
+        foreach ($items as $item) {
             $date                             = DateTime::createFromFormat('F j, Y', $item->date ?? null);
             $item->dateSlug                   = $date ? $date->format('Y_m_d') : (new DateTime())->format('Y_m_d');
             $onejavItems[$item->itemNumber][] = $item;
-        }
-
-        $medias = [];
-
-        foreach ($onejavItems as $index => $result) {
-            $result  = reset($result);
-            $keyword = $result->itemNumber;
-
-            $medias [$index] = $this->getDoctrine()->getRepository(JavMedia::class)
-                ->createQueryBuilder('media')
-                ->where('LOWER(media.filename) = :keyword1')
-                ->orWhere('LOWER(media.filename) = :keyword2')
-                ->setParameter('keyword1', '%' . $keyword . '%')
-                ->setParameter('keyword2', '%' . str_replace('-', '', $keyword) . '%')
-                ->getQuery()
-                ->getFirstResult();
         }
 
         return $this->render(
             'onejav/results.html.twig',
             [
                 'keyword' => $keyword,
-                'onejav' => $onejavItems,
-                'r18' => $items['r18'],
-                'medias' => $medias,
+                'items' => $onejavItems,
             ]
         );
     }
 }
-

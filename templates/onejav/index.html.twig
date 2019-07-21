@@ -6,14 +6,16 @@
     {% set userguide_content = 'Search OneJAV to get torrent download file and show up with R18 content data. Suggest to use keyword with <strong>movie ID</strong> or <strong>DVD ID</strong>' %}
     {{ include('base/guide.html.twig') }}
     <div class="row">
-        <div class="col-12"><span class="badge badge-secondary">{{ date }}</span></div>
-        <hr/>
         <div class="col-8">
-            <div class="card-columns">
-                {% for item in today %}
-                    {{ include('/onejav/card.html.twig') }}
-                {% endfor %}
-            </div>
+            {% for date, items in daily %}
+                <div class="col-12"><span class="badge badge-secondary">{{ date }}</span></div>
+                <hr/>
+                <div class="card-columns">
+                    {% for item in items %}
+                        {{ include('/onejav/card.html.twig') }}
+                    {% endfor %}
+                </div>
+            {% endfor %}
         </div>
         <div class="col-4">
             {{ include('/onejav/form/search.html.twig') }}

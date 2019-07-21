@@ -52,7 +52,6 @@ class OnejavCrawler extends BaseCrawler
     public function getAllDetailItems($indexUrl)
     {
         $pages = $this->getIndexPages($indexUrl);
-
         $items = [];
 
         for ($page = 1; $page <= $pages; $page++) {
@@ -161,6 +160,11 @@ class OnejavCrawler extends BaseCrawler
                 }
 
                 $detail = $crawler->getDetail($searchLink);
+                foreach ($detail->actress as $actress) {
+                    $movie->actresses[] = $actress;
+                }
+
+                $movie->actresses = array_unique($movie->actresses);
                 break;
             }
         }
