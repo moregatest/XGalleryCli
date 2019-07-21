@@ -4,11 +4,25 @@
     <div class="container-fluid">
         <div class="row">
             <div class="card-columns">
-                {% for key, result in results %}
+                {% for key, result in onejav %}
                     {% set item = result[0] %}
                     {% set downloads = {} %}
                     {% set downloads = downloads|merge(result) %}
                     {{ include('/onejav/card.html.twig') }}
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="card-columns">
+                {% for item in r18 %}
+                    <div class="card">
+                        <img data-src="{{ item.cover }}" class="card-img-top lazy" alt="{{ item.name }}">
+
+                        <div class="card-header">
+                            <h5 style="text-align: left; display: inline-block">{{ item.content_id }}</h5>
+                            <span class="float-right">{{ item.dvd_id }}</span>
+                        </div>
+                    </div>
                 {% endfor %}
             </div>
         </div>

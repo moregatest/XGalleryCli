@@ -14,7 +14,6 @@ use App\Entity\JavMedia;
 use App\Entity\JavMyFavorite;
 use App\Service\Crawler\OnejavCrawler;
 use App\Service\Crawler\R18Crawler;
-use App\Service\HttpClient;
 use DateTime;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
@@ -46,6 +45,7 @@ class OnejavController extends AbstractController
     }
 
     /**
+     * Index view for Onejav
      * @Route("/onejav")
      */
     public function index()
@@ -81,7 +81,6 @@ class OnejavController extends AbstractController
 
     /**
      * Detail page
-     *
      * @Route("/onejav/detail/{slug}")
      */
     public function detail($slug)
@@ -145,7 +144,11 @@ class OnejavController extends AbstractController
      */
     public function actress($slug)
     {
-        return $this->showResults($this->crawler->getAllDetailItems('https://onejav.com/actress/' . $slug), $slug);
+        $r18             = new R18Crawler;
+        $items['r18']    = $r18->getSearchDetail($slug);
+        $items['onejav'] = $this->crawler->getAllDetailItems('https://onejav.com/actress/' . $slug);
+
+        return $this->showResults($items, $slug);
     }
 
     /**
@@ -190,9 +193,7 @@ class OnejavController extends AbstractController
         $downloadUrl = 'https://onejav.com/' . ($request->get('url'));
         $saveTo      = getenv('storage_torrent') . '/' . basename($downloadUrl);
 
-        $client = new HttpClient;
-
-        if ($client->download($downloadUrl, $saveTo)) {
+        if ($this->crawler->download($downloadUrl, $saveTo)) {
             $this->addFlash('success', 'Download torrent success: ' . $saveTo);
         }
 
@@ -231,17 +232,17 @@ class OnejavController extends AbstractController
      */
     private function showResults($items, $keyword)
     {
-        $results = [];
+        $onejavItems = [];
 
-        foreach ($items as $item) {
-            $date                         = DateTime::createFromFormat('F j, Y', $item->date ?? null);
-            $item->dateSlug               = $date ? $date->format('Y_m_d') : (new DateTime())->format('Y_m_d');
-            $results[$item->itemNumber][] = $item;
+        foreach ($items['onejav'] as $item) {
+            $date                             = DateTime::createFromFormat('F j, Y', $item->date ?? null);
+            $item->dateSlug                   = $date ? $date->format('Y_m_d') : (new DateTime())->format('Y_m_d');
+            $onejavItems[$item->itemNumber][] = $item;
         }
 
         $medias = [];
 
-        foreach ($results as $index => $result) {
+        foreach ($onejavItems as $index => $result) {
             $result  = reset($result);
             $keyword = $result->itemNumber;
 
@@ -259,7 +260,8 @@ class OnejavController extends AbstractController
             'onejav/results.html.twig',
             [
                 'keyword' => $keyword,
-                'results' => $results,
+                'onejav' => $onejavItems,
+                'r18' => $items['r18'],
                 'medias' => $medias,
             ]
         );

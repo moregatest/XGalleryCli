@@ -48,39 +48,43 @@
     {% if downloads is defined %}
         <div class="card-footer">
             <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-                <div class="btn-group" role="group">
-                    <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle"
-                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-download"></i> Download <span
-                                class="badge badge-pill badge-light">{{ downloads|length }}</span></a>
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                        {% for download in downloads %}
-                            <a href="{{ path('app_onejav_downloadtorrent') }}/?url={{ download.torrent }}"
-                               class="dropdown-item">Size {{ download.size }} GB</a>
-                        {% endfor %}
-                    </div>
-                    <a href="{{ path('app_onejav_addfavorite') }}/?itemNumber={{ item.itemNumber }}"
-                       class="btn btn-secondary">Add</a>
+
+                <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-download"></i> Download <span
+                            class="badge badge-pill badge-light">{{ downloads|length }}</span></a>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                    {% for download in downloads %}
+                        <a href="{{ path('app_onejav_downloadtorrent') }}/?url={{ download.torrent }}"
+                           class="dropdown-item">Size {{ download.size }} GB</a>
+                    {% endfor %}
                 </div>
+
+            </div>
+            <div class="btn-group" role="group">
+                <a href="{{ path('app_onejav_addfavorite') }}/?itemNumber={{ item.itemNumber }}"
+                   class="btn btn-secondary"><i class="fas fa-folder-plus"></i> Add</a>
             </div>
         </div>
     {% else %}
         <div class="card-footer">
             <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-                <div class="btn-group" role="group">
-                    <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle"
-                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-download"></i> Download <span
-                                class="badge badge-pill badge-light">1</span></a>
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                        <a href="{{ path('app_onejav_downloadtorrent') }}?url={{ item.torrent }}"
-                           class="dropdown-item">Size {{ item.size }} GB</a>
-                    </div>
-                    <a href="{{ path('app_onejav_addfavorite') }}/?itemNumber={{ item.itemNumber }}"
-                       class="btn btn-secondary">Add</a>
+
+                <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-download"></i> Download <span
+                            class="badge badge-pill badge-light">1</span></a>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                    <a href="{{ path('app_onejav_downloadtorrent') }}?url={{ item.torrent }}"
+                       class="dropdown-item">Size {{ item.size }} GB</a>
                 </div>
+
+            </div>
+            <div class="btn-group" role="group">
+                <a href="{{ path('app_onejav_addfavorite') }}/?itemNumber={{ item.itemNumber }}"
+                   class="btn btn-secondary"><i class="fas fa-folder-plus"></i> Add</a>
             </div>
         </div>
     {% endif %}
