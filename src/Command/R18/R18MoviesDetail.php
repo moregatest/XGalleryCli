@@ -92,40 +92,44 @@ final class R18MoviesDetail extends CrawlerCommand
             $this->insertGenres($movieObj->categories);
             $this->insertXRef($movieObj->categories, $movieEntity);
 
-            if (!empty($movieObj->actress)) {
-                foreach ($movieObj->actress as $actress) {
-                    $idolEntity = $this->entityManager->getRepository(JavIdol::class)->findOneBy(
-                        ['name' => $actress]
-                    );
+            if (empty($movieObj->actress)) {
+                $this->io->progressAdvance();
 
-                    if (!$idolEntity) {
-                        $idolEntity = new JavIdol;
-                        $idolEntity->setName($actress);
-                        $idolEntity->setSource('r18');
-                        $this->entityManager->persist($idolEntity);
-                        $this->entityManager->flush();
-                    }
+                continue;
+            }
 
-                    $xRefEntity = $this->entityManager->getRepository(JavMoviesXref::class)->findOneBy(
-                        [
-                            'movie_id' => $movieEntity->getId(),
-                            'xref_id' => $idolEntity->getId(),
-                            'xref_type' => 'actress',
-                        ]
-                    );
+            foreach ($movieObj->actress as $actress) {
+                $idolEntity = $this->entityManager->getRepository(JavIdol::class)->findOneBy(
+                    ['name' => $actress]
+                );
 
-                    if ($xRefEntity) {
-                        continue;
-                    }
-
-                    $xRefEntity = new JavMoviesXref;
-                    $xRefEntity->setXrefId($idolEntity->getId());
-                    $xRefEntity->setXrefType('actress');
-                    $xRefEntity->setMovieId($movieEntity->getId());
-
-                    $this->entityManager->persist($xRefEntity);
+                if (!$idolEntity) {
+                    $idolEntity = new JavIdol;
+                    $idolEntity->setName($actress);
+                    $idolEntity->setSource('r18');
+                    $this->entityManager->persist($idolEntity);
                     $this->entityManager->flush();
                 }
+
+                $xRefEntity = $this->entityManager->getRepository(JavMoviesXref::class)->findOneBy(
+                    [
+                        'movie_id' => $movieEntity->getId(),
+                        'xref_id' => $idolEntity->getId(),
+                        'xref_type' => 'actress',
+                    ]
+                );
+
+                if ($xRefEntity) {
+                    continue;
+                }
+
+                $xRefEntity = new JavMoviesXref;
+                $xRefEntity->setXrefId($idolEntity->getId());
+                $xRefEntity->setXrefType('actress');
+                $xRefEntity->setMovieId($movieEntity->getId());
+
+                $this->entityManager->persist($xRefEntity);
+                $this->entityManager->flush();
             }
 
             $this->io->progressAdvance();

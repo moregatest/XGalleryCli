@@ -20,6 +20,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Process\Process;
 
 /**
@@ -58,6 +60,11 @@ class BaseCommand extends Command
      * @var EntityManagerInterface
      */
     protected $entityManager;
+
+    /**
+     * @var ParameterBag
+     */
+    protected $params;
     /**
      * @var InputInterface
      */
@@ -75,9 +82,10 @@ class BaseCommand extends Command
      * BaseCommand constructor.
      * @param EntityManagerInterface $entityManager
      */
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, ParameterBagInterface $parameterBag)
     {
         $this->entityManager = $entityManager;
+        $this->params        = $parameterBag;
 
         parent::__construct();
     }
@@ -87,6 +95,7 @@ class BaseCommand extends Command
      */
     public function __destruct()
     {
+        $this->entityManager->close();
         $this->entityManager->getConnection()->close();
     }
 
@@ -123,20 +132,12 @@ class BaseCommand extends Command
          * @TODO Use https://symfony.com/doc/current/console/calling_commands.html
          */
         return new Process(
-            array_merge(['php', $this->getBinDir() . '/console'], $cmd),
+            array_merge(['php', $this->params->get('kernel.project_dir') . '/bin/console'], $cmd),
             null,
             null,
             null,
             (float)$timeout
         );
-    }
-
-    /**
-     * @return boolean|string
-     */
-    protected function getBinDir()
-    {
-        return realpath(__DIR__ . '/../bin');
     }
 
     /**

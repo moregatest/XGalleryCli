@@ -97,6 +97,17 @@ class JavMedia
     }
 
     /**
+     * @param string|null $filename
+     * @return JavMedia
+     */
+    public function setFilename(?string $filename): self
+    {
+        $this->filename = $filename;
+
+        return $this;
+    }
+
+    /**
      * @return string|null
      */
     public function getFilenameWithoutExtension(): ?string
@@ -131,17 +142,6 @@ class JavMedia
         );
 
         return implode('-', sscanf($originalFileName, "%[A-Z|a-z]%d"));
-    }
-
-    /**
-     * @param string|null $filename
-     * @return JavMedia
-     */
-    public function setFilename(?string $filename): self
-    {
-        $this->filename = $filename;
-
-        return $this;
     }
 
     /**

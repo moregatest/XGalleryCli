@@ -35,7 +35,6 @@
     "symfony/security-csrf": "4.3.*",
     "symfony/serializer-pack": "*",
     "symfony/templating": "4.3.*",
-    "symfony/translation": "4.3.*",
     "symfony/twig-bundle": "4.3.*",
     "symfony/validator": "4.3.*",
     "symfony/web-link": "4.3.*",

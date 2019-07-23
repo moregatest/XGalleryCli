@@ -10,11 +10,14 @@
 
 namespace App\Service;
 
-
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\DomCrawler\Crawler;
 
+/**
+ * Class BaseCrawler
+ * @package App\Service
+ */
 class BaseCrawler extends HttpClient
 {
     /**
