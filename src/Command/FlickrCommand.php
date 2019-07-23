@@ -13,6 +13,7 @@ namespace App\Command;
 use App\Entity\FlickrContact;
 use App\Service\OAuth\Flickr\FlickrClient;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use XGallery\BaseCommand;
 
 /**
@@ -55,9 +56,14 @@ class FlickrCommand extends BaseCommand
      */
     protected $client;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    /**
+     * FlickrCommand constructor.
+     * @param EntityManagerInterface $entityManager
+     * @param ParameterBagInterface $parameterBag
+     */
+    public function __construct(EntityManagerInterface $entityManager, ParameterBagInterface $parameterBag)
     {
-        parent::__construct($entityManager);
+        parent::__construct($entityManager, $parameterBag);
 
         $this->client = new FlickrClient;
     }

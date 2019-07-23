@@ -81,6 +81,7 @@ class BaseCommand extends Command
     /**
      * BaseCommand constructor.
      * @param EntityManagerInterface $entityManager
+     * @param ParameterBagInterface $parameterBag
      */
     public function __construct(EntityManagerInterface $entityManager, ParameterBagInterface $parameterBag)
     {

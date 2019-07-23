@@ -13,6 +13,7 @@ namespace App\Command\Linksys;
 use App\Service\Router\LinksysClient;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Exception\GuzzleException;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use XGallery\BaseCommand;
 
 /**
@@ -34,10 +35,11 @@ final class LinksysDevices extends BaseCommand
     /**
      * LinksysDevices constructor.
      * @param EntityManagerInterface $entityManager
+     * @param ParameterBagInterface $parameterBag
      */
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, ParameterBagInterface $parameterBag)
     {
-        parent::__construct($entityManager);
+        parent::__construct($entityManager, $parameterBag);
 
         $this->client = new LinksysClient;
     }
