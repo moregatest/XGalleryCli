@@ -64,6 +64,10 @@ final class XCityIdols extends CrawlerCommand
 
                 foreach ($links as $link) {
                     $this->logInfo('Processing ' . $link);
+
+                    /**
+                     * @TODO Break down get detail for another process
+                     */
                     $profile = $this->client->getProfileDetail($link);
 
                     $profileEntity = $this->entityManager->getRepository(JavIdol::class)->findOneBy(

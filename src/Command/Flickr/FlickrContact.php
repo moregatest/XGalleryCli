@@ -10,11 +10,11 @@
 
 namespace App\Command\Flickr;
 
+use App\Command\FlickrCommand;
 use DateTime;
 use Exception;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\FlickrCommand;
 
 /**
  * Class FlickrContact

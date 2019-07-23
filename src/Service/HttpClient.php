@@ -99,7 +99,7 @@ class HttpClient extends Client
             /**
              * @TODO Support decode content via event
              */
-            $header = $response->getHeader('Content-Type')[0] ?? '';
+            $header  = $response->getHeader('Content-Type')[0] ?? '';
             $content = $response->getBody()->getContents();
 
             if (strpos($header, 'application/json') !== false) {
@@ -143,7 +143,7 @@ class HttpClient extends Client
             return false;
         }
 
-        $orgFileSize = (int)$response->getHeader('Content-Length')[0];
+        $orgFileSize        = (int)$response->getHeader('Content-Length')[0];
         $downloadedFileSize = filesize($saveTo);
 
         if ($orgFileSize !== $downloadedFileSize) {

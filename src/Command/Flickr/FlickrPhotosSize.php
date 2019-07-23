@@ -10,10 +10,10 @@
 
 namespace App\Command\Flickr;
 
+use App\Command\FlickrCommand;
 use App\Entity\FlickrPhoto;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\FlickrCommand;
 
 /**
  * Class FlickrPhotosSize

@@ -135,29 +135,6 @@ final class MediaFiles extends BaseCommand
     }
 
     /**
-     * @return boolean
-     */
-    protected function processDatabaseFiles()
-    {
-        $entities = $this->entityManager->getRepository(JavMedia::class)->findAll();
-
-        if (!$entities) {
-            return false;
-        }
-
-        $this->io->newLine();
-        $this->io->progressStart(count($entities));
-
-        foreach ($entities as $entity) {
-            $file = new \SplFileInfo($entity->getDirectory() . DIRECTORY_SEPARATOR . $entity->getFilename());
-            $this->updateFile($file);
-            $this->io->progressAdvance();
-        }
-
-        return true;
-    }
-
-    /**
      * @param \SplFileInfo $file
      * @return bool
      */
@@ -224,6 +201,29 @@ final class MediaFiles extends BaseCommand
 
         $this->entityManager->persist($movieEntity);
         $this->entityManager->flush();
+
+        return true;
+    }
+
+    /**
+     * @return boolean
+     */
+    protected function processDatabaseFiles()
+    {
+        $entities = $this->entityManager->getRepository(JavMedia::class)->findAll();
+
+        if (!$entities) {
+            return false;
+        }
+
+        $this->io->newLine();
+        $this->io->progressStart(count($entities));
+
+        foreach ($entities as $entity) {
+            $file = new \SplFileInfo($entity->getDirectory() . DIRECTORY_SEPARATOR . $entity->getFilename());
+            $this->updateFile($file);
+            $this->io->progressAdvance();
+        }
 
         return true;
     }

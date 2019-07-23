@@ -10,11 +10,11 @@
 
 namespace App\Command\Flickr;
 
+use App\Command\FlickrCommand;
 use App\Entity\FlickrPhoto;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\FlickrCommand;
 
 /**
  * Class FlickrPhotosDownload
@@ -84,7 +84,6 @@ final class FlickrPhotosDownload extends FlickrCommand
                     ]
                 )
             );
-
         parent::configure();
     }
 

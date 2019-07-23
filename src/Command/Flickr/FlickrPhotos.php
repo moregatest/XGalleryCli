@@ -10,13 +10,13 @@
 
 namespace App\Command\Flickr;
 
+use App\Command\FlickrCommand;
 use App\Entity\FlickrPhoto;
 use DateTime;
 use Exception;
 use stdClass;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\FlickrCommand;
 
 /**
  * Class FlickrPhotos

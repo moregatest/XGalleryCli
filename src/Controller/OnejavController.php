@@ -100,7 +100,36 @@ class OnejavController extends AbstractController
             $item->downloads[$item->size] = $item->torrent;
         }
 
+        /**
+         * @TODO Related items
+         */
+
         return $this->showResults([$item], $slug);
+    }
+
+    /**
+     * @param $items
+     * @param $keyword
+     * @return Response
+     * @throws Exception
+     */
+    private function showResults($items, $keyword)
+    {
+        $onejavItems = [];
+
+        foreach ($items as $item) {
+            $date                             = DateTime::createFromFormat('F j, Y', $item->date ?? null);
+            $item->dateSlug                   = $date ? $date->format('Y_m_d') : (new DateTime())->format('Y_m_d');
+            $onejavItems[$item->itemNumber][] = $item;
+        }
+
+        return $this->render(
+            'onejav/results.html.twig',
+            [
+                'keyword' => $keyword,
+                'items' => $onejavItems,
+            ]
+        );
     }
 
     /**
@@ -225,30 +254,5 @@ class OnejavController extends AbstractController
 
         $this->addFlash('success', 'Item added success: ' . $itemNumber);
         return $this->redirect('/onejav');
-    }
-
-    /**
-     * @param $items
-     * @param $keyword
-     * @return Response
-     * @throws Exception
-     */
-    private function showResults($items, $keyword)
-    {
-        $onejavItems = [];
-
-        foreach ($items as $item) {
-            $date                             = DateTime::createFromFormat('F j, Y', $item->date ?? null);
-            $item->dateSlug                   = $date ? $date->format('Y_m_d') : (new DateTime())->format('Y_m_d');
-            $onejavItems[$item->itemNumber][] = $item;
-        }
-
-        return $this->render(
-            'onejav/results.html.twig',
-            [
-                'keyword' => $keyword,
-                'items' => $onejavItems,
-            ]
-        );
     }
 }

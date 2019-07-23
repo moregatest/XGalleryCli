@@ -8,15 +8,16 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace XGallery;
+namespace App\Command;
 
 use App\Entity\FlickrContact;
 use App\Service\OAuth\Flickr\FlickrClient;
 use Doctrine\ORM\EntityManagerInterface;
+use XGallery\BaseCommand;
 
 /**
  * Class FlickrCommand
- * @package XGallery\Command
+ * @package App\Command
  */
 class FlickrCommand extends BaseCommand
 {

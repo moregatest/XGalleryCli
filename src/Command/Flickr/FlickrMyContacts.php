@@ -10,9 +10,9 @@
 
 namespace App\Command\Flickr;
 
+use App\Command\FlickrCommand;
 use DateTime;
 use Exception;
-use XGallery\FlickrCommand;
 
 /**
  * Class FlickrMyContacts

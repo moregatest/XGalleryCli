@@ -16,6 +16,11 @@ namespace App\Utils;
  */
 class Filesystem
 {
+    public static function mkdir($dir)
+    {
+        self::getFilesystem()->mkdir($dir);
+    }
+
     protected static function getFilesystem()
     {
         static $instance;
@@ -28,12 +33,6 @@ class Filesystem
 
         return $instance;
     }
-
-    public static function mkdir($dir)
-    {
-        self::getFilesystem()->mkdir($dir);
-    }
-
 
     public static function exists($dir)
     {

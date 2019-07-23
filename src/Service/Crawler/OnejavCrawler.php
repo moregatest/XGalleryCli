@@ -23,27 +23,6 @@ use Symfony\Component\DomCrawler\Crawler;
 class OnejavCrawler extends BaseCrawler
 {
     /**
-     * Return pages number
-     *
-     * @param $indexUrl
-     * @return boolean|integer
-     * @throws GuzzleException
-     * @throws InvalidArgumentException
-     */
-    public function getIndexPages($indexUrl)
-    {
-        if (!$crawler = $this->getCrawler('GET', $indexUrl)) {
-            return false;
-        }
-
-        if ($crawler->filter('ul.pagination-list a')->count() === 0) {
-            return 1;
-        }
-
-        return (int)$crawler->filter('ul.pagination-list a')->last()->text();
-    }
-
-    /**
      * @param $indexUrl
      * @return array
      * @throws GuzzleException
@@ -74,46 +53,24 @@ class OnejavCrawler extends BaseCrawler
     }
 
     /**
-     * @return array|boolean
+     * Return pages number
+     *
+     * @param $indexUrl
+     * @return boolean|integer
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
-    public function getFeatured()
+    public function getIndexPages($indexUrl)
     {
-        $indexUrl = 'https://onejav.com/';
-
         if (!$crawler = $this->getCrawler('GET', $indexUrl)) {
             return false;
         }
 
-        $links = $crawler->filter('.is-desktop .card-content .dragscroll a.thumbnail-link')->each(
-            function ($el) {
-                return $el->attr('href');
-            }
-        );
-
-        $list = [];
-
-        foreach ($links as $index => $link) {
-            if (!$crawler = $this->getCrawler('GET', $indexUrl . $link)) {
-                unset($crawler);
-                continue;
-            }
-
-            $list [] = $this->getDetail($crawler);
-            unset($crawler);
+        if ($crawler->filter('ul.pagination-list a')->count() === 0) {
+            return 1;
         }
 
-        return $list;
-    }
-
-    public function getDetailFromUrl($url)
-    {
-        if (!$crawler = $this->getCrawler('GET', $url)) {
-            return false;
-        }
-
-        return $this->getDetail($crawler);
+        return (int)$crawler->filter('ul.pagination-list a')->last()->text();
     }
 
     /**
@@ -173,5 +130,48 @@ class OnejavCrawler extends BaseCrawler
         $movie->r18    = reset($searchLinks);
 
         return $movie;
+    }
+
+    /**
+     * @return array|boolean
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function getFeatured()
+    {
+        $indexUrl = 'https://onejav.com/';
+
+        if (!$crawler = $this->getCrawler('GET', $indexUrl)) {
+            return false;
+        }
+
+        $links = $crawler->filter('.is-desktop .card-content .dragscroll a.thumbnail-link')->each(
+            function ($el) {
+                return $el->attr('href');
+            }
+        );
+
+        $list = [];
+
+        foreach ($links as $index => $link) {
+            if (!$crawler = $this->getCrawler('GET', $indexUrl . $link)) {
+                unset($crawler);
+                continue;
+            }
+
+            $list [] = $this->getDetail($crawler);
+            unset($crawler);
+        }
+
+        return $list;
+    }
+
+    public function getDetailFromUrl($url)
+    {
+        if (!$crawler = $this->getCrawler('GET', $url)) {
+            return false;
+        }
+
+        return $this->getDetail($crawler);
     }
 }

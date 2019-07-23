@@ -10,6 +10,7 @@
 
 namespace App\Command\Flickr;
 
+use App\Command\FlickrCommand;
 use App\Entity\FlickrPhoto;
 use App\Service\HttpClient;
 use App\Traits\HasStorage;
@@ -17,7 +18,6 @@ use Exception;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
-use XGallery\FlickrCommand;
 
 /**
  * Class FlickrPhotoDownload

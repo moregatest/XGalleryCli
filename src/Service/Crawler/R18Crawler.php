@@ -66,6 +66,57 @@ final class R18Crawler extends AbstractCrawler
     }
 
     /**
+     * @param $keyword
+     * @return array
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function getSearchDetail($keyword)
+    {
+        $links = $this->getSearchLinks($keyword);
+
+        if (empty($links)) {
+            return [];
+        }
+
+        $items = [];
+
+        foreach ($links as $link) {
+            if (!$link) {
+                continue;
+            }
+
+            $items[] = $this->getDetail($link);
+        }
+
+        return $items;
+    }
+
+    /**
+     * @param $keyword
+     * @return array|boolean
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function getSearchLinks($keyword)
+    {
+        // https://www.r18.com/common/search/pagesize=120/searchword=Eimi+Fukada/page=1/
+        $url = 'https://www.r18.com/common/search/pagesize=120/searchword=' . urlencode($keyword) . '/page=1';
+
+        if (!$crawler = $this->getCrawler('GET', $url)) {
+            return false;
+        }
+
+        return $crawler->filter('.main .cmn-list-product01 li.item-list a')->each(
+            function ($el) {
+                if ($href = $el->attr('href')) {
+                    return $href;
+                }
+            }
+        );
+    }
+
+    /**
      * @param $url
      * @return boolean|mixed|stdClass
      * @throws GuzzleException
@@ -114,56 +165,5 @@ final class R18Crawler extends AbstractCrawler
 
             return false;
         }
-    }
-
-    /**
-     * @param $keyword
-     * @return array|boolean
-     * @throws GuzzleException
-     * @throws InvalidArgumentException
-     */
-    public function getSearchLinks($keyword)
-    {
-        // https://www.r18.com/common/search/pagesize=120/searchword=Eimi+Fukada/page=1/
-        $url = 'https://www.r18.com/common/search/pagesize=120/searchword=' . urlencode($keyword) . '/page=1';
-
-        if (!$crawler = $this->getCrawler('GET', $url)) {
-            return false;
-        }
-
-        return $crawler->filter('.main .cmn-list-product01 li.item-list a')->each(
-            function ($el) {
-                if ($href = $el->attr('href')) {
-                    return $href;
-                }
-            }
-        );
-    }
-
-    /**
-     * @param $keyword
-     * @return array
-     * @throws GuzzleException
-     * @throws InvalidArgumentException
-     */
-    public function getSearchDetail($keyword)
-    {
-        $links = $this->getSearchLinks($keyword);
-
-        if (empty($links)) {
-            return [];
-        }
-
-        $items = [];
-
-        foreach ($links as $link) {
-            if (!$link) {
-                continue;
-            }
-
-            $items[] = $this->getDetail($link);
-        }
-
-        return $items;
     }
 }
