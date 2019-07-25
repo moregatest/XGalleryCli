@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -65,7 +64,7 @@ final class FlickrPhotosSize extends FlickrCommand
                             null,
                             InputOption::VALUE_OPTIONAL,
                             'Number of photos will be used for get sizes',
-                            self::REST_LIMIT_PHOTOS_SIZE
+                            self::PHOTOS_SIZE_LIMIT
                         ),
                         new InputOption(
                             'all',

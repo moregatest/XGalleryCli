@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,13 +9,13 @@
 
 namespace App\Command\R18;
 
+use App\Command\CrawlerCommand;
 use App\Entity\JavIdol;
 use App\Entity\JavMovie;
 use App\Entity\JavMoviesXref;
 use App\Traits\HasMovies;
 use DateTime;
 use Exception;
-use XGallery\CrawlerCommand;
 
 /**
  * Class R18FetchMovies

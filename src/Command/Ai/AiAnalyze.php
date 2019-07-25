@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,13 +9,13 @@
 
 namespace App\Command\Ai;
 
+use App\Command\BaseCommand;
 use App\Entity\JavMyFavorite;
 use App\Entity\JavMyFavoriteData;
 use App\Service\Crawler\R18Crawler;
 use Doctrine\DBAL\DBALException;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
-use XGallery\BaseCommand;
 
 /**
  * Class AiAnalyze

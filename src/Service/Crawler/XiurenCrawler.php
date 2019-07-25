@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -12,6 +11,7 @@ namespace App\Service\Crawler;
 
 use App\Service\AbstractCrawler;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 
 /**
  * Class XiurenOrgCrawler
@@ -19,22 +19,23 @@ use GuzzleHttp\Exception\GuzzleException;
  */
 final class XiurenCrawler extends AbstractCrawler
 {
+    /**
+     * @var string
+     */
     protected $indexUrl = 'http://xiuren.org';
 
     /**
      * @return boolean|integer
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getIndexPages()
     {
-        $crawler = $this->getCrawler('GET', $this->getIndexUrl(1));
-
-        if (!$crawler) {
+        if (!$crawler = $this->getCrawler('GET', $this->getIndexUrl(1))) {
             return false;
         }
 
-        $pages = $crawler->filter('#page .info')->text();
-        $pages = explode('/', $pages);
+        $pages = explode('/', $crawler->filter('#page .info')->text());
 
         return (int)end($pages);
     }
@@ -49,15 +50,14 @@ final class XiurenCrawler extends AbstractCrawler
     }
 
     /**
-     * @param $indexUrl
-     * @return array|bool
+     * @param string $indexUrl
+     * @return array|boolean
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getIndexDetailLinks($indexUrl)
     {
-        $crawler = $this->getCrawler('GET', $indexUrl);
-
-        if (!$crawler) {
+        if (!$crawler = $this->getCrawler('GET', $indexUrl)) {
             return false;
         }
 
@@ -69,15 +69,14 @@ final class XiurenCrawler extends AbstractCrawler
     }
 
     /**
-     * @param $detailUrl
-     * @return array|bool
+     * @param string $detailUrl
+     * @return array|boolean|mixed
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getDetail($detailUrl)
     {
-        $crawler = $this->getCrawler('GET', $detailUrl);
-
-        if (!$crawler) {
+        if (!$crawler = $this->getCrawler('GET', $detailUrl)) {
             return false;
         }
 

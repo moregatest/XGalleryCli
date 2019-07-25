@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -72,8 +71,8 @@ final class FlickrPhotosDownload extends FlickrCommand
                             'limit',
                             null,
                             InputOption::VALUE_OPTIONAL,
-                            'Number of photos will be used for get sizes',
-                            self::REST_LIMIT_PHOTOS_SIZE
+                            'Limit number of downloads',
+                            self::DOWNLOAD_LIMIT
                         ),
                         new InputOption(
                             'all',

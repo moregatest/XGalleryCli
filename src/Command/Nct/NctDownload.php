@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,13 +9,13 @@
 
 namespace App\Command\Nct;
 
+use App\Command\CrawlerCommand;
 use App\Service\Crawler\NctCrawler;
 use App\Traits\HasStorage;
 use App\Utils\Filesystem;
 use SplFileInfo;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\CrawlerCommand;
 
 /**
  * Class NctDownload

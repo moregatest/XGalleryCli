@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,10 +9,10 @@
 
 namespace App\Command\Pornhub;
 
+use App\Command\CrawlerCommand;
 use App\Traits\HasStorage;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\CrawlerCommand;
 
 /**
  * Class PornhubDownload

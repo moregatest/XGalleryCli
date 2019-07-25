@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,7 +9,7 @@
 
 namespace App\Command\Xiuren;
 
-use XGallery\CrawlerCommand;
+use App\Command\CrawlerCommand;
 
 /**
  * Class XiurenDownloads
@@ -29,6 +28,7 @@ final class XiurenDownloads extends CrawlerCommand
     }
 
     /**
+     * Download all photos
      * @return boolean
      */
     protected function processDownloads()

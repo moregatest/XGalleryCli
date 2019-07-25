@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,11 +9,11 @@
 
 namespace App\Command\Phodacbiet;
 
+use App\Command\CrawlerCommand;
 use App\Service\Crawler\PhodacbietCrawler;
 use App\Traits\HasStorage;
 use App\Utils\Filesystem;
 use SplFileInfo;
-use XGallery\CrawlerCommand;
 
 /**
  * Class PhodacbietDownloads

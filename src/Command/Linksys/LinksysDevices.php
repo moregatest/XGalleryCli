@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,11 +9,11 @@
 
 namespace App\Command\Linksys;
 
+use App\Command\BaseCommand;
 use App\Service\Router\LinksysClient;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use XGallery\BaseCommand;
 
 /**
  * Class LinksysDevices

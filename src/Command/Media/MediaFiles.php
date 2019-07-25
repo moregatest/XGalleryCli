@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,6 +9,7 @@
 
 namespace App\Command\Media;
 
+use App\Command\BaseCommand;
 use App\Entity\JavMedia;
 use Exception;
 use FFMpeg\FFProbe;
@@ -18,7 +18,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use XGallery\BaseCommand;
 
 /**
  * Class MediaFiles

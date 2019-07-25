@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,8 +9,8 @@
 
 namespace App\Command\R18;
 
+use App\Command\CrawlerCommand;
 use App\Entity\JavMovie;
-use XGallery\CrawlerCommand;
 
 /**
  * Class R18Movies
