@@ -41,30 +41,18 @@
     </ul>
 
     <div class="card-footer">
-        {% if downloads is defined %}
+        {% if item.downloads is defined %}
             <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
                 <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <i class="fas fa-download"></i> Download <span
-                            class="badge badge-pill badge-light">{{ downloads|length }}</span></a>
+                            class="badge badge-pill badge-light">{{ item.downloads|length }}</span></a>
                 </button>
                 <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                    {% for download in downloads %}
-                        <a href="{{ path('app_onejav_downloadtorrent') }}/?url={{ download.torrent }}"
-                           class="dropdown-item" target="_blank">Size {{ download.size }} GB</a>
+                    {% for size, download in item.downloads %}
+                        <a href="{{ path('app_onejav_downloadtorrent') }}/?url={{ download }}"
+                           class="dropdown-item" target="_blank">Size {{ size }} GB</a>
                     {% endfor %}
-                </div>
-            </div>
-        {% else %}
-            <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-                <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-download"></i> Download <span
-                            class="badge badge-pill badge-light">1</span></a>
-                </button>
-                <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                    <a href="{{ path('app_onejav_downloadtorrent') }}?url={{ item.torrent }}"
-                       class="dropdown-item" target="_blank">Size {{ item.size }} GB</a>
                 </div>
             </div>
         {% endif %}

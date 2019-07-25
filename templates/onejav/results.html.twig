@@ -3,11 +3,8 @@
 {% block body %}
     <div class="container-fluid">
         <div class="row">
-            <div class="{% if items|length == 1 %}card{% else %}card-columns{% endif %}">
-                {% for key, result in items %}
-                    {% set item = result[0] %}
-                    {% set downloads = {} %}
-                    {% set downloads = downloads|merge(result) %}
+            <div class="{% if items|length == 1 %}col-4{% else %}card-columns{% endif %}">
+                {% for key, item in items %}
                     {{ include('/onejav/card.html.twig') }}
                 {% endfor %}
             </div>

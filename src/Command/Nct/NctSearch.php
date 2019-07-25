@@ -13,7 +13,6 @@ use App\Command\CrawlerCommand;
 use App\Entity\Nct;
 use DateTime;
 use Exception;
-use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -49,7 +48,6 @@ final class NctSearch extends CrawlerCommand
 
     /**
      * @return boolean
-     * @throws GuzzleException
      */
     protected function prepareSongs()
     {

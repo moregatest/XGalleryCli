@@ -13,6 +13,7 @@ use App\Command\CrawlerCommand;
 use App\Service\Crawler\NctCrawler;
 use App\Traits\HasStorage;
 use App\Utils\Filesystem;
+use Psr\Cache\InvalidArgumentException;
 use SplFileInfo;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
@@ -42,6 +43,7 @@ final class NctDownload extends CrawlerCommand
 
     /**
      * @return boolean
+     * @throws InvalidArgumentException
      */
     protected function processDownload()
     {

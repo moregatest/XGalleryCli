@@ -25,6 +25,12 @@
                         <a href="/onejav/tag/{{ tag }}"><span class="badge badge-info">{{ tag }}</span></a>
                     {% endfor %}
                 </div>
+                <hr/>
+                <div class="col-12">
+                    {% for actress in actresses %}
+                        <a href="/onejav/actress/{{ actress }}"><span class="badge badge-info">{{ actress }}</span></a>
+                    {% endfor %}
+                </div>
                 {% for item in featured %}
                     <div class="col-12 mb-2">
                         {{ include('/onejav/card.html.twig') }}

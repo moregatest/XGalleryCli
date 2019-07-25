@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -107,7 +106,9 @@ class NctCrawler extends AbstractCrawler
         $songs = [];
 
         foreach ($top20 as $url) {
-            $crawler = $this->getCrawler('GET', $url);
+            if (!$crawler = $this->getCrawler('GET', $url)) {
+                continue;
+            }
 
             foreach ($crawler->filter('.box_info_field h3 a') as $index => $node) {
                 $songs[$index]['href']  = $node->getAttribute('href');

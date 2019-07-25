@@ -1,6 +1,5 @@
 <?php
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -87,9 +86,22 @@ class OnejavCrawler extends BaseCrawler
 
         $movie = new stdClass;
 
-        $movie->cover = $crawler->filter('.columns img.image')->attr('src');
-        $movie->title = trim($crawler->filter('h5 a')->text());
-        $movie->size  = (float)str_replace('GB', '', $crawler->filter('h5 span')->text());
+        $movie->cover = null;
+        $movie->title = null;
+        $movie->size  = null;
+
+        if ($crawler->filter('.columns img.image')->count()) {
+            $movie->cover = $crawler->filter('.columns img.image')->attr('src');
+        }
+
+        if ($crawler->filter('h5 a')->count()) {
+            $movie->title = trim($crawler->filter('h5 a')->text());
+        }
+
+        if ($crawler->filter('h5 span')->count()) {
+            $movie->size = (float)str_replace('GB', '', $crawler->filter('h5 span')->text());
+        }
+
         // Date
         $movie->date        = trim($crawler->filter('.subtitle.is-6')->text());
         $movie->tags        = $crawler->filter('.tags .tag')->each(
@@ -109,6 +121,7 @@ class OnejavCrawler extends BaseCrawler
 
         $crawler     = new R18Crawler;
         $searchLinks = $crawler->getSearchLinks($movie->itemNumber);
+        $searchLinks = $searchLinks ?? [];
 
         if (!empty($searchLinks)) {
             foreach ($searchLinks as $searchLink) {
