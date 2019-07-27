@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -204,7 +204,7 @@ class OAuthClient
      */
     private function getNonce()
     {
-        return md5(uniqid(mt_rand(), true));
+        return md5(uniqid((string)mt_rand(), true));
     }
 
     /**
@@ -216,7 +216,7 @@ class OAuthClient
     private function encode($value)
     {
         if (!is_array($value)) {
-            return str_replace('%7E', '~', str_replace('+', ' ', rawurlencode($value)));
+            return str_replace('%7E', '~', str_replace('+', ' ', rawurlencode((string)$value)));
         }
 
         foreach ($value as $key => $aValue) {

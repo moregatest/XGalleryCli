@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
@@ -199,6 +200,7 @@ final class FlickrPhotosSize extends FlickrCommand
         $this->logInfo('Working on ' . count($this->photos) . ' photos');
         $failed = 0;
 
+        $this->io->newLine();
         $this->io->progressStart(count($this->photos));
 
         foreach ($this->photos as $index => $photoId) {
@@ -241,9 +243,9 @@ final class FlickrPhotosSize extends FlickrCommand
 
             $lastSize = end($photoSize->sizes->size);
             $photoEntity->setUrls(json_encode($photoSize->sizes->size));
-            $photoEntity->setWidth($lastSize->width ?? null);
-            $photoEntity->setHeight($lastSize->height ?? null);
-            $photoEntity->setMedia($lastSize->media == 'photo' ? 1 : 0);
+            $photoEntity->setWidth((int)$lastSize->width ?? null);
+            $photoEntity->setHeight((int)$lastSize->height ?? null);
+            $photoEntity->setMedia($lastSize->media == 'photo' ? true : false);
             $photoEntity->setUrl($lastSize->source);
 
             $this->batchInsert($photoEntity, $index);

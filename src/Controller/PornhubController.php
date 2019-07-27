@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -11,7 +11,10 @@
 namespace App\Controller;
 
 use App\Service\Crawler\PornhubCrawler;
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -31,6 +34,10 @@ class PornhubController extends AbstractController
 
     /**
      * @Route("/pornhub/search", name="search", methods="POST")
+     * @param Request $request
+     * @return RedirectResponse
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function search(Request $request)
     {

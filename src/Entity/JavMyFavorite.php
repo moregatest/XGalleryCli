@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -30,16 +30,26 @@ class JavMyFavorite
      */
     private $item_number;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getItemNumber(): ?string
     {
         return $this->item_number;
     }
 
+    /**
+     * @param string $item_number
+     * @return JavMyFavorite
+     */
     public function setItemNumber(string $item_number): self
     {
         $this->item_number = $item_number;

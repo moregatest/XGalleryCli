@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
@@ -54,7 +55,6 @@ final class XCityIdols extends CrawlerCommand
                 $this->io->progressStart(array_sum($pages));
             },
             function ($links) {
-
                 if (!$links || empty($links)) {
                     $this->io->progressAdvance();
 

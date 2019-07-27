@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -13,10 +13,13 @@ namespace App\Controller;
 use App\Entity\JavMedia;
 use App\Service\Crawler\R18Crawler;
 use App\Utils\Filesystem;
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use SplFileInfo;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -27,6 +30,10 @@ class MediaController extends AbstractController
 {
     /**
      * @Route("/media")
+     * @param Request $request
+     * @return Response
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function index(Request $request)
     {
@@ -127,6 +134,5 @@ class MediaController extends AbstractController
 
     public function feature()
     {
-
     }
 }

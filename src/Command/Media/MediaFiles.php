@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
@@ -163,11 +164,8 @@ final class MediaFiles extends BaseCommand
         }
 
         // Rename file name
-        $newFileName = str_replace(
-                $this->getOption('replace'),
-                '',
-                pathinfo($file->getFilename(), PATHINFO_FILENAME)
-            ) . '.' . $ext;
+        $newFileName = str_replace($this->getOption('replace'), '', pathinfo($file->getFilename(), PATHINFO_FILENAME))
+            . '.' . $ext;
         $newFilePath = $dirPath . DIRECTORY_SEPARATOR . $newFileName;
 
         if ($file->getRealPath() !== $newFilePath && !file_exists($newFilePath)) {

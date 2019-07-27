@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
@@ -49,7 +50,6 @@ class AiAnalyze extends BaseCommand
         $r18 = new R18Crawler;
 
         foreach ($this->data as $item) {
-
             $items = $r18->getSearchLinks($item->getItemNumber());
 
             if (empty($items)) {
@@ -80,15 +80,15 @@ class AiAnalyze extends BaseCommand
             }
 
             $this->entityManager->flush();
-
-            return true;
         }
+
+        return true;
     }
 
     /**
-     * @param $name
-     * @param $type
-     * @return boolean
+     * @param string $name
+     * @param string $type
+     * @return boolean|void
      */
     private function addData($name, $type)
     {
@@ -99,6 +99,6 @@ class AiAnalyze extends BaseCommand
         $entity = new JavMyFavoriteData;
         $entity->setName($name);
         $entity->setType($type);
-        $this->entityManager->persist($entity);
+        return $this->entityManager->persist($entity);
     }
 }

@@ -1,8 +1,13 @@
-<div class="card {% if item.detail is null %}text-white bg-dark{% endif %}">
+<div class="card shadow-sm mb-5 bg-white rounded">
     {% if app.environment == 'dev' %}
-        <img data-src="https://via.placeholder.com/450" class="card-img-top lazy" alt="{{ item.title }}">
+        <a
+                href="{{ path('app_onejav_detail', {'slug': item.itemNumber}) }}"><img
+                    data-src="https://via.placeholder.com/450" class="card-img-top lazy" alt="{{ item.title }}"></a>
     {% else %}
-        <img data-src="{{ item.cover }}" class="card-img-top lazy" alt="{{ item.title }}">
+        <a
+                href="{{ path('app_onejav_detail', {'slug': item.itemNumber}) }}"><img data-src="{{ item.cover }}"
+                                                                                       class="card-img-top lazy"
+                                                                                       alt="{{ item.title }}"></a>
     {% endif %}
 
     <div class="card-header">

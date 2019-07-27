@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
@@ -39,6 +40,9 @@ class PornhubDownload extends CrawlerCommand
         parent::configure();
     }
 
+    /**
+     * @return boolean
+     */
     protected function processDownload()
     {
         if (!$data = $this->getClient()->getDetail($this->getOption('url'))) {

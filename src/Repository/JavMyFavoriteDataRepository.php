@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -22,6 +22,10 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  */
 class JavMyFavoriteDataRepository extends ServiceEntityRepository
 {
+    /**
+     * JavMyFavoriteDataRepository constructor.
+     * @param RegistryInterface $registry
+     */
     public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, JavMyFavoriteData::class);

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
@@ -179,6 +180,12 @@ class OnejavCrawler extends BaseCrawler
         return $list;
     }
 
+    /**
+     * @param $url
+     * @return bool|stdClass
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
     public function getDetailFromUrl($url)
     {
         if (!$crawler = $this->getCrawler('GET', $url)) {

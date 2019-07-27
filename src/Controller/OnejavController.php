@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
@@ -95,8 +96,42 @@ class OnejavController extends AbstractController
     }
 
     /**
+     * @param $items
+     * @return mixed
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    private function getItems($items)
+    {
+        foreach ($items as $index => $item) {
+            unset($items[$index]);
+
+            $downloads[(string)$item->size] = $item->torrent;
+
+            if ($sameItems = $this->onejavCrawler->getAllDetailItems('https://onejav.com/search/' . urlencode($item->itemNumber))) {
+                foreach ($sameItems as $sameItem) {
+                    $downloads[(string)$sameItem->size] = $sameItem->torrent;
+                }
+            }
+
+            $item->downloads          = $downloads;
+            $date                     = DateTime::createFromFormat('F j, Y', $item->date);
+            $item->dateSlug           = $date ? $date->format('Y_m_d') : (new DateTime())->format('Y_m_d');
+            $items[$item->itemNumber] = $item;
+
+            $downloads = [];
+        }
+
+        return $items;
+    }
+
+    /**
      * Detail page
      * @Route("/onejav/detail/{slug}")
+     * @param $slug
+     * @return Response
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function detail($slug)
     {
@@ -107,6 +142,27 @@ class OnejavController extends AbstractController
          */
 
         return $this->showResults($this->getItems([$item]), $slug);
+    }
+
+    /**
+     * @param $items
+     * @param $keyword
+     * @return Response
+     * @throws Exception
+     */
+    private function showResults($items, $keyword)
+    {
+        if (count($items) == 1) {
+            return $this->render(
+                'onejav/detail.html.twig',
+                ['keyword' => $keyword, 'item' => reset($items), 'related' => $related ?? []]
+            );
+        }
+
+        return $this->render(
+            'onejav/results.html.twig',
+            ['keyword' => $keyword, 'items' => $items, 'related' => $related ?? []]
+        );
     }
 
     /**
@@ -215,30 +271,6 @@ class OnejavController extends AbstractController
     }
 
     /**
-     * @param $items
-     * @param $keyword
-     * @return Response
-     * @throws Exception
-     */
-    private function showResults($items, $keyword)
-    {
-        if (!is_array($items)) {
-            $date            = DateTime::createFromFormat('F j, Y', $item->date ?? null);
-            $items->dateSlug = $date ? $date->format('Y_m_d') : (new DateTime())->format('Y_m_d');
-
-            return $this->render(
-                'onejav/results.html.twig',
-                ['keyword' => $keyword, 'items' => [$items], 'related' => $related ?? []]
-            );
-        }
-
-        return $this->render(
-            'onejav/results.html.twig',
-            ['keyword' => $keyword, 'items' => $items, 'related' => $related ?? []]
-        );
-    }
-
-    /**
      * @Route("/onejav/download/", methods="GET")
      * @param Request $request
      * @return RedirectResponse
@@ -277,35 +309,5 @@ class OnejavController extends AbstractController
 
         $this->addFlash('success', 'Item added success: ' . $itemNumber);
         return $this->redirect('/onejav');
-    }
-
-    /**
-     * @param $items
-     * @return mixed
-     * @throws GuzzleException
-     * @throws InvalidArgumentException
-     */
-    private function getItems($items)
-    {
-        foreach ($items as $index => $item) {
-            unset($items[$index]);
-
-            $downloads[(string)$item->size] = $item->torrent;
-
-            if ($sameItems = $this->onejavCrawler->getAllDetailItems('https://onejav.com/search/' . urlencode($item->itemNumber))) {
-                foreach ($sameItems as $sameItem) {
-                    $downloads[(string)$sameItem->size] = $sameItem->torrent;
-                }
-            }
-
-            $item->downloads          = $downloads;
-            $date                     = DateTime::createFromFormat('F j, Y', $item->date);
-            $item->dateSlug           = $date ? $date->format('Y_m_d') : (new DateTime())->format('Y_m_d');
-            $items[$item->itemNumber] = $item;
-
-            $downloads = [];
-        }
-
-        return $items;
     }
 }

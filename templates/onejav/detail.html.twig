@@ -1,30 +1,33 @@
 {% extends "base/base.html.twig" %}
-{% block title %}
-    XGallery - Onejav - {{ item.name }}
-{% endblock %}
-
+{% block title %}XGallery - Onejav - {{ item.title }}{% endblock %}
 {% block body %}
-    {{ dump(item) }}
-    <h2 class="my-4">{{ item.name }}</h2>
     <div class="row">
         <div class="col-4">
-            <img src="{{ item.cover }}" alt="{{ item.name }}" class="img-thumbnail"/>
+            {{ include('/onejav/card.html.twig') }}
         </div>
         <div class="col-8">
-            <dl>
-                <dt>Content ID</dt>
-                <dd>{{ item.content_id }}</dd>
-                <dt>Dvd ID</dt>
-                <dd>{{ item.dvd_id }}</dd>
-                <dt>Downloads</dt>
-                <dd>
-                    {% for size, torrent in downloads %}
-                        <a href="{{ path('app_onejav_downloadtorrent') }}/?url={{ torrent }}"
-                           class="btn btn-primary"><i class="fas fa-download"></i> Size {{ size }} GB</a>
+            {% if item.detail.gallery is defined %}
+                <ul class="list-unstyled">
+                    {% for image in item.detail.gallery %}
+                        <li style="display: inline-block; height: 90px; border: 4px solid #fff; box-shadow: 0 1px 4px #ddd; margin: 4px 10px 0 0; width: 120px; overflow: hidden">
+                            <a href="#ex1" rel="modal:open">
+                                {% if app.environment == 'dev' %}
+                                    <img src="https://via.placeholder.com/450" class=""/>
+                                {% else %}
+                                    <img src="{{ image }}" class=""/>
+                                {% endif %}
+                            </a>
+                        </li>
                     {% endfor %}
-                </dd>
-            </dl>
+                </ul>
+                <hr/>
+            {% endif %}
+            {% if item.detail.sample is defined %}
+                <video width="100%" controls>
+                    <source src="{{ item.detail.sample }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            {% endif %}
         </div>
     </div>
-    <hr/>
 {% endblock %}

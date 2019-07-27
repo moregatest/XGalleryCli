@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,7 +10,6 @@
 
 namespace App\Controller;
 
-
 use App\Service\OAuth\Flickr\FlickrClient;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,7 +18,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
-
 
 /**
  * Class FlickrController
@@ -32,6 +30,10 @@ class FlickrController extends AbstractController
      */
     private $client;
 
+    /**
+     * FlickrController constructor.
+     * @param FlickrClient $client
+     */
     public function __construct(FlickrClient $client)
     {
         $this->client = $client;
@@ -66,7 +68,7 @@ class FlickrController extends AbstractController
             null,
             null,
             null,
-            600
+            (float)600
         );
         $process->disableOutput();
         $process->run();
@@ -97,7 +99,7 @@ class FlickrController extends AbstractController
             case 'gallery':
                 $command = ['flickr:photos', '--gallery=' . $data];
                 break;
-            case 'gallery':
+            case 'photo_ids':
                 $command = ['flickr:photos', '--photo_ids=' . $data];
                 break;
         }
@@ -107,7 +109,7 @@ class FlickrController extends AbstractController
             null,
             null,
             null,
-            600
+            (float)600
         );
         $process->disableOutput();
         $process->run();
@@ -138,7 +140,7 @@ class FlickrController extends AbstractController
             case 'gallery':
                 $command = ['flickr:photossize', '--gallery=' . $data];
                 break;
-            case 'gallery':
+            case 'photo_ids':
                 $command = ['flickr:photossize', '--photo_ids=' . $data];
                 break;
         }
@@ -148,7 +150,7 @@ class FlickrController extends AbstractController
             null,
             null,
             null,
-            600
+            (float)600
         );
         $process->disableOutput();
         $process->run();
@@ -179,7 +181,7 @@ class FlickrController extends AbstractController
             case 'gallery':
                 $command = ['flickr:photosdownload', '--gallery=' . $data];
                 break;
-            case 'gallery':
+            case 'photo_ids':
                 $command = ['flickr:photosdownload', '--photo_ids=' . $data];
                 break;
         }
@@ -189,7 +191,7 @@ class FlickrController extends AbstractController
             null,
             null,
             null,
-            600
+            (float)600
         );
         $process->disableOutput();
         $process->run();

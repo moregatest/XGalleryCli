@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -61,6 +61,11 @@ class JavMediaRepository extends ServiceEntityRepository
     }
     */
 
+    /**
+     * @param int $page
+     * @param int $limit
+     * @return Paginator
+     */
     public function getItems($page = 1, $limit = 5)
     {
         // Create our query
@@ -74,6 +79,12 @@ class JavMediaRepository extends ServiceEntityRepository
         return $this->paginate($query, $page, $limit);
     }
 
+    /**
+     * @param $dql
+     * @param int $page
+     * @param int $limit
+     * @return Paginator
+     */
     private function paginate($dql, $page = 1, $limit = 5)
     {
         $paginator = new Paginator($dql);

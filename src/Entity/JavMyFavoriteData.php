@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -35,16 +35,26 @@ class JavMyFavoriteData
      */
     private $type;
 
+    /**
+     * @return integer|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
+    /**
+     * @param string $name
+     * @return JavMyFavoriteData
+     */
     public function setName(string $name): self
     {
         $this->name = $name;
@@ -52,11 +62,18 @@ class JavMyFavoriteData
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getType(): ?string
     {
         return $this->type;
     }
 
+    /**
+     * @param string $type
+     * @return JavMyFavoriteData
+     */
     public function setType(string $type): self
     {
         $this->type = $type;

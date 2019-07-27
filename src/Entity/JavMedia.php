@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -115,6 +115,9 @@ class JavMedia
         return pathinfo($this->filename, PATHINFO_FILENAME);
     }
 
+    /**
+     * @return string|null
+     */
     public function getSuggestFilename(): ?string
     {
         $fileInfo         = pathinfo($this->filename);

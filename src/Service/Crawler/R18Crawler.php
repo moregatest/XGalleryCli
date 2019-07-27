@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -158,6 +158,14 @@ final class R18Crawler extends AbstractCrawler
             );
 
             $movieDetail = $this->assignFields($fields, $movieDetail);
+
+            if ($crawler->filter('a.js-view-sample')->count()) {
+                $movieDetail->sample = $crawler->filter('a.js-view-sample')->attr('data-video-high');
+            }
+
+            $movieDetail->gallery = $crawler->filter('.product-gallery a img.lazy')->each(function ($img) {
+                return $img->attr('data-original');
+            });
 
             return $movieDetail;
         } catch (RuntimeException $exception) {

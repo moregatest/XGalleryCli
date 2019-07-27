@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -205,9 +205,10 @@ final class XCityCrawler extends AbstractCrawler
     }
 
     /**
-     * @param $url
-     * @return boolean|stdClass
+     * @param string $url
+     * @return boolean|mixed|stdClass
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getProfileDetail($url)
     {

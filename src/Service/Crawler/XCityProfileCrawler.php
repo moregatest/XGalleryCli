@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -12,6 +12,7 @@ namespace App\Service\Crawler;
 
 use App\Service\AbstractCrawler;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use RuntimeException;
 use stdClass;
 
@@ -35,10 +36,10 @@ final class XCityProfileCrawler extends AbstractCrawler
 
     /**
      * Get profile object
-     *
      * @param string $url
-     * @return stdClass|boolean
+     * @return boolean|mixed|stdClass
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getDetail($url)
     {
@@ -173,11 +174,11 @@ final class XCityProfileCrawler extends AbstractCrawler
 
     /**
      * Get all profile links
-     *
      * @param null $callbackPagesCount
      * @param null $callback
      * @return array
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getAllDetailLinks($callbackPagesCount = null, $callback = null)
     {
@@ -205,8 +206,9 @@ final class XCityProfileCrawler extends AbstractCrawler
     }
 
     /**
-     * @return array|bool|int
+     * @return array|boolean|integer
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getIndexPages()
     {
@@ -242,10 +244,10 @@ final class XCityProfileCrawler extends AbstractCrawler
 
     /**
      * Get all profile links
-     *
      * @param string $url
      * @return array|boolean
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getIndexDetailLinks($url)
     {

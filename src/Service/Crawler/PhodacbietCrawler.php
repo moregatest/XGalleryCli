@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -12,6 +12,7 @@ namespace App\Service\Crawler;
 
 use App\Service\AbstractCrawler;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 
 /**
  * Class PhodacbietCrawler
@@ -27,6 +28,7 @@ final class PhodacbietCrawler extends AbstractCrawler
     /**
      * @return boolean|integer
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getIndexPages()
     {
@@ -39,10 +41,10 @@ final class PhodacbietCrawler extends AbstractCrawler
 
     /**
      * Return array of thread URLs
-     *
      * @param string $url
      * @return array|boolean
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getIndexDetailLinks($url)
     {
@@ -59,8 +61,9 @@ final class PhodacbietCrawler extends AbstractCrawler
 
     /**
      * @param string $url
-     * @return array|boolean
+     * @return array|boolean|mixed
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function getDetail($url)
     {

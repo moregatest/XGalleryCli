@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -81,13 +81,13 @@ final class FlickrMyContacts extends FlickrCommand
                 $contactEntity->setNsid($contact->nsid);
             }
 
-            $contactEntity->setIconserver($contact->iconserver);
-            $contactEntity->setIconfarm($contact->iconfarm);
+            $contactEntity->setIconserver((int)$contact->iconserver);
+            $contactEntity->setIconfarm((int)$contact->iconfarm);
             $contactEntity->setPathAlias($contact->path_alias);
-            $contactEntity->setIgnored($contact->ignored);
-            $contactEntity->setRevIgnored($contact->rev_ignored);
-            $contactEntity->setFriend($contact->friend);
-            $contactEntity->setFamily($contact->family);
+            $contactEntity->setIgnored((bool)$contact->ignored);
+            $contactEntity->setRevIgnored((bool)$contact->rev_ignored);
+            $contactEntity->setFriend((bool)$contact->friend);
+            $contactEntity->setFamily((bool)$contact->family);
             $contactEntity->setUsername($contact->username);
             $contactEntity->setRealname($contact->realname);
             $contactEntity->setLocation($contact->location ?? null);

@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -95,9 +95,6 @@ class FlickrClient extends OAuthClient
         $this->logNotice($response->message, [$parameters, get_object_vars($response)]);
 
         return false;
-
-
-        return $response;
     }
 
     /**
