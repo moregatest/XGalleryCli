@@ -136,27 +136,29 @@ class HttpClient extends Client
     public function download($url, $saveTo)
     {
         try {
-            $response = parent::request('GET', $url, ['sink' => $saveTo]);
+            if (!$response = parent::request('GET', $url, ['sink' => $saveTo])) {
+                return false;
+            }
+
+            $orgFileSize        = (int)$response->getHeader('Content-Length')[0];
+            $downloadedFileSize = filesize($saveTo);
+
+            if ($orgFileSize !== $downloadedFileSize) {
+                $this->logError('Downloaded filesize is not matched remote file');
+
+                return false;
+            }
+
+            if ($response->getStatusCode() !== 200) {
+                return false;
+            }
+
+            return true;
         } catch (GuzzleException $exception) {
             $this->logError($exception->getMessage());
 
             return false;
         }
-
-        $orgFileSize        = (int)$response->getHeader('Content-Length')[0];
-        $downloadedFileSize = filesize($saveTo);
-
-        if ($orgFileSize !== $downloadedFileSize) {
-            $this->logError('Downloaded filesize is not matched remote file');
-
-            return false;
-        }
-
-        if ($response->getStatusCode() === 200) {
-            return true;
-        }
-
-        return false;
     }
 
     /**

@@ -14,8 +14,9 @@
         <h5 style="text-align: left; display: inline-block"><a
                     href="{{ path('app_onejav_detail', {'slug': item.itemNumber}) }}">{{ item.itemNumber }}</a> <span
                     class="badge badge-secondary">{{ item.size }} GB</span></h5>
-        <span class="float-right"><a href="/onejav/daily/{{ item.dateSlug }}"><i
-                        class="fas fa-calendar-alt"></i> {{ item.date }}</a></span>
+        <span class="float-right"><i
+                    class="fas fa-calendar-alt"></i> <a
+                    href="/onejav/daily/{{ item.dateSlug }}">{{ item.date }}</a></span>
     </div>
 
     {% if item.description|length %}

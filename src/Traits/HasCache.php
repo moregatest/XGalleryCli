@@ -44,8 +44,7 @@ trait HasCache
 
     /**
      * @param $id
-     * @return bool|mixed
-     * @throws InvalidArgumentException
+     * @return boolean|mixed
      */
     private function getCacheItem($id)
     {
@@ -70,8 +69,7 @@ trait HasCache
      * @param $id
      * @param $data
      * @param int $expire
-     * @return bool
-     * @throws InvalidArgumentException
+     * @return boolean
      */
     protected function saveCache($id, $data, $expire = 86400)
     {

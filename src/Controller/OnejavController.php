@@ -13,6 +13,8 @@ namespace App\Controller;
 use App\Entity\JavMyFavorite;
 use App\Service\Crawler\OnejavCrawler;
 use App\Service\Crawler\R18Crawler;
+use App\Traits\HasCache;
+use App\Traits\HasStorage;
 use DateInterval;
 use DateTime;
 use Exception;
@@ -30,6 +32,10 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class OnejavController extends AbstractController
 {
+    use HasCache;
+
+    use HasStorage;
+
     /**
      * @var OnejavCrawler
      */
@@ -62,12 +68,17 @@ class OnejavController extends AbstractController
         $today     = $date->format('Y/m/d');
         $yesterday = $date->add(DateInterval::createFromDateString('yesterday'))->format('Y/m/d');
 
+        $id = md5($today);
+
+        if ($this->isHit($id, $response)) {
+            return $response;
+        }
+
         // Merging tags
         $tags      = [];
         $actresses = [];
 
-        $featuredItems = $this->onejavCrawler->getFeatured();
-        $featuredItems = $this->getItems($featuredItems);
+        $featuredItems = $this->getItems($this->onejavCrawler->getFeatured());
 
         foreach ($featuredItems as $index => $item) {
             $tags      = array_merge($tags, $item->tags);
@@ -86,17 +97,21 @@ class OnejavController extends AbstractController
             }
         }
 
-        return $this->render(
+        $response = $this->render(
             'onejav/index.html.twig',
             [
                 'featured' => $featuredItems, 'daily' => $daily,
                 'tags' => array_unique($tags), 'actresses' => array_unique($actresses)
             ]
         );
+
+        $this->saveCache($id, $response);
+
+        return $response;
     }
 
     /**
-     * @param $items
+     * @param array $items
      * @return mixed
      * @throws GuzzleException
      * @throws InvalidArgumentException
@@ -106,6 +121,7 @@ class OnejavController extends AbstractController
         foreach ($items as $index => $item) {
             unset($items[$index]);
 
+            $downloads                      = [];
             $downloads[(string)$item->size] = $item->torrent;
 
             if ($sameItems = $this->onejavCrawler->getAllDetailItems('https://onejav.com/search/' . urlencode($item->itemNumber))) {
@@ -118,8 +134,6 @@ class OnejavController extends AbstractController
             $date                     = DateTime::createFromFormat('F j, Y', $item->date);
             $item->dateSlug           = $date ? $date->format('Y_m_d') : (new DateTime())->format('Y_m_d');
             $items[$item->itemNumber] = $item;
-
-            $downloads = [];
         }
 
         return $items;
@@ -155,13 +169,13 @@ class OnejavController extends AbstractController
         if (count($items) == 1) {
             return $this->render(
                 'onejav/detail.html.twig',
-                ['keyword' => $keyword, 'item' => reset($items), 'related' => $related ?? []]
+                ['keyword' => $keyword, 'item' => reset($items)]
             );
         }
 
         return $this->render(
             'onejav/results.html.twig',
-            ['keyword' => $keyword, 'items' => $items, 'related' => $related ?? []]
+            ['keyword' => $keyword, 'items' => $items]
         );
     }
 
@@ -189,9 +203,7 @@ class OnejavController extends AbstractController
      */
     public function tag($slug)
     {
-        $items = $this->onejavCrawler->getAllDetailItems('https://onejav.com/tag/' . $slug);
-
-        return $this->showResults($this->getItems($items), $slug);
+        return $this->showResults($this->getItems($this->onejavCrawler->getAllDetailItems('https://onejav.com/tag/' . $slug)), $slug);
     }
 
     /**
@@ -278,10 +290,12 @@ class OnejavController extends AbstractController
     public function downloadTorrent(Request $request)
     {
         $downloadUrl = 'https://onejav.com/' . ($request->get('url'));
-        $saveTo      = getenv('storage_torrent') . '/' . basename($downloadUrl);
+        $saveTo      = $this->getStorage('torrent') . '/' . basename($downloadUrl);
 
         if ($this->onejavCrawler->download($downloadUrl, $saveTo)) {
             $this->addFlash('success', 'Download torrent success: ' . $saveTo);
+        } else {
+            $this->addFlash('warning', 'Can not download torrent file: ' . $downloadUrl);
         }
 
         return $this->redirect('/onejav');
