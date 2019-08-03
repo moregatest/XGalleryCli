@@ -11,6 +11,7 @@
 namespace App\Service\Crawler;
 
 use App\Service\AbstractCrawler;
+use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
 use stdClass;
@@ -93,51 +94,54 @@ final class BatdongsanCrawler extends AbstractCrawler
             return false;
         }
 
-        $item          = new stdClass;
-        $item->name    = trim($crawler->filter('.pm-title h1')->text());
-        $item->price   = trim($crawler->filter('.gia-title.mar-right-15 strong')->text());
-        $item->size    = trim($crawler->filter('.gia-title')->nextAll()->filter('strong')->text());
-        $item->content = $crawler->filter('.pm-content .pm-desc')->html();
-        $fields        = $crawler->filter('.table-detail')->each(
-            function ($row) {
-                $label = $row->filter('.left')->text();
-                if (strpos($label, 'Loại tin rao') !== false) {
-                    return ['type' => $row->filter('.right')->text()];
-                }
+        try {
+            $item          = new stdClass;
+            $item->name    = trim($crawler->filter('.pm-title h1')->text());
+            $item->price   = trim($crawler->filter('.gia-title.mar-right-15 strong')->text());
+            $item->size    = trim($crawler->filter('.gia-title')->nextAll()->filter('strong')->text());
+            $item->content = $crawler->filter('.pm-content .pm-desc')->html();
+            $fields        = $crawler->filter('.table-detail')->each(
+                function ($row) {
+                    $label = $row->filter('.left')->text();
+                    if (strpos($label, 'Loại tin rao') !== false) {
+                        return ['type' => $row->filter('.right')->text()];
+                    }
 
-                if (strpos($label, 'Địa chỉ') !== false) {
-                    return ['address' => $row->filter('.right')->text()];
-                }
+                    if (strpos($label, 'Địa chỉ') !== false) {
+                        return ['address' => $row->filter('.right')->text()];
+                    }
 
-                if (strpos($label, 'Tên dự án') !== false) {
-                    return ['project' => $row->filter('.right')->text()];
-                }
+                    if (strpos($label, 'Tên dự án') !== false) {
+                        return ['project' => $row->filter('.right')->text()];
+                    }
 
-                if (strpos($label, 'Quy mô') !== false) {
-                    return ['scope' => $row->filter('.right')->text()];
+                    if (strpos($label, 'Quy mô') !== false) {
+                        return ['scope' => $row->filter('.right')->text()];
+                    }
                 }
-            }
-        );
-        $item          = $this->assignFields($fields, $item);
-        $contact       = $crawler->filter('#divCustomerInfo .right-content')->each(
-            function ($el) {
-                $label = $el->filter('div')->text();
+            );
+            $item          = $this->assignFields($fields, $item);
+            $contact       = $crawler->filter('#divCustomerInfo .right-content')->each(
+                function ($el) {
+                    $label = $el->filter('div')->text();
 
-                if (strpos($label, 'Tên liên lạc') !== false) {
-                    return ['contact_name' => str_replace('Tên liên lạc', '', $label)];
+                    if (strpos($label, 'Tên liên lạc') !== false) {
+                        return ['contact_name' => str_replace('Tên liên lạc', '', $label)];
+                    }
+
+                    if (strpos($label, 'Mobile') !== false) {
+                        return ['phone' => str_replace('Mobile', '', $label)];
+                    }
+
+                    if (strpos($label, 'Email') !== false) {
+                        return ['email' => str_replace('Email', '', $label)];
+                    }
                 }
+            );
 
-                if (strpos($label, 'Mobile') !== false) {
-                    return ['phone' => str_replace('Mobile', '', $label)];
-                }
-
-                if (strpos($label, 'Email') !== false) {
-                    return ['email' => str_replace('Email', '', $label)];
-                }
-            }
-        );
-        $item          = $this->assignFields($contact, $item);
-
-        return $item;
+            return $this->assignFields($contact, $item);
+        } catch (Exception $exception) {
+            return false;
+        }
     }
 }
