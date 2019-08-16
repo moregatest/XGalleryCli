@@ -10,6 +10,7 @@
 
 namespace App\Controller;
 
+use App\Entity\JavDownload;
 use App\Entity\JavMyFavorite;
 use App\Service\Crawler\OnejavCrawler;
 use App\Service\Crawler\R18Crawler;
@@ -284,17 +285,29 @@ class OnejavController extends AbstractController
      */
     public function downloadTorrent(Request $request)
     {
-        $downloadUrl = 'https://onejav.com/' . ($request->get('url'));
-        $saveTo      = $this->getStorage('torrent') . '/' . basename($downloadUrl);
+        $itemNumber     = $request->get('item');
+        $downloadEntity = $this->getDoctrine()->getRepository(JavDownload::class)
+            ->findOneBy(['item_number' => $itemNumber]);
+        $downloadUrl    = 'https://onejav.com/' . ($request->get('url'));
+
+        if ($downloadEntity) {
+            $this->addFlash('warning', 'Already downloaded: ' . $downloadUrl);
+            return $this->redirect('/onejav');
+        }
+
+        $saveTo = $this->getStorage('torrent') . '/' . basename($downloadUrl);
 
         if ($this->onejavCrawler->download($downloadUrl, $saveTo)) {
             $this->addFlash('success', 'Download torrent success: ' . $saveTo);
+            $entity = new JavDownload;
+            $entity->setItemNumber($itemNumber);
+            $this->getDoctrine()->getManager()->persist($entity);
+            $this->getDoctrine()->getManager()->flush();
         } else {
             $this->addFlash('warning', 'Can not download torrent file: ' . $downloadUrl);
         }
 
-        $itemNumber = $request->get('item');
-        $entity     = $this->getDoctrine()->getManager()->getRepository(JavMyFavorite::class)
+        $entity = $this->getDoctrine()->getManager()->getRepository(JavMyFavorite::class)
             ->findOneBy(['item_number' => $itemNumber]);
 
         if (!$entity) {
