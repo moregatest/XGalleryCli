@@ -11,7 +11,6 @@
 namespace App\Traits;
 
 use App\Factory;
-use Psr\Cache\InvalidArgumentException;
 
 /**
  * Trait HasCache
@@ -22,8 +21,7 @@ trait HasCache
     /**
      * @param $id
      * @param $data
-     * @return bool
-     * @throws InvalidArgumentException
+     * @return boolean
      */
     protected function isHit($id, &$data)
     {
@@ -71,7 +69,7 @@ trait HasCache
      * @param int $expire
      * @return boolean
      */
-    protected function saveCache($id, $data, $expire = 86400)
+    protected function saveCache($id, $data, $expire = 8640)
     {
         $item = $this->getCacheItem($id);
 

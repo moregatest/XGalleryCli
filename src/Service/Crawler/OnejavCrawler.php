@@ -30,7 +30,10 @@ class OnejavCrawler extends BaseCrawler
      */
     public function getAllDetailItems($indexUrl)
     {
-        $pages = $this->getIndexPages($indexUrl);
+        if (!$pages = $this->getIndexPages($indexUrl)) {
+            return [];
+        }
+
         $items = [];
 
         for ($page = 1; $page <= $pages; $page++) {
@@ -120,28 +123,28 @@ class OnejavCrawler extends BaseCrawler
         $movie->torrent     = $crawler->filter('.control.is-expanded a')->attr('href');
         $movie->itemNumber  = implode('-', sscanf(trim($movie->title), "%[A-Z]%d"));
 
-        $crawler     = new R18Crawler;
-        $searchLinks = $crawler->getSearchLinks($movie->itemNumber);
-        $searchLinks = $searchLinks ?? [];
+        /*        $crawler     = new R18Crawler;
+                $searchLinks = $crawler->getSearchLinks($movie->itemNumber);
+                $searchLinks = $searchLinks ?? [];
 
-        if (!empty($searchLinks)) {
-            foreach ($searchLinks as $searchLink) {
-                if (!$searchLink) {
-                    continue;
+                if (!empty($searchLinks)) {
+                    foreach ($searchLinks as $searchLink) {
+                        if (!$searchLink) {
+                            continue;
+                        }
+
+                        $detail = $crawler->getDetail($searchLink);
+                        foreach ($detail->actress as $actress) {
+                            $movie->actresses[] = $actress;
+                        }
+
+                        $movie->actresses = array_unique($movie->actresses);
+                        break;
+                    }
                 }
 
-                $detail = $crawler->getDetail($searchLink);
-                foreach ($detail->actress as $actress) {
-                    $movie->actresses[] = $actress;
-                }
-
-                $movie->actresses = array_unique($movie->actresses);
-                break;
-            }
-        }
-
-        $movie->detail = $detail ?? null;
-        $movie->r18    = reset($searchLinks);
+                $movie->detail = $detail ?? null;
+                $movie->r18    = reset($searchLinks);*/
 
         return $movie;
     }

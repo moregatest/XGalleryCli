@@ -1,0 +1,11 @@
+{% for date, items in daily %}
+    <div class="daily-items" data-date="{{ date }}">
+        <div class="col-12"><span class="badge badge-secondary">{{ date }}</span></div>
+        <hr/>
+        <div class="card-columns">
+            {% for item in items %}
+                {{ include('/onejav/card.html.twig') }}
+            {% endfor %}
+        </div>
+    </div>
+{% endfor %}

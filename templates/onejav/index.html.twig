@@ -1,41 +1,45 @@
 {% extends "base/base.html.twig" %}
 {% block title %}
-    XGallery - Onejav
+    XGallery - Onejav - Homepage
 {% endblock %}
 {% block body %}
     {% set userguide_content = 'Search OneJAV to get torrent download file and show up with R18 content data. Suggest to use keyword with <strong>movie ID</strong> or <strong>DVD ID</strong>' %}
     {{ include('base/guide.html.twig') }}
     <div class="row">
         <div class="col-8">
-            {% for date, items in daily %}
-                <div class="col-12"><span class="badge badge-secondary">{{ date }}</span></div>
-                <hr/>
-                <div class="card-columns">
-                    {% for item in items %}
-                        {{ include('/onejav/card.html.twig') }}
-                    {% endfor %}
-                </div>
-            {% endfor %}
+            {% if daily is defined %}
+                {{ include('onejav/cards.html.twig') }}
+            {% endif %}
+            <button type="button" class="btn btn-primary load-more"><i
+                        class="fas fa-chevron-circle-down"></i>
+                Load more
+            </button>
         </div>
+
         <div class="col-4">
-            {{ include('/onejav/form/search.html.twig') }}
             <div class="row">
                 <div class="col-12">
-                    {% for tag in tags %}
-                        <a href="/onejav/tag/{{ tag }}"><span class="badge badge-info">{{ tag }}</span></a>
-                    {% endfor %}
+                    {% if tags is defined %}
+                        {% for tag in tags %}
+                            <a href="/onejav/tag/{{ tag }}"><span class="badge badge-info">{{ tag }}</span></a>
+                        {% endfor %}
+                    {% endif %}
                 </div>
                 <hr/>
                 <div class="col-12">
-                    {% for actress in actresses %}
-                        <a href="/onejav/actress/{{ actress }}"><span class="badge badge-info">{{ actress }}</span></a>
-                    {% endfor %}
+                    {% if actresses is defined %}
+                        {% for actress in actresses %}
+                            <a href="/onejav/actress/{{ actress }}"><span class="badge badge-info">{{ actress }}</span></a>
+                        {% endfor %}
+                    {% endif %}
                 </div>
-                {% for item in featured %}
-                    <div class="col-12 mb-2">
-                        {{ include('/onejav/card.html.twig') }}
-                    </div>
-                {% endfor %}
+                {% if featured is defined %}
+                    {% for item in featured %}
+                        <div class="col-12 mb-2">
+                            {{ include('/onejav/cover.html.twig') }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
     </div>

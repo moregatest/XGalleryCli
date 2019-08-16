@@ -1,0 +1,11 @@
+{% if app.environment == 'dev' %}
+    <a
+            href="{{ path('app_onejav_detail', {'slug': item.itemNumber}) }}"><img
+                data-src="https://via.placeholder.com/450"
+                class="card-img-top lazy {% if card is not defined %}rounded{% endif %}" alt="{{ item.title }}"></a>
+{% else %}
+    <a
+            href="{{ path('app_onejav_detail', {'slug': item.itemNumber}) }}"><img data-src="{{ item.cover }}"
+                                                                                   class="card-img-top lazy {% if card is not defined %}rounded{% endif %}"
+                                                                                   alt="{{ item.title }}"></a>
+{% endif %}

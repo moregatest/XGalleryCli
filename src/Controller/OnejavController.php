@@ -15,7 +15,6 @@ use App\Service\Crawler\OnejavCrawler;
 use App\Service\Crawler\R18Crawler;
 use App\Traits\HasCache;
 use App\Traits\HasStorage;
-use DateInterval;
 use DateTime;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
@@ -60,57 +59,53 @@ class OnejavController extends AbstractController
     /**
      * Index view for Onejav
      * @Route("/onejav")
+     * @param Request $request
+     * @return Response
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Today
-        $date      = new DateTime;
-        $today     = $date->format('Y/m/d');
-        $yesterday = $date->add(DateInterval::createFromDateString('yesterday'))->format('Y/m/d');
+        $formatDateTime = 'Y/m/d';
+        $requestDate    = $request->get('date');
+        $date           = $requestDate ? DateTime::createFromFormat($formatDateTime, $requestDate) : new DateTime;
+        $today          = $date->format($formatDateTime);
 
-        $id = md5($today);
-
-        if ($this->isHit($id, $response)) {
-            return $response;
-        }
-
-        // Merging tags
-        $tags      = [];
-        $actresses = [];
-
-        $featuredItems = $this->getItems($this->onejavCrawler->getFeatured());
-
-        foreach ($featuredItems as $index => $item) {
-            $tags      = array_merge($tags, $item->tags);
-            $actresses = array_merge($actresses, $item->actresses);
-        }
-
-        $daily[$today]     = $this->onejavCrawler->getAllDetailItems('https://onejav.com/' . $today);
-        $daily[$yesterday] = $this->onejavCrawler->getAllDetailItems('https://onejav.com/' . $yesterday);
-
-        foreach ($daily as $day => $items) {
-            $items = $this->getItems($items);
-
-            foreach ($items as $index => $item) {
-                $tags      = array_merge($tags, $item->tags);
-                $actresses = array_merge($actresses, $item->actresses);
-            }
-        }
+        $daily[$today] = $this->getItems($this->onejavCrawler->getAllDetailItems('https://onejav.com/' . $today));
 
         $response = $this->render(
             'onejav/index.html.twig',
             [
-                'featured' => $featuredItems, 'daily' => $daily,
-                'tags' => array_unique($tags), 'actresses' => array_unique($actresses)
+                'featured'  => $this->getItems($this->onejavCrawler->getFeatured()),
+                'daily'     => $daily,
+                'yesterday' => $date->add(\DateInterval::createFromDateString('yesterday'))->format('Y/m/d')
             ]
         );
-
-        $this->saveCache($id, $response);
 
         return $response;
     }
 
     /**
+     * @Route("/onejav/ajax")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function indexAjax(Request $request)
+    {
+
+        $formatDateTime      = 'Y/m/d';
+        $date                = DateTime::createFromFormat($formatDateTime, $request->get('date'));
+        $requestDate         = $date->add(\DateInterval::createFromDateString('yesterday'))->format('Y/m/d');
+        $daily[$requestDate] = $this->getItems($this->onejavCrawler->getAllDetailItems('https://onejav.com/' . $requestDate));
+
+        return $this->json($this->renderView('onejav/cards.html.twig', ['daily' => $daily]));
+    }
+
+    /**
+     * Get items detail
+     *
      * @param array $items
      * @return mixed
      * @throws GuzzleException
@@ -296,6 +291,19 @@ class OnejavController extends AbstractController
             $this->addFlash('success', 'Download torrent success: ' . $saveTo);
         } else {
             $this->addFlash('warning', 'Can not download torrent file: ' . $downloadUrl);
+        }
+
+        $itemNumber = $request->get('item');
+        $entity     = $this->getDoctrine()->getManager()->getRepository(JavMyFavorite::class)
+            ->findOneBy(['item_number' => $itemNumber]);
+
+        if (!$entity) {
+            $entity = new JavMyFavorite;
+            $entity->setItemNumber($itemNumber);
+            $this->getDoctrine()->getManager()->persist($entity);
+            $this->getDoctrine()->getManager()->flush();
+
+            $this->addFlash('success', 'Item added success: ' . $itemNumber);
         }
 
         return $this->redirect('/onejav');
