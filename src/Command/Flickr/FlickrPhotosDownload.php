@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,11 +10,11 @@
 
 namespace App\Command\Flickr;
 
+use App\Command\FlickrCommand;
 use App\Entity\FlickrPhoto;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\Command\FlickrCommand;
 
 /**
  * Class FlickrPhotosDownload
@@ -72,8 +72,8 @@ final class FlickrPhotosDownload extends FlickrCommand
                             'limit',
                             null,
                             InputOption::VALUE_OPTIONAL,
-                            'Number of photos will be used for get sizes',
-                            self::REST_LIMIT_PHOTOS_SIZE
+                            'Limit number of downloads',
+                            self::DOWNLOAD_LIMIT
                         ),
                         new InputOption(
                             'all',
@@ -84,7 +84,6 @@ final class FlickrPhotosDownload extends FlickrCommand
                     ]
                 )
             );
-
         parent::configure();
     }
 
@@ -190,6 +189,7 @@ final class FlickrPhotosDownload extends FlickrCommand
     {
         /**
          * @TODO Get photos with no contact record
+         * @TODO Support get size if not get sized ( with NSID param )
          */
         if (!$this->nsid || ($this->nsid && !$this->getOption('all'))) {
             $this->photos = $this->entityManager->getRepository(FlickrPhoto::class)->getSizedPhotoIds(

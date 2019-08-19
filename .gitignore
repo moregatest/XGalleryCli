@@ -7,6 +7,7 @@
 /public/bundles/
 /var/
 /vendor/
+/src/Migrations
 ###< symfony/framework-bundle ###
 
 ###> symfony/phpunit-bridge ###
@@ -21,3 +22,10 @@
 /composer.lock
 /symfony.lock
 /.php_cs.cache
+
+###> symfony/web-server-bundle ###
+/.web-server-pid
+###< symfony/web-server-bundle ###
+/.env.test
+
+/storage

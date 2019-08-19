@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,27 +10,31 @@
 
 namespace App\Service\Crawler;
 
+use App\Service\AbstractCrawler;
+use Exception;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
 use stdClass;
 
 /**
  * Class BdsCrawler
  * @package App\Service\Crawler
  */
-class BatdongsanCrawler extends BaseCrawler
+final class BatdongsanCrawler extends AbstractCrawler
 {
     /**
-     * Return number of pages
-     *
-     * @param string $url
-     * @return integer
-     * @throws GuzzleException
+     * @var string
      */
-    public function getPages($url)
-    {
-        $crawler = $this->getCrawler('GET', $url);
+    protected $indexUrl = 'https://batdongsan.com.vn/nha-dat-ban';
 
-        if (!$crawler) {
+    /**
+     * @return boolean|integer
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function getIndexPages()
+    {
+        if (!$crawler = $this->getCrawler('GET', $this->getIndexUrl(1))) {
             return false;
         }
 
@@ -42,17 +46,23 @@ class BatdongsanCrawler extends BaseCrawler
     }
 
     /**
-     * Extract all items on page
-     *
-     * @param string $url
-     * @return array
-     * @throws GuzzleException
+     * @param null $page
+     * @return string
      */
-    public function extractItems($url)
+    protected function getIndexUrl($page = null)
     {
-        $crawler = $this->getCrawler('GET', $url);
+        return $this->indexUrl . '/p' . $page;
+    }
 
-        if (!$crawler) {
+    /**
+     * @param string $url
+     * @return array|boolean
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function getIndexDetailLinks($url)
+    {
+        if (!$crawler = $this->getCrawler('GET', $url)) {
             return false;
         }
 
@@ -65,7 +75,7 @@ class BatdongsanCrawler extends BaseCrawler
         }
 
         foreach ($crawler->filter('.search-productItem .p-title h3 a') as $node) {
-            $result[] = $node->getAttribute('href');
+            $result[] = 'http://batdongsan.com.vn' . $node->getAttribute('href');
         }
 
         return $result;
@@ -73,64 +83,65 @@ class BatdongsanCrawler extends BaseCrawler
 
     /**
      * Extract object of item in a page
-     *
      * @param string $url
-     * @return boolean|stdClass
+     * @return boolean|mixed|stdClass
      * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
-    public function extractItem($url)
+    public function getDetail($url)
     {
-        $crawler = $this->getCrawler('GET', $url);
-
-        if (!$crawler) {
+        if (!$crawler = $this->getCrawler('GET', $url)) {
             return false;
         }
 
-        $item          = new stdClass;
-        $item->name    = trim($crawler->filter('.pm-title h1')->text());
-        $item->price   = trim($crawler->filter('.gia-title.mar-right-15 strong')->text());
-        $item->size    = trim($crawler->filter('.gia-title')->nextAll()->filter('strong')->text());
-        $item->content = $crawler->filter('.pm-content .pm-desc')->html();
-        $fields        = $crawler->filter('.table-detail')->each(
-            function ($row) {
-                $label = $row->filter('.left')->text();
-                if (strpos($label, 'Loại tin rao') !== false) {
-                    return ['type' => $row->filter('.right')->text()];
-                }
+        try {
+            $item          = new stdClass;
+            $item->name    = trim($crawler->filter('.pm-title h1')->text());
+            $item->price   = trim($crawler->filter('.gia-title.mar-right-15 strong')->text());
+            $item->size    = trim($crawler->filter('.gia-title')->nextAll()->filter('strong')->text());
+            $item->content = $crawler->filter('.pm-content .pm-desc')->html();
+            $fields        = $crawler->filter('.table-detail')->each(
+                function ($row) {
+                    $label = $row->filter('.left')->text();
+                    if (strpos($label, 'Loại tin rao') !== false) {
+                        return ['type' => $row->filter('.right')->text()];
+                    }
 
-                if (strpos($label, 'Địa chỉ') !== false) {
-                    return ['address' => $row->filter('.right')->text()];
-                }
+                    if (strpos($label, 'Địa chỉ') !== false) {
+                        return ['address' => $row->filter('.right')->text()];
+                    }
 
-                if (strpos($label, 'Tên dự án') !== false) {
-                    return ['project' => $row->filter('.right')->text()];
-                }
+                    if (strpos($label, 'Tên dự án') !== false) {
+                        return ['project' => $row->filter('.right')->text()];
+                    }
 
-                if (strpos($label, 'Quy mô') !== false) {
-                    return ['scope' => $row->filter('.right')->text()];
+                    if (strpos($label, 'Quy mô') !== false) {
+                        return ['scope' => $row->filter('.right')->text()];
+                    }
                 }
-            }
-        );
-        $item          = $this->assignFields($fields, $item);
-        $contact       = $crawler->filter('#divCustomerInfo .right-content')->each(
-            function ($el) {
-                $label = $el->filter('div')->text();
+            );
+            $item          = $this->assignFields($fields, $item);
+            $contact       = $crawler->filter('#divCustomerInfo .right-content')->each(
+                function ($el) {
+                    $label = $el->filter('div')->text();
 
-                if (strpos($label, 'Tên liên lạc') !== false) {
-                    return ['contact_name' => str_replace('Tên liên lạc', '', $label)];
+                    if (strpos($label, 'Tên liên lạc') !== false) {
+                        return ['contact_name' => str_replace('Tên liên lạc', '', $label)];
+                    }
+
+                    if (strpos($label, 'Mobile') !== false) {
+                        return ['phone' => str_replace('Mobile', '', $label)];
+                    }
+
+                    if (strpos($label, 'Email') !== false) {
+                        return ['email' => str_replace('Email', '', $label)];
+                    }
                 }
+            );
 
-                if (strpos($label, 'Mobile') !== false) {
-                    return ['phone' => str_replace('Mobile', '', $label)];
-                }
-
-                if (strpos($label, 'Email') !== false) {
-                    return ['email' => str_replace('Email', '', $label)];
-                }
-            }
-        );
-        $item          = $this->assignFields($contact, $item);
-
-        return $item;
+            return $this->assignFields($contact, $item);
+        } catch (Exception $exception) {
+            return false;
+        }
     }
 }

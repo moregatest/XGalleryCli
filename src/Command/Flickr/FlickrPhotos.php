@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,13 +10,13 @@
 
 namespace App\Command\Flickr;
 
+use App\Command\FlickrCommand;
 use App\Entity\FlickrPhoto;
 use DateTime;
 use Exception;
 use stdClass;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\Command\FlickrCommand;
 
 /**
  * Class FlickrPhotos

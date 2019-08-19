@@ -1,0 +1,7 @@
+<form class="form-inline" action="/onejav/search" method="POST">
+    <input type="text" name="keyword" class="form-control mr-sm-2" id="inputKeyword"
+           aria-describedby="keywordHelp"
+           placeholder="Enter your keyword">
+    <input type="hidden" name="token" value="{{ csrf_token('onejav-search') }}"/>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
+</form>

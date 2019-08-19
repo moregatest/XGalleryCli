@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,18 +10,20 @@
 
 namespace App\Command\Nct;
 
+use App\Command\CrawlerCommand;
+use App\Service\Crawler\NctCrawler;
 use App\Traits\HasStorage;
+use App\Utils\Filesystem;
+use Psr\Cache\InvalidArgumentException;
 use SplFileInfo;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Filesystem\Filesystem;
-use XGallery\Command\NctCommand;
 
 /**
  * Class NctDownload
  * @package App\Command\Nct
  */
-final class NctDownload extends NctCommand
+final class NctDownload extends CrawlerCommand
 {
     use HasStorage;
 
@@ -30,7 +32,7 @@ final class NctDownload extends NctCommand
      */
     protected function configure()
     {
-        $this->setDescription('Download song')
+        $this->setDescription('Download NCT song')
             ->setDefinition(
                 new InputDefinition(
                     [new InputOption('url', null, InputOption::VALUE_OPTIONAL)]
@@ -42,6 +44,7 @@ final class NctDownload extends NctCommand
 
     /**
      * @return boolean
+     * @throws InvalidArgumentException
      */
     protected function processDownload()
     {
@@ -53,9 +56,14 @@ final class NctDownload extends NctCommand
             return false;
         }
 
+        /**
+         * @var NctCrawler $client
+         */
+        $client = $this->getClient();
+
         $this->log('Download url ' . $url);
 
-        if (!$download = $this->client->extractItem($url)) {
+        if (!$download = $client->getDetail($url)) {
             $this->logError('Can not extract item');
 
             return false;
@@ -66,11 +74,13 @@ final class NctDownload extends NctCommand
         $saveTo = $this->getStorage('nct') . '/' . $download['creator'];
 
         if (!file_exists($saveTo) || !is_dir($saveTo)) {
-            (new Filesystem())->mkdir($saveTo);
+            Filesystem::mkdir($saveTo);
         }
 
         $this->log('Download to ' . $saveTo . '/' . $parts[0]);
-        if (!$this->client->download($download['download'], $saveTo . '/' . $parts[0])) {
+
+        // Use wget instead
+        if (!$client->download($download['download'], $saveTo . '/' . $parts[0])) {
             return false;
         }
 

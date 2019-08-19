@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,6 +10,10 @@
 
 namespace App;
 
+/**
+ * Class DefinesCore
+ * @package App
+ */
 class DefinesCore
 {
     /**

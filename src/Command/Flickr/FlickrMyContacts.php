@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,9 +10,9 @@
 
 namespace App\Command\Flickr;
 
+use App\Command\FlickrCommand;
 use DateTime;
 use Exception;
-use XGallery\Command\FlickrCommand;
 
 /**
  * Class FlickrMyContacts
@@ -32,7 +32,7 @@ final class FlickrMyContacts extends FlickrCommand
      */
     protected function configure()
     {
-        $this->setDescription('Fetch & insert all contacts of current user');
+        $this->setDescription('Fetchall contacts of current user');
 
         parent::configure();
     }
@@ -45,7 +45,6 @@ final class FlickrMyContacts extends FlickrCommand
     protected function prepareGetContacts()
     {
         // 2 days expire
-        $this->client->setExpireAfter(172800);
         $this->contacts = $this->client->flickrContactsGetAll();
 
         if (!$this->contacts || empty($this->contacts)) {
@@ -82,13 +81,13 @@ final class FlickrMyContacts extends FlickrCommand
                 $contactEntity->setNsid($contact->nsid);
             }
 
-            $contactEntity->setIconserver($contact->iconserver);
-            $contactEntity->setIconfarm($contact->iconfarm);
+            $contactEntity->setIconserver((int)$contact->iconserver);
+            $contactEntity->setIconfarm((int)$contact->iconfarm);
             $contactEntity->setPathAlias($contact->path_alias);
-            $contactEntity->setIgnored($contact->ignored);
-            $contactEntity->setRevIgnored($contact->rev_ignored);
-            $contactEntity->setFriend($contact->friend);
-            $contactEntity->setFamily($contact->family);
+            $contactEntity->setIgnored((bool)$contact->ignored);
+            $contactEntity->setRevIgnored((bool)$contact->rev_ignored);
+            $contactEntity->setFriend((bool)$contact->friend);
+            $contactEntity->setFamily((bool)$contact->family);
             $contactEntity->setUsername($contact->username);
             $contactEntity->setRealname($contact->realname);
             $contactEntity->setLocation($contact->location ?? null);

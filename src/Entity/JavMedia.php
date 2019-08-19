@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @package XGallery
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
+
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -97,6 +105,46 @@ class JavMedia
         $this->filename = $filename;
 
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getFilenameWithoutExtension(): ?string
+    {
+        return pathinfo($this->filename, PATHINFO_FILENAME);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getSuggestFilename(): ?string
+    {
+        $fileInfo         = pathinfo($this->filename);
+        $originalFileName = trim($fileInfo['filename']);
+        $originalFileName = str_replace(
+            [
+                '[HD]',
+                '(HD)',
+                '.HD',
+                '[FHD]',
+                'FHD',
+                '(CEN)',
+                '[Thz.la]',
+                '【Thz.la】',
+                '[ThZu.Cc]',
+                'g-cup.tv',
+                '.1080p',
+                '(ORE)',
+                '-h264',
+                'hjd2048.com-',
+                'www.av9.cc-',
+            ],
+            '',
+            $originalFileName
+        );
+
+        return implode('-', sscanf($originalFileName, "%[A-Z|a-z]%d"));
     }
 
     /**

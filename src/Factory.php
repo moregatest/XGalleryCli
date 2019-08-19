@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -61,7 +61,6 @@ class Factory
                     return false;
                 }
                 break;
-            default:
             case 'filesystem':
                 $instance = new FilesystemAdapter(
                     DefinesCore::APPLICATION,
@@ -69,6 +68,8 @@ class Factory
                     getenv('filecache_path')
                 );
                 break;
+            default:
+                return false;
         }
 
         return $instance;

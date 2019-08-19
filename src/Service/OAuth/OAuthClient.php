@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,7 +10,6 @@
 
 namespace App\Service\OAuth;
 
-use App\Factory;
 use App\Service\HttpClient;
 use App\Traits\HasLogger;
 use GuzzleHttp\Exception\GuzzleException;
@@ -69,17 +68,73 @@ class OAuthClient
     }
 
     /**
-     * @param $consumerKey
-     * @param $consumerSecretKey
-     * @param $token
-     * @param $tokenSecret
+     * @param $expireAfter
      */
-    protected function setCredential($consumerKey, $consumerSecretKey, $token, $tokenSecret)
+    public function setExpireAfter($expireAfter)
     {
-        $this->credential['consumerKey']       = $consumerKey;
-        $this->credential['consumerSecretKey'] = $consumerSecretKey;
-        $this->credential['token']             = $token;
-        $this->credential['tokenSecret']       = $tokenSecret;
+        $this->expireAfter = $expireAfter;
+    }
+
+    /**
+     * @param $callback
+     * @return string
+     * @throws GuzzleException
+     */
+    public function getRequestTokenUrl($callback)
+    {
+        parse_str($this->getRequestToken($callback), $query);
+
+        return static::OAUTH_AUTHORIZE_ENDPOINT . '?oauth_token=' . $query['oauth_token'];
+    }
+
+    /**
+     * @param $callback
+     * @return boolean|string
+     * @throws GuzzleException
+     */
+    public function getRequestToken($callback)
+    {
+        $this->credential['token']       = '';
+        $this->credential['tokenSecret'] = '';
+
+        return $this->request(
+            static::TOKEN_REQUEST_METHOD,
+            static::OAUTH_REQUEST_TOKEN_ENDPOINT,
+            ['oauth_callback' => $callback]
+        );
+    }
+
+    /**
+     * @param $method
+     * @param $uri
+     * @param $parameters
+     * @param array $options
+     * @return bool|string
+     * @throws GuzzleException
+     */
+    public function request($method, $uri, $parameters, $options = [])
+    {
+        try {
+            $parameters = $this->sign($method, $uri, $parameters);
+
+            if ($method === 'GET') {
+                $uri .= '?' . http_build_query($parameters);
+            } else {
+                $options['headers']['Authorization'] = $this->getOauthHeader();
+            }
+
+            $response = $this->client->request($method, $uri, $options);
+
+            if ($response === false) {
+                return false;
+            }
+
+            return $response;
+        } catch (InvalidArgumentException $exception) {
+            $this->logError($exception->getMessage());
+
+            return false;
+        }
     }
 
     /**
@@ -126,6 +181,52 @@ class OAuthClient
     }
 
     /**
+     * Get oauth parameters
+     *
+     * @return array
+     */
+    private function getOauthParameters()
+    {
+        return
+            [
+                'oauth_consumer_key' => $this->credential['consumerKey'],
+                'oauth_nonce' => $this->getNonce(),
+                'oauth_signature_method' => self::SIGNATURE_METHOD,
+                'oauth_timestamp' => time(),
+                'oauth_version' => self::VERSION,
+            ];
+    }
+
+    /**
+     * getNonce
+     *
+     * @return string
+     */
+    private function getNonce()
+    {
+        return md5(uniqid((string)mt_rand(), true));
+    }
+
+    /**
+     * encode
+     *
+     * @param array|string $value
+     * @return array|mixed
+     */
+    private function encode($value)
+    {
+        if (!is_array($value)) {
+            return str_replace('%7E', '~', str_replace('+', ' ', rawurlencode((string)$value)));
+        }
+
+        foreach ($value as $key => $aValue) {
+            $value[$key] = $this->encode($aValue);
+        }
+
+        return $value;
+    }
+
+    /**
      * Get encrypted signature
      *
      * @param string $baseSignature
@@ -135,6 +236,17 @@ class OAuthClient
     private function getSignature($baseSignature)
     {
         return base64_encode(hash_hmac('SHA1', $baseSignature, $this->getKey(), true));
+    }
+
+    /**
+     * Get key
+     *
+     * @return string
+     */
+    private function getKey()
+    {
+        return $this->encode($this->credential['consumerSecretKey'])
+            . '&' . $this->encode($this->credential['tokenSecret']);
     }
 
     /**
@@ -154,126 +266,6 @@ class OAuthClient
     }
 
     /**
-     * Get oauth parameters
-     *
-     * @return array
-     */
-    private function getOauthParameters()
-    {
-        return
-            [
-                'oauth_consumer_key' => $this->credential['consumerKey'],
-                'oauth_nonce' => $this->getNonce(),
-                'oauth_signature_method' => self::SIGNATURE_METHOD,
-                'oauth_timestamp' => time(),
-                'oauth_version' => self::VERSION,
-            ];
-    }
-
-    /**
-     * Get key
-     *
-     * @return string
-     */
-    private function getKey()
-    {
-        return $this->encode($this->credential['consumerSecretKey'])
-            . '&' . $this->encode($this->credential['tokenSecret']);
-    }
-
-    /**
-     * @param $method
-     * @param $uri
-     * @param $parameters
-     * @param array $options
-     * @return bool|string
-     * @throws GuzzleException
-     */
-    public function request($method, $uri, $parameters, $options = [])
-    {
-        /**
-         * @todo Check limit of requests
-         */
-        $cache = Factory::getCache();
-
-        try {
-            $item = $cache->getItem(md5(serialize(func_get_args())));
-
-            if ($item->isHit()) {
-                $this->logNotice('Request have cached', func_get_args());
-
-                return $item->get();
-            }
-
-            $parameters = $this->sign($method, $uri, $parameters);
-
-            if ($method === 'GET') {
-                $uri .= '?' . http_build_query($parameters);
-            } else {
-                $options['headers']['Authorization'] = $this->getOauthHeader();
-            }
-
-            $response = $this->client->request($method, $uri, $options);
-
-            if ($response === false) {
-                return false;
-            }
-
-            /**
-             * @TODO Flickr failed case still be cached
-             */
-            $item->set($response);
-            $item->expiresAfter($this->expireAfter);
-            $cache->save($item);
-
-            $this->expireAfter = null;
-
-            return $item->get();
-        } catch (InvalidArgumentException $exception) {
-            $this->logError($exception->getMessage());
-
-            return false;
-        }
-    }
-
-    /**
-     * @param $expireAfter
-     */
-    public function setExpireAfter($expireAfter)
-    {
-        $this->expireAfter = $expireAfter;
-    }
-
-    /**
-     * @param $callback
-     * @return boolean|string
-     * @throws GuzzleException
-     */
-    public function getRequestToken($callback)
-    {
-        $this->credential['token']       = '';
-        $this->credential['tokenSecret'] = '';
-
-        return $this->request(
-            static::TOKEN_REQUEST_METHOD,
-            static::OAUTH_REQUEST_TOKEN_ENDPOINT,
-            ['oauth_callback' => $callback]
-        );
-    }
-
-    /**
-     * @param $callback
-     * @return string
-     * @throws GuzzleException
-     */
-    public function getRequestTokenUrl($callback)
-    {
-        parse_str($this->getRequestToken($callback), $query);
-
-        return static::OAUTH_AUTHORIZE_ENDPOINT . '?oauth_token=' . $query['oauth_token'];
-    }
-
-    /**
      * @param $oauthToken
      * @param $oauthVerifier
      * @return boolean|string
@@ -289,31 +281,16 @@ class OAuthClient
     }
 
     /**
-     * getNonce
-     *
-     * @return string
+     * @param $consumerKey
+     * @param $consumerSecretKey
+     * @param $token
+     * @param $tokenSecret
      */
-    private function getNonce()
+    protected function setCredential($consumerKey, $consumerSecretKey, $token, $tokenSecret)
     {
-        return md5(uniqid(mt_rand(), true));
-    }
-
-    /**
-     * encode
-     *
-     * @param array|string $value
-     * @return array|mixed
-     */
-    private function encode($value)
-    {
-        if (!is_array($value)) {
-            return str_replace('%7E', '~', str_replace('+', ' ', rawurlencode($value)));
-        }
-
-        foreach ($value as $key => $aValue) {
-            $value[$key] = $this->encode($aValue);
-        }
-
-        return $value;
+        $this->credential['consumerKey']       = $consumerKey;
+        $this->credential['consumerSecretKey'] = $consumerSecretKey;
+        $this->credential['token']             = $token;
+        $this->credential['tokenSecret']       = $tokenSecret;
     }
 }

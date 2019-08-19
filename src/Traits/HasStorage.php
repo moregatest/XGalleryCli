@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,9 +10,16 @@
 
 namespace App\Traits;
 
-
+/**
+ * Trait HasStorage
+ * @package App\Traits
+ */
 trait HasStorage
 {
+    /**
+     * @param $name
+     * @return array|false|string
+     */
     protected function getStorage($name)
     {
         $name    = strtolower($name);

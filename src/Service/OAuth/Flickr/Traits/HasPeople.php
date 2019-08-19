@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -18,16 +18,6 @@ trait HasPeople
 {
 
     /**
-     * Call RESTful
-     *
-     * @param array $parameters
-     * @param array $options
-     *
-     * @return mixed
-     */
-    abstract public function get($parameters, $options = []);
-
-    /**
      * Search people by email
      *
      * @param string $email
@@ -39,21 +29,14 @@ trait HasPeople
     }
 
     /**
-     * Get photos of request people
+     * Call RESTful
      *
-     * @param string $nsid
-     * @param array $params
+     * @param array $parameters
+     * @param array $options
+     *
      * @return mixed
      */
-    public function flickrPeopleGetPhotos($nsid, $params = [])
-    {
-        return $this->get(
-            array_merge(
-                ['method' => 'flickr.people.getPhotos', 'per_page' => 500, 'user_id' => $nsid],
-                $params
-            )
-        );
-    }
+    abstract public function get($parameters, $options = []);
 
     /**
      * Recursive to get all photos of people
@@ -85,6 +68,23 @@ trait HasPeople
         }
 
         return $photos;
+    }
+
+    /**
+     * Get photos of request people
+     *
+     * @param string $nsid
+     * @param array $params
+     * @return mixed
+     */
+    public function flickrPeopleGetPhotos($nsid, $params = [])
+    {
+        return $this->get(
+            array_merge(
+                ['method' => 'flickr.people.getPhotos', 'per_page' => 500, 'user_id' => $nsid],
+                $params
+            )
+        );
     }
 
     /**

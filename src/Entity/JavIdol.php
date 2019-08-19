@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -41,7 +41,7 @@ class JavIdol
     /**
      * @var int
      *
-     * @ORM\Column(name="xid", type="integer", nullable=false)
+     * @ORM\Column(name="xid", type="integer", nullable=true)
      */
     private $xid;
 

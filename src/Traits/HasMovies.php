@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -35,18 +35,19 @@ trait HasMovies
             $genreEntity->setName($genre);
             $this->entityManager->persist($genreEntity);
         }
+
+        $this->entityManager->flush();
     }
 
     /**
      * @param $genres
      * @param $movieEntity
+     * @param string $type
      */
-    protected function insertXRef($genres, $movieEntity)
+    protected function insertXRef($genres, $movieEntity, $type = 'genre')
     {
         foreach ($genres as $genre) {
-            $genreEntity = $this->entityManager->getRepository(JavGenre::class)->findOneBy(
-                ['name' => $genre]
-            );
+            $genreEntity = $this->entityManager->getRepository(JavGenre::class)->findOneBy(['name' => $genre]);
 
             if (!$genreEntity) {
                 continue;
@@ -56,7 +57,7 @@ trait HasMovies
                 [
                     'movie_id' => $movieEntity->getId(),
                     'xref_id' => $genreEntity->getId(),
-                    'xref_type' => 'genre',
+                    'xref_type' => $type,
                 ]
             );
 
@@ -66,7 +67,7 @@ trait HasMovies
 
             $xRefEntity = new JavMoviesXref;
             $xRefEntity->setXrefId($genreEntity->getId());
-            $xRefEntity->setXrefType('genre');
+            $xRefEntity->setXrefType($type);
             $xRefEntity->setMovieId($movieEntity->getId());
 
             $this->entityManager->persist($xRefEntity);

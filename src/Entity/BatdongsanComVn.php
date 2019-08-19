@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -21,31 +21,37 @@ use Doctrine\ORM\Mapping as ORM;
 class BatdongsanComVn
 {
     /**
+     * @ORM\Id()
+     * @ORM\GeneratedValue()
+     * @ORM\Column(type="integer")
+     */
+    private $id;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="url", type="string", length=255, nullable=false)
-     * @ORM\Id
      */
     private $url;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="text", length=65535, nullable=true)
+     * @ORM\Column(name="name", type="string", length=255, nullable=true)
      */
     private $name;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="price", type="string", length=255, nullable=true)
+     * @ORM\Column(name="price", type="string", length=125, nullable=true)
      */
     private $price;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="size", type="string", length=255, nullable=true)
+     * @ORM\Column(name="size", type="string", length=125, nullable=true)
      */
     private $size;
 
@@ -59,28 +65,28 @@ class BatdongsanComVn
     /**
      * @var string
      *
-     * @ORM\Column(name="type", type="text", length=65535, nullable=true)
+     * @ORM\Column(name="type", type="string", length=125, nullable=true)
      */
     private $type;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="project", type="text", length=65535, nullable=true)
+     * @ORM\Column(name="project", type="string", length=125, nullable=true)
      */
     private $project;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="contact_name", type="text", length=65535, nullable=true)
+     * @ORM\Column(name="contact_name", type="string", length=255, nullable=true)
      */
     private $contactName;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="phone", type="string", length=255, nullable=true)
+     * @ORM\Column(name="phone", type="string", length=125, nullable=true)
      */
     private $phone;
 
@@ -90,6 +96,14 @@ class BatdongsanComVn
      * @ORM\Column(name="email", type="text", length=65535, nullable=true)
      */
     private $email;
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     /**
      * @return string|null

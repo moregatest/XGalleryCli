@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,74 +10,59 @@
 
 namespace App\Command\Batdongsan;
 
-use GuzzleHttp\Exception\GuzzleException;
-use Symfony\Component\Console\Input\InputDefinition;
-use Symfony\Component\Console\Input\InputOption;
-use XGallery\Command\BatdongsanCommand;
+use App\Command\CrawlerCommand;
+use App\Entity\BatdongsanComVn;
 
 /**
  * Class BatdongsanFetch
  * @package App\Command\Batdongsan
  */
-final class BatdongsanFetch extends BatdongsanCommand
+final class BatdongsanFetch extends CrawlerCommand
 {
-    /**
-     * @var integer
-     */
-    private $pages;
-
     /**
      * Configures the current command.
      */
     protected function configure()
     {
-        $this->setDescription('Fetch BDS URLs');
-        $this->setDefinition(
-            new InputDefinition(
-                [
-                    new InputOption(
-                        'url',
-                        null,
-                        InputOption::VALUE_OPTIONAL,
-                        'Index URL',
-                        'https://batdongsan.com.vn/nha-dat-ban'
-                    ),
-                ]
-            )
-        );
+        $this->setDescription('Fetch BDS data');
 
         parent::configure();
     }
 
     /**
      * @return boolean
-     * @throws GuzzleException
      */
-    protected function prepareGetPages()
+    protected function processFetch()
     {
-        $this->pages = $this->client->getPages($this->getOption('url'));
-        $this->log('Total pages: <options=bold>' . $this->pages . '</>');
+        $this->getClient()->getAllDetailLinks(
+            function ($pages) {
+                $this->io->newLine();
+                $this->io->progressStart($pages);
+            },
+            function ($links) {
+                if (!$links || empty($links)) {
+                    return;
+                }
 
-        return self::PREPARE_SUCCEED;
-    }
+                foreach ($links as $link) {
+                    if ($itemEntity = $this->entityManager->getRepository(BatdongsanComVn::class)->findOneBy(['url' => $link])) {
+                        $this->logNotice($link . ' already exists. We\'ll skip it');
 
-    /**
-     * Process insert items for all pages
-     */
-    protected function processInsertItems()
-    {
-        $this->io->newLine();
-        $this->io->progressStart($this->pages);
+                        continue;
+                    }
 
-        /**
-         * Process extract items & import for each page
-         * @TODO Support multi pages at same time
-         */
-        for ($page = 1; $page <= $this->pages; $page++) {
-            $this->getProcess(['batdongsan:import', '--url=' . $this->getOption('url') . '/p' . $page])->run();
+                    $itemEntity = new BatdongsanComVn;
+                    $itemEntity->setUrl($link);
+                    $this->entityManager->persist($itemEntity);
+                }
 
-            $this->io->progressAdvance();
-        }
+                $this->entityManager->flush();
+                $this->io->progressAdvance();
+
+                // Skip merge array
+                return false;
+            }
+        );
 
         return true;
     }

@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -18,16 +18,6 @@ namespace App\Service\OAuth\Flickr\Traits;
 trait HasActivity
 {
     /**
-     * Call RESTful
-     *
-     * @param array $parameters
-     * @param array $options
-     *
-     * @return mixed
-     */
-    abstract public function get($parameters, $options = []);
-
-    /**
      * flickrActivityUserComments
      *
      * @param array $params
@@ -43,6 +33,16 @@ trait HasActivity
             )
         );
     }
+
+    /**
+     * Call RESTful
+     *
+     * @param array $parameters
+     * @param array $options
+     *
+     * @return mixed
+     */
+    abstract public function get($parameters, $options = []);
 
     /**
      * flickrActivityUserPhotos

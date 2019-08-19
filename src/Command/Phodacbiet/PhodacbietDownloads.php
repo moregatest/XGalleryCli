@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,60 +10,77 @@
 
 namespace App\Command\Phodacbiet;
 
+use App\Command\CrawlerCommand;
+use App\Service\Crawler\PhodacbietCrawler;
 use App\Traits\HasStorage;
-use GuzzleHttp\Exception\GuzzleException;
+use App\Utils\Filesystem;
 use SplFileInfo;
-use Symfony\Component\Filesystem\Filesystem;
-use XGallery\Command\PhodacbietCommand;
 
 /**
  * Class PhodacbietDownloads
  * @package App\Command\Phodacbiet
  */
-class PhodacbietDownloads extends PhodacbietCommand
+final class PhodacbietDownloads extends CrawlerCommand
 {
     use HasStorage;
 
     /**
-     * @throws GuzzleException
+     * @var PhodacbietCrawler
      */
-    public function processDownloads()
+    private $client;
+
+    /**
+     * Configures the current command.
+     */
+    protected function configure()
     {
-        $this->io->newLine();
-        $this->io->progressStart(7);
+        $this->setDescription('Download Phodacbiet photos');
 
-        $threads = [];
+        parent::configure();
+    }
 
-        for ($index = 1; $index <= 7; $index++) {
-            $url     = 'https://phodacbiet.info/forums/anh-hotgirl-nguoi-mau.43/page-' . $index;
-            $threads = array_merge($threads, $this->client->getThreads($url));
-            $this->io->progressAdvance();
-        }
+    /**
+     * @return boolean
+     */
+    protected function processDownloads()
+    {
+        $this->client = $this->getClient();
+        $this->client->getAllDetailLinks(
+            function ($pages) {
+                $this->io->newLine();
+                $this->io->progressStart($pages);
+            },
+            function ($links) {
+                foreach ($links as $link) {
+                    $images = $this->client->getDetail($link);
 
-        $this->io->progressStart(count($threads));
+                    if (!$images || empty($images)) {
+                        continue;
+                    }
 
-        foreach ($threads as $thread) {
-            $images = $this->client->getThreadImages($thread);
+                    $saveDir = $this->getStorage('phodacbiet') . '/' . md5($link);
+                    Filesystem::mkdir($saveDir);
 
-            foreach ($images as $image) {
-                $info     = new SplFileInfo($image);
-                $baseName = $info->getBasename();
-                $baseName = explode('.', $baseName);
-                $baseName = $baseName[0];
+                    foreach ($images as $image) {
+                        $info     = new SplFileInfo($image);
+                        $baseName = $info->getBasename();
+                        $baseName = explode('.', $baseName);
+                        $baseName = $baseName[0];
 
-                $parts    = explode('-', $baseName);
-                $fileName = $baseName . '.' . end($parts);
+                        $parts    = explode('-', $baseName);
+                        $fileName = $baseName . '.' . end($parts);
 
-                $saveDir = $this->getStorage('phodacbiet') . '/' . md5($thread);
-                (new Filesystem())->mkdir($saveDir);
+                        /**
+                         * @TODO Use wget instead
+                         */
+                        $this->client->download($image, $saveDir . '/' . $fileName);
+                    }
+                }
 
-                $this->client->download(
-                    $image,
-                    $saveDir . '/' . $fileName
-                );
+                $this->io->progressAdvance();
             }
+        );
 
-            $this->io->progressAdvance();
-        }
+        return true;
     }
 }

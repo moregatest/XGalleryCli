@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -57,6 +57,19 @@ class FlickrContactRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('c')
             ->orderBy('c.updated', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @return int|null
+     * @throws NonUniqueResultException
+     */
+    public function getTotalContacts(): ?int
+    {
+        return $this->createQueryBuilder('c')
+            ->select('COUNT(`c`.`nsid`) AS `total`')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();

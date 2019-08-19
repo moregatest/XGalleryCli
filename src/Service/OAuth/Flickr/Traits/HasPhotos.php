@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -17,16 +17,6 @@ namespace App\Service\OAuth\Flickr\Traits;
  */
 trait HasPhotos
 {
-
-    /**
-     * Call RESTful
-     *
-     * @param array $parameters
-     * @param array $options
-     *
-     * @return mixed
-     */
-    abstract public function get($parameters, $options = []);
 
     /**
      * Search photos
@@ -46,6 +36,16 @@ trait HasPhotos
             )
         );
     }
+
+    /**
+     * Call RESTful
+     *
+     * @param array $parameters
+     * @param array $options
+     *
+     * @return mixed
+     */
+    abstract public function get($parameters, $options = []);
 
     /**
      * Get photo sizes

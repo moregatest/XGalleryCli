@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,6 +10,7 @@
 
 namespace App\Command\Flickr;
 
+use App\Command\FlickrCommand;
 use App\Entity\FlickrPhoto;
 use App\Service\HttpClient;
 use App\Traits\HasStorage;
@@ -17,7 +18,6 @@ use Exception;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Filesystem\Filesystem;
-use XGallery\Command\FlickrCommand;
 
 /**
  * Class FlickrPhotoDownload

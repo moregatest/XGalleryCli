@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,11 +10,11 @@
 
 namespace App\Command\Flickr;
 
+use App\Command\FlickrCommand;
 use DateTime;
 use Exception;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\Command\FlickrCommand;
 
 /**
  * Class FlickrContact
@@ -32,12 +32,10 @@ final class FlickrContact extends FlickrCommand
      */
     protected function configure()
     {
-        $this->setDescription('Manual update contact into database')
+        $this->setDescription('Manual insert a contact')
             ->setDefinition(
                 new InputDefinition(
-                    [
-                        new InputOption('nsid', 'id', InputOption::VALUE_OPTIONAL, 'Specific NSID for process'),
-                    ]
+                    [new InputOption('nsid', 'id', InputOption::VALUE_OPTIONAL, 'Specific NSID for process')]
                 )
             );
 
@@ -52,20 +50,11 @@ final class FlickrContact extends FlickrCommand
     protected function prepareContact()
     {
         if (!$nsid = $this->getOption('nsid')) {
-            $this->io->newLine();
-            $nsid = $this->io->ask(
-                'Please enter NSID',
-                null,
-                function ($value) {
-                    $value = trim($value);
+            $nsid = $this->io->ask('Enter NSID');
+        }
 
-                    if (empty($value)) {
-                        throw new Exception('The NSID cannot be empty');
-                    }
-
-                    return $value;
-                }
-            );
+        if (!$nsid) {
+            return self::PREPARE_FAILED;
         }
 
         $this->contact = $this->client->flickrPeopleGetInfo($this->client->getNsid($nsid));
@@ -104,12 +93,12 @@ final class FlickrContact extends FlickrCommand
             $contactEntity->setNsid($this->contact->person->nsid);
         }
 
-        $contactEntity->setIconserver($this->contact->person->iconserver);
+        $contactEntity->setIconserver((int)$this->contact->person->iconserver);
         $contactEntity->setIconfarm($this->contact->person->iconfarm);
         $contactEntity->setPathAlias($this->contact->person->path_alias);
-        $contactEntity->setIgnored($this->contact->person->ignored);
-        $contactEntity->setFriend($this->contact->person->friend);
-        $contactEntity->setFamily($this->contact->person->family);
+        $contactEntity->setIgnored((bool)$this->contact->person->ignored);
+        $contactEntity->setFriend((bool)$this->contact->person->friend);
+        $contactEntity->setFamily((bool)$this->contact->person->family);
         $contactEntity->setUsername($this->contact->person->username->_content);
         $contactEntity->setRealname($this->contact->person->realname->_content ?? null);
         $contactEntity->setLocation($this->contact->person->location->_content ?? null);

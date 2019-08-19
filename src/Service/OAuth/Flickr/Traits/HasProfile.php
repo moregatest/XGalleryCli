@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -17,16 +17,6 @@ namespace App\Service\OAuth\Flickr\Traits;
 trait HasProfile
 {
     /**
-     * Call RESTful
-     *
-     * @param array $parameters
-     * @param array $options
-     *
-     * @return mixed
-     */
-    abstract public function get($parameters, $options = []);
-
-    /**
      * flickrProfileGetProfile
      *
      * @param string $userId
@@ -36,4 +26,14 @@ trait HasProfile
     {
         return $this->get(['method' => 'flickr.profile.getProfile', 'user_id' => $userId]);
     }
+
+    /**
+     * Call RESTful
+     *
+     * @param array $parameters
+     * @param array $options
+     *
+     * @return mixed
+     */
+    abstract public function get($parameters, $options = []);
 }

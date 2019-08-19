@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,10 +10,10 @@
 
 namespace App\Command\Flickr;
 
+use App\Command\FlickrCommand;
 use App\Entity\FlickrPhoto;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
-use XGallery\Command\FlickrCommand;
 
 /**
  * Class FlickrPhotosSize
@@ -65,7 +65,7 @@ final class FlickrPhotosSize extends FlickrCommand
                             null,
                             InputOption::VALUE_OPTIONAL,
                             'Number of photos will be used for get sizes',
-                            self::REST_LIMIT_PHOTOS_SIZE
+                            self::PHOTOS_SIZE_LIMIT
                         ),
                         new InputOption(
                             'all',
@@ -197,9 +197,10 @@ final class FlickrPhotosSize extends FlickrCommand
             $this->photos = array_slice($this->photos, 0, 3600);
         }
 
-        $this->log('Working on ' . count($this->photos) . ' photos', 'info', [], true);
+        $this->logInfo('Working on ' . count($this->photos) . ' photos');
         $failed = 0;
 
+        $this->io->newLine();
         $this->io->progressStart(count($this->photos));
 
         foreach ($this->photos as $index => $photoId) {
@@ -242,9 +243,9 @@ final class FlickrPhotosSize extends FlickrCommand
 
             $lastSize = end($photoSize->sizes->size);
             $photoEntity->setUrls(json_encode($photoSize->sizes->size));
-            $photoEntity->setWidth($lastSize->width ?? null);
-            $photoEntity->setHeight($lastSize->height ?? null);
-            $photoEntity->setMedia($lastSize->media == 'photo' ? 1 : 0);
+            $photoEntity->setWidth((int)$lastSize->width ?? null);
+            $photoEntity->setHeight((int)$lastSize->height ?? null);
+            $photoEntity->setMedia($lastSize->media == 'photo' ? true : false);
             $photoEntity->setUrl($lastSize->source);
 
             $this->batchInsert($photoEntity, $index);

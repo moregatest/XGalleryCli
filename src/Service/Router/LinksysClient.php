@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -12,6 +12,8 @@ namespace App\Service\Router;
 
 use App\Service\HttpClient;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Cache\InvalidArgumentException;
+use Psr\Http\Message\ResponseInterface;
 use stdClass;
 
 /**
@@ -22,38 +24,9 @@ class LinksysClient extends HttpClient
 {
 
     /**
-     * @param string $method
-     * @param string $uri
-     * @param array $options
-     * @return boolean|string
+     * @return boolean|mixed|ResponseInterface|string
      * @throws GuzzleException
-     */
-    public function request($method, $uri, array $options = [])
-    {
-        $response = parent::request($method, $uri, $options);
-
-        if (!$response) {
-            $this->logNotice('Fetch failed: ' . $response);
-
-            return false;
-        }
-
-        $response = json_decode($response, false);
-
-        if (!$response) {
-            return false;
-        }
-
-        if ($response->result != 'OK') {
-            return false;
-        }
-
-        return $response->responses;
-    }
-
-    /**
-     * @return boolean|string
-     * @throws GuzzleException
+     * @throws InvalidArgumentException
      */
     public function jNapCoreTransaction()
     {
@@ -67,5 +40,30 @@ class LinksysClient extends HttpClient
                 ],
             ]
         );
+    }
+
+    /**
+     * @param string $method
+     * @param string $uri
+     * @param array $options
+     * @return boolean|mixed|ResponseInterface|string
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function request($method, $uri = '', array $options = [])
+    {
+        $response = parent::request($method, $uri, $options);
+
+        if (!$response) {
+            $this->logNotice('Fetch failed: ' . $response);
+
+            return false;
+        }
+
+        if ($response->result != 'OK') {
+            return false;
+        }
+
+        return $response->responses;
     }
 }

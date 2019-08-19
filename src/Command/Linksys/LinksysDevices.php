@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -10,28 +10,38 @@
 
 namespace App\Command\Linksys;
 
+use App\Command\BaseCommand;
+use App\Service\Router\LinksysClient;
+use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Exception\GuzzleException;
-use XGallery\Command\LinksysCommand;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
  * Class LinksysDevices
  * @package App\Command\Linksys
  */
-final class LinksysDevices extends LinksysCommand
+final class LinksysDevices extends BaseCommand
 {
+    /**
+     * @var LinksysClient
+     */
+    private $client;
+
     /**
      * @var array
      */
     private $devices;
 
     /**
-     * Configures the current command.
+     * LinksysDevices constructor.
+     * @param EntityManagerInterface $entityManager
+     * @param ParameterBagInterface $parameterBag
      */
-    protected function configure()
+    public function __construct(EntityManagerInterface $entityManager, ParameterBagInterface $parameterBag)
     {
-        $this->setDescription('Verify list of connected devices');
+        parent::__construct($entityManager, $parameterBag);
 
-        parent::configure();
+        $this->client = new LinksysClient;
     }
 
     /**
@@ -65,6 +75,8 @@ final class LinksysDevices extends LinksysCommand
             'Workspace' => '30:9C:23:09:2E:26',
             'S8+' => '30:07:4D:58:6A:D0',
             'iPhone 8+' => '3C:2E:F9:09:16:5D',
+            'BlackBerry' => 'A4:E4:B8:7E:6C:83',
+            'HTC' => 'AC:37:43:E6:3A:7A',
         ];
 
         $illegalDevices = [];
@@ -90,5 +102,15 @@ final class LinksysDevices extends LinksysCommand
         }
 
         return true;
+    }
+
+    /**
+     * Configures the current command.
+     */
+    protected function configure()
+    {
+        $this->setDescription('Verify list of connected devices');
+
+        parent::configure();
     }
 }

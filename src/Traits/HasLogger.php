@@ -1,6 +1,6 @@
 <?php
+
 /**
- *
  * Copyright (c) 2019 JOOservices Ltd
  * @author Viet Vu <jooservices@gmail.com>
  * @package XGallery
@@ -21,6 +21,17 @@ use Monolog\Logger;
  */
 trait HasLogger
 {
+
+    /**
+     * Log with debug level
+     *
+     * @param string $message
+     * @param array $context
+     */
+    protected function logDebug($message, $context = [])
+    {
+        $this->getLogger()->debug($message, $context);
+    }
 
     /**
      * getLogger
@@ -54,17 +65,6 @@ trait HasLogger
         } catch (Exception $exception) {
             return false;
         }
-    }
-
-    /**
-     * Log with debug level
-     *
-     * @param string $message
-     * @param array $context
-     */
-    protected function logDebug($message, $context = [])
-    {
-        $this->getLogger()->debug($message, $context);
     }
 
     /**
