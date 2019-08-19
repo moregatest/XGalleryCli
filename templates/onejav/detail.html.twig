@@ -6,9 +6,9 @@
             {{ include('/onejav/card.html.twig') }}
         </div>
         <div class="col-8">
-            {% if item.detail.gallery is defined %}
+            {% if item.r18.gallery is defined %}
                 <ul class="list-unstyled">
-                    {% for image in item.detail.gallery %}
+                    {% for image in item.r18.gallery %}
                         <li style="display: inline-block; height: 90px; border: 4px solid #fff; box-shadow: 0 1px 4px #ddd; margin: 4px 10px 0 0; width: 120px; overflow: hidden">
                             <a href="#ex1" rel="modal:open">
                                 {% if app.environment == 'dev' %}
@@ -22,9 +22,9 @@
                 </ul>
                 <hr/>
             {% endif %}
-            {% if item.detail.sample is defined %}
+            {% if item.r18.sample is defined %}
                 <video width="100%" controls>
-                    <source src="{{ item.detail.sample }}" type="video/mp4">
+                    <source src="{{ item.r18.sample }}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
             {% endif %}

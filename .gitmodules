@@ -1,3 +1,9 @@
 [submodule "public/vendor/lazyload"]
 	path = public/vendor/lazyload
 	url = https://github.com/verlok/lazyload.git
+[submodule "public/vendor/bootstrap"]
+	path = public/vendor/bootstrap
+	url = https://github.com/twbs/bootstrap.git
+[submodule "public/vendor/fontawesome"]
+	path = public/vendor/fontawesome
+	url = https://github.com/FortAwesome/Font-Awesome.git

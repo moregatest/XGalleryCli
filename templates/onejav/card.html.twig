@@ -3,7 +3,7 @@
 
     <div class="card-header">
         <h5 style="text-align: left; display: inline-block"><a
-                    href="{{ path('app_onejav_detail', {'slug': item.itemNumber}) }}">{{ item.itemNumber }}</a> <span
+                    href="{{ path('app_onejav_detail', {'slug': item.title}) }}">{{ item.title }}</a> <span
                     class="badge badge-secondary">{{ item.size }} GB</span></h5>
         <span class="float-right"><i
                     class="fas fa-calendar-alt"></i> <a
@@ -26,6 +26,16 @@
                     <a href="/onejav/tag/{{ tag }}"><span
                                 class="badge badge-info">{{ tag }}</span></a>
                 {% endfor %}
+            </li>
+        </ul>
+    {% endif %}
+
+    {% if item.r18 is defined %}
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <i class="fas fa-info"></i> <span class="badge badge-info">{{ item.r18.studio }}</span> <span
+                        class="badge badge-info">{{ item.r18.label }}</span> <span
+                        class="badge badge-info">{{ item.r18.series }}</span>
             </li>
         </ul>
     {% endif %}

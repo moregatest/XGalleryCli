@@ -22,6 +22,8 @@ use Symfony\Component\DomCrawler\Crawler;
  */
 class OnejavCrawler extends BaseCrawler
 {
+    protected $indexUrl = 'https://onejav.com';
+
     /**
      * @param $indexUrl
      * @return array
@@ -30,6 +32,8 @@ class OnejavCrawler extends BaseCrawler
      */
     public function getAllDetailItems($indexUrl)
     {
+        $indexUrl = $this->indexUrl . '/' . $indexUrl;
+
         if (!$pages = $this->getIndexPages($indexUrl)) {
             return [];
         }
@@ -121,7 +125,7 @@ class OnejavCrawler extends BaseCrawler
             }
         );
         $movie->torrent     = $crawler->filter('.control.is-expanded a')->attr('href');
-        $movie->itemNumber  = implode('-', sscanf(trim($movie->title), "%[A-Z]%d"));
+        $movie->itemNumber  = implode('-', sscanf(trim($movie->title), "%[A-Z]%[0-9]"));
 
         /*        $crawler     = new R18Crawler;
                 $searchLinks = $crawler->getSearchLinks($movie->itemNumber);
@@ -147,6 +151,29 @@ class OnejavCrawler extends BaseCrawler
                 $movie->r18    = reset($searchLinks);*/
 
         return $movie;
+    }
+
+    /**
+     * @param $itemNumber
+     * @return stdClass
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function getR18($itemNumber)
+    {
+        $crawler = new R18Crawler;
+        $r18     = new stdClass;
+
+        $searchLinks = $crawler->getSearchLinks($itemNumber);
+        $searchLinks = $searchLinks ?? [];
+
+        if (empty($searchLinks)) {
+            return $r18;
+        }
+
+        $r18 = $crawler->getDetail(reset($searchLinks));
+
+        return $r18;
     }
 
     /**
