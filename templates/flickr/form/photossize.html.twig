@@ -1,0 +1,20 @@
+<form class="" action="{{ path('app_flickr_photossize') }}" method="POST">
+    <div class="form-group">
+        <input type="text" name="data" class="form-control" id="inputNSID"
+               aria-describedby="nsidHelp"
+               placeholder="Enter NSID or URL of Profile / Album / Gallery or IDs">
+        <input type="hidden" name="token" value="{{ csrf_token('flickr-photossize') }}"/>
+    </div>
+    <button type="submit" class="btn btn-primary" name="submit"
+            value="nsid"><i class="fas fa-tasks"></i> Get photos' size by NSID
+    </button>
+    <button type="submit" class="btn btn-primary" name="submit"
+            value="album"><i class="fas fa-tasks"></i> Get photos' size by Album
+    </button>
+    <button type="submit" class="btn btn-primary" name="submit"
+            value="gallery"><i class="fas fa-tasks"></i> Get photos' size by Gallery
+    </button>
+    <button type="submit" class="btn btn-primary" name="submit"
+            value="ids"><i class="fas fa-tasks"></i> Get photos' size by IDs
+    </button>
+</form>

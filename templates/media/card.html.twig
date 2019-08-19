@@ -1,0 +1,68 @@
+<div class="card {{ item.detail is defined ? '' : 'text-white bg-dark' }}">
+    {% if item.detail is defined %}
+        <!--<img data-src="{{ item.detail.cover }}" class="card-img-top lazy" alt="{{ item.detail.name }}">-->
+    {% endif %}
+    <h5 class="card-header"><span
+                class="badge badge-info">{{ item.getId() }}</span> {{ item.getFilenameWithoutExtension() }}
+        <span
+                class="badge badge-secondary float-right">{{ item.getFileSize() / 1024 / 1024 }} MB</span>
+        {% if (item.getWidth() == 1920) and (item.getHeight() == 1080) %}
+            <span class="badge badge-primary">FHD</span>
+        {% else %}
+            <a href="/onejav/search/{{ item.getFilenameWithoutExtension() }}" target="_blank"><span
+                        class="badge badge-warning">Update</span></a>
+        {% endif %}
+    </h5>
+    <div class="card-body">
+        {{ dump(item) }}
+        {% if item.detail is not defined %}
+            <form class="form-inline" action="/media/rename" method="POST">
+                <div class="form-group mb-2">
+                    <label for="inputFilename" class="sr-only">Filename</label>
+                    <input type="text" name="filename" class="form-control" id="inputFilename"
+                           placeholder="Enter new filename"
+                           value="{{ item.getFilenameWithoutExtension() }}"
+                    >
+                </div>
+
+                <div class="form-group mb-2 ml-3">
+                    <input type="text" name="suggestFileName" class="form-control" id="inputFilename"
+                           value="{{ item.getSuggestFilename() }}"
+                    >
+                </div>
+                <div class="form-group mb-2 ml-3 form-check-inline">
+                    <input type="checkbox" name="use_suggest" class="form-check-input"
+                           id="exampleCheck1"
+                           value="1">
+                    <label class="form-check-label" for="exampleCheck1">Use suggest</label>
+                </div>
+
+                <input type="hidden" name="id" value="{{ item.getId() }}"/>
+                <input type="hidden" name="page" value="{{ currentPage }}"/>
+                <button type="submit" class="btn btn-primary mx-sm-3 mb-2"><i class="fas fa-file-signature"></i> Rename
+                </button>
+                {% if item.duration <= 50 %}
+
+                {% endif %}
+            </form>
+        {% endif %}
+    </div>
+    {% if item.detail is defined %}
+        <ul class="list-group list-group-flush">
+            {% for actress in item.detail.actress %}
+                <li class="list-group-item"><i class="fas fa-female"></i> <a href="">{{ actress }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+        {% if item.detail.categories|length > 0 %}
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <i class="fas fa-tags"></i>
+                    {% for tag in item.detail.categories %}
+                        <a href=""><span class="badge badge-info">{{ tag }}</span></a>
+                    {% endfor %}
+                </li>
+            </ul>
+        {% endif %}
+    {% endif %}
+</div>

@@ -1,0 +1,34 @@
+{% extends "base/base.html.twig" %}
+{% block title %}
+    XGallery - Media local files
+{% endblock %}
+{% block body %}
+    {% set userguide_content = 'Local media files' %}
+    <div class="row">
+        <div class="col-6">
+            {{ include('base/guide.html.twig') }}
+        </div>
+        <div class="col-6">
+            <form action="/media/search" method="POST">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="inputGroupPrepend2">Enter keyword</span>
+                    </div>
+                    <input type="text" class="form-control" id="validationDefaultUsername" placeholder=""
+                           aria-describedby="inputGroupPrepend2" required=""
+                           name="keyword"
+                    />
+                </div>
+            </form>
+        </div>
+    </div>
+    {{ include('base/pagination.html.twig') }}
+    <div class="row">
+        <div class="card-columns">
+            {% for item in items %}
+                {{ include('media/card.html.twig') }}
+            {% endfor %}
+        </div>
+    </div>
+    {{ include('base/pagination.html.twig') }}
+{% endblock %}

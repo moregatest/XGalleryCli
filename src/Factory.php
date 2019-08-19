@@ -1,203 +1,102 @@
 <?php
+
 /**
- * @package     XGalleryCli
- * @subpackage  Factory
- *
- * @copyright   Copyright (C) 2012 - 2018 JOOservices.com. All rights reserved.
- * @license     GNU General Public License version 2 or later; see LICENSE
+ * Copyright (c) 2019 JOOservices Ltd
+ * @author Viet Vu <jooservices@gmail.com>
+ * @package XGallery
+ * @license GPL
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace XGallery;
+namespace App;
 
-use Joomla\Database\DatabaseFactory;
-use Joomla\Input\Input;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
-use Psr\Log\LogLevel;
-use Stash\Driver\Apc;
-use Stash\Driver\FileSystem;
-use Stash\Driver\Memcache;
-
-defined('_XEXEC') or die;
+use ErrorException;
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\PHPMailer;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Cache\Adapter\MemcachedAdapter;
+use Symfony\Component\Cache\Adapter\RedisAdapter;
 
 /**
  * Class Factory
- * @package XGallery
- *
- * @since   2.0.2
+ * @package App
  */
 class Factory
 {
-	/**
-	 * @param   string $name Application name
-	 *
-	 * @return  boolean|mixed
-	 *
-	 * @since   2.0.2
-	 */
-	public static function getApplication($name)
-	{
-		static $instances;
+    /**
+     * Get cache instance
+     *
+     * @return boolean|FilesystemAdapter|MemcachedAdapter|RedisAdapter
+     */
+    public static function getCache()
+    {
+        static $instance;
 
-		$name      = str_replace('.', '\\', $name);
-		$className = '\\' . XGALLERY_NAMESPACE . '\\Application\\' . $name;
+        if ($instance) {
+            return $instance;
+        }
 
-		if (isset($instances[$className]))
-		{
-			return $instances[$name];
-		}
+        $defaultLifetime = (int)getenv('cache_interval');
 
-		if (!class_exists($className) && !is_subclass_of($name, '\\' . XGALLERY_NAMESPACE . '\\Application'))
-		{
-			return false;
-		}
+        switch (getenv('cache_driver')) {
+            case 'memcached':
+                try {
+                    $instance = new MemcachedAdapter(
+                        MemcachedAdapter::createConnection(getenv('memcached_host')),
+                        DefinesCore::APPLICATION,
+                        $defaultLifetime
+                    );
+                } catch (ErrorException $exception) {
+                    return false;
+                }
+                break;
+            case 'redis':
+                try {
+                    $instance = new RedisAdapter(
+                        RedisAdapter::createConnection(getenv('redis_host')),
+                        DefinesCore::APPLICATION,
+                        $defaultLifetime
+                    );
+                } catch (ErrorException $exception) {
+                    return false;
+                }
+                break;
+            case 'filesystem':
+                $instance = new FilesystemAdapter(
+                    DefinesCore::APPLICATION,
+                    $defaultLifetime,
+                    getenv('filecache_path')
+                );
+                break;
+            default:
+                return false;
+        }
 
-		$instances[$name] = new $className;
+        return $instance;
+    }
 
-		return $instances[$name];
-	}
+    /**
+     * getMailer
+     * @return PHPMailer
+     * @throws Exception
+     */
+    public static function getMailer()
+    {
+        $mailer = new PHPMailer;
+        $mailer->IsSMTP();
 
-	/**
-	 * @return  Input
-	 *
-	 * @since   2.0.2
-	 */
-	public static function getInput()
-	{
-		static $instance;
+        $mailer->SMTPDebug  = 2;
+        $mailer->SMTPAuth   = true;
+        $mailer->SMTPSecure = getenv('smtp_secure');
+        $mailer->Host       = getenv('smtp_host');
+        $mailer->Port       = getenv('smtp_port');
+        $mailer->IsHTML(true);
+        $mailer->Username = getenv('smtp_username');
+        $mailer->Password = getenv('smtp_password');
+        $mailer->SetFrom(getenv('smtp_username'));
+        $mailer->CharSet  = 'UTF-8';
+        $mailer->Encoding = 'base64';
 
-		if (isset($instance))
-		{
-			if (Environment::isCli())
-			{
-				return $instance->cli;
-			}
-
-		}
-
-		$instance = new Input;
-
-		if (Environment::isCli())
-		{
-			return $instance->cli;
-		}
-
-		return $instance;
-	}
-
-	/**
-	 * @return  \Joomla\Database\DatabaseDriver
-	 *
-	 * @since   2.0.2
-	 */
-	public static function getDbo()
-	{
-		static $instance;
-
-		if (isset($instance))
-		{
-			return $instance;
-		}
-
-		$config   = Configuration::getInstance();
-		$factory  = new DatabaseFactory;
-		$instance = $factory->getDriver('mysqli',
-			array(
-				'host'     => $config->get('host'),
-				'user'     => $config->get('user'),
-				'password' => $config->get('password'),
-				'database' => $config->get('database'),
-				'prefix'   => $config->get('prefix')
-			)
-		);
-
-		return $instance;
-	}
-
-	/**
-	 * @param   string $name  Name
-	 * @param   string $level Log level
-	 *
-	 * @return  Logger
-	 *
-	 * @since   2.0.2
-	 *
-	 * @throws  \Exception
-	 */
-	public static function getLogger($name = 'core', $level = LogLevel::DEBUG)
-	{
-		static $instances;
-
-		$name = str_replace('\\', '_', strtolower($name));
-
-		if (isset($instances[$name]))
-		{
-			return $instances[$name];
-		}
-
-		$instances[$name] = new Logger(XGALLERY_NAMESPACE);
-		$instances[$name]->pushHandler(
-			new StreamHandler(self::getConfiguration()->get('log_path') . '/' . date("Y-m-d", time()) . '/' . $name . '_' . $level . '.log')
-		);
-
-		return $instances[$name];
-	}
-
-	/**
-	 * @return Configuration
-	 */
-	public static function getConfiguration()
-	{
-		return Configuration::getInstance();
-	}
-
-	/**
-	 * @return boolean
-	 *
-	 * @since  2.2.0
-	 */
-	public static function isDebug()
-	{
-		return self::getConfiguration()->get('debug', false);
-	}
-
-	/**
-	 * @param   string $driver Driver
-	 *
-	 * @return  Cache
-	 */
-	public static function getCache($driver = null)
-	{
-		static $caches;
-
-		if (isset($caches[$driver]))
-		{
-			return $caches[$driver];
-		}
-
-		if ($driver === null)
-		{
-			$driver = self::getConfiguration()->get('cache_driver', 'FileSystem');
-		}
-
-		switch ($driver)
-		{
-			default:
-			case 'FileSystem':
-				$cacheDriver = new FileSystem(
-					array('path' => self::getConfiguration()->get('cache_path'))
-				);
-				break;
-			case 'APC':
-				$cacheDriver = new Apc(array('ttl' => 3600));
-				break;
-			case 'Memcache':
-				$cacheDriver = new Memcache(array('servers' => array('127.0.0.1', '11211')));
-				break;
-		}
-
-		$caches[$driver] = new Cache($cacheDriver);
-
-		return $caches[$driver];
-	}
+        return $mailer;
+    }
 }

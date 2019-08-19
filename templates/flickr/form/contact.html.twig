@@ -1,0 +1,14 @@
+<form class="" action="{{ path('app_flickr_contact') }}" method="POST">
+    <div class="form-group">
+        <input type="text" name="nsid" class="form-control" id="inputNSID"
+               aria-describedby="nsidHelp"
+               placeholder="Enter NSID or URL">
+    </div>
+    <input type="hidden" name="token" value="{{ csrf_token('flickr-contact') }}"/>
+    <button type="submit" class="btn btn-primary" name="submit" value="mycontacts"><i class="fas fa-tasks"></i> Update
+        my contacts
+    </button>
+    <button type="submit" class="btn btn-primary" name="submit" value="contact"><i class="fas fa-plus-circle"></i> Add
+        contact
+    </button>
+</form>

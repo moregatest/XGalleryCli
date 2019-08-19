@@ -1,0 +1,71 @@
+<div class="card shadow-sm mb-5 bg-white rounded" data-item="{{ item.itemNumber }}">
+    {{ include('onejav/cover.html.twig', {card: true}) }}
+
+    <div class="card-header">
+        <h5 style="text-align: left; display: inline-block"><a
+                    href="{{ path('app_onejav_detail', {'slug': item.title}) }}">{{ item.title }}</a> <span
+                    class="badge badge-secondary">{{ item.size }} GB</span></h5>
+        <span class="float-right"><i
+                    class="fas fa-calendar-alt"></i> <a
+                    href="/onejav/daily/{{ item.dateSlug }}">{{ item.date }}</a></span>
+    </div>
+
+    {% if item.description|length %}
+        <div class="card-body">
+            <blockquote class="blockquote mb-0">
+                <small>{{ item.description }}</small>
+            </blockquote>
+        </div>
+    {% endif %}
+
+    {% if item.tags|length > 0 %}
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <i class="fas fa-tags"></i>
+                {% for tag in item.tags %}
+                    <a href="/onejav/tag/{{ tag }}"><span
+                                class="badge badge-info">{{ tag }}</span></a>
+                {% endfor %}
+            </li>
+        </ul>
+    {% endif %}
+
+    {% if item.r18 is defined %}
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <i class="fas fa-info"></i> <span class="badge badge-info">{{ item.r18.studio }}</span> <span
+                        class="badge badge-info">{{ item.r18.label }}</span> <span
+                        class="badge badge-info">{{ item.r18.series }}</span>
+            </li>
+        </ul>
+    {% endif %}
+
+    <ul class="list-group list-group-flush">
+        {% for actress in item.actresses %}
+            <li class="list-group-item"><i class="fas fa-female"></i> <a
+                        href="/onejav/actress/{{ actress }}">{{ actress }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <div class="card-footer">
+        {% if item.downloads is defined %}
+            <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+                <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-download"></i> Download <span
+                            class="badge badge-pill badge-light">{{ item.downloads|length }}</span></a>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                    {% for size, download in item.downloads %}
+                        <a href="{{ path('app_onejav_downloadtorrent') }}?url={{ download }}&item={{ item.itemNumber }}"
+                           class="dropdown-item" target="_blank">Size {{ size }} GB</a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        <div class="btn-group" role="group">
+            <a href="{{ path('app_onejav_addfavorite') }}/?itemNumber={{ item.itemNumber }}"
+               class="btn btn-secondary" target="_blank"><i class="fas fa-heart"></i> Favorite</a>
+        </div>
+    </div>
+</div>

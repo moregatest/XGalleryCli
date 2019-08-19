@@ -1,0 +1,22 @@
+{% extends "base/base.html.twig" %}
+{% block title %}
+    XGallery - Pornhub - Download fetcher
+{% endblock %}
+{% block body %}
+    {% set userguide_content = 'Get Pornhub download link' %}
+    {{ include('base/guide.html.twig') }}
+    <div class="row">
+        <div class="col-12">
+            <form class="" action="pornhub/search" method="POST">
+                <div class="form-group">
+                    <input type="text" name="url" class="form-control" id="inputUrl"
+                           aria-describedby="keywordHelp"
+                           placeholder="Enter your URL">
+                    <input type="hidden" name="token" value="{{ csrf_token('pornhub-search') }}"/>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
