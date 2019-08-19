@@ -69,7 +69,7 @@ trait HasCache
      * @param int $expire
      * @return boolean
      */
-    protected function saveCache($id, $data, $expire = 8640)
+    protected function saveCache($id, $data, $expire = null)
     {
         $item = $this->getCacheItem($id);
 
@@ -77,11 +77,9 @@ trait HasCache
             return false;
         }
 
-        /**
-         * @TODO Cache expire via config
-         */
         $item->set($data);
-        $item->expiresAfter($expire);
+        $item->expiresAfter($expire ?? (int)getenv('cache_interval'));
+
         Factory::getCache()->save($item);
     }
 }
