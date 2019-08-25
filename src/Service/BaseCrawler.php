@@ -10,6 +10,7 @@
 
 namespace App\Service;
 
+use App\Traits\HasLogger;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\DomCrawler\Crawler;
@@ -20,6 +21,8 @@ use Symfony\Component\DomCrawler\Crawler;
  */
 class BaseCrawler extends HttpClient
 {
+    use HasLogger;
+
     /**
      * @param $method
      * @param $uri

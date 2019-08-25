@@ -35,7 +35,7 @@ class LinksysClient extends HttpClient
             'http://192.168.1.1/JNAP/',
             [
                 'headers' => ['X-JNAP-Action' => 'http://cisco.com/jnap/core/Transaction'],
-                'json' => [
+                'json'    => [
                     ['action' => 'http://linksys.com/jnap/devicelist/GetDevices', 'request' => new stdClass],
                 ],
             ]

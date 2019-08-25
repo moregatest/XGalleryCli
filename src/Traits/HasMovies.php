@@ -55,8 +55,8 @@ trait HasMovies
 
             $xRefEntity = $this->entityManager->getRepository(JavMoviesXref::class)->findOneBy(
                 [
-                    'movie_id' => $movieEntity->getId(),
-                    'xref_id' => $genreEntity->getId(),
+                    'movie_id'  => $movieEntity->getId(),
+                    'xref_id'   => $genreEntity->getId(),
                     'xref_type' => $type,
                 ]
             );

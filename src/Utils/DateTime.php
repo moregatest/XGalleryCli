@@ -10,6 +10,8 @@
 
 namespace App\Utils;
 
+use Exception;
+
 /**
  * Class DateTime
  * @package App\Utils
@@ -20,7 +22,7 @@ class DateTime
      * @param string $format
      * @param null $date
      * @return boolean|\DateTime
-     * @throws \Exception
+     * @throws Exception
      */
     public static function getDateTime($date = null, $format = 'Y/m/d')
     {

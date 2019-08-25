@@ -68,6 +68,7 @@ final class R18Movies extends CrawlerCommand
 
                 // @TODO Try catch
                 $this->entityManager->flush();
+                $this->entityManager->getConnection()->close();
                 $this->io->progressAdvance();
             }
         );

@@ -14,7 +14,6 @@ use App\Service\BaseCrawler;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
 use stdClass;
-use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * Class Onejav
@@ -25,7 +24,7 @@ class OnejavCrawler extends BaseCrawler
     protected $indexUrl = 'https://onejav.com';
 
     /**
-     * @param $indexUrl
+     * @param string $indexUrl
      * @return array
      * @throws GuzzleException
      * @throws InvalidArgumentException
@@ -61,7 +60,6 @@ class OnejavCrawler extends BaseCrawler
 
     /**
      * Return pages number
-     *
      * @param $indexUrl
      * @return boolean|integer
      * @throws GuzzleException
@@ -81,10 +79,55 @@ class OnejavCrawler extends BaseCrawler
     }
 
     /**
-     * @param Crawler $crawler
-     * @return boolean|stdClass
+     * @return array|boolean
      * @throws GuzzleException
      * @throws InvalidArgumentException
+     */
+    public function getFeatured()
+    {
+        if (!$crawler = $this->getCrawler('GET', $this->indexUrl)) {
+            return false;
+        }
+
+        $links = $crawler->filter('.is-desktop .card-content .dragscroll a.thumbnail-link')->each(
+            function ($el) {
+                return $el->attr('href');
+            }
+        );
+
+        $list = [];
+
+        foreach ($links as $index => $link) {
+            if (!$crawler = $this->getCrawler('GET', $this->indexUrl . $link)) {
+                unset($crawler);
+                continue;
+            }
+
+            $list [] = $this->getDetail($crawler);
+            unset($crawler);
+        }
+
+        return $list;
+    }
+
+    /**
+     * @param $url
+     * @return bool|stdClass
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    public function getDetailFromUrl($url)
+    {
+        if (!$crawler = $this->getCrawler('GET', $url)) {
+            return false;
+        }
+
+        return $this->getDetail($crawler);
+    }
+
+    /**
+     * @param $crawler
+     * @return boolean|stdClass
      */
     private function getDetail($crawler)
     {
@@ -162,66 +205,30 @@ class OnejavCrawler extends BaseCrawler
     public function getR18($itemNumber)
     {
         $crawler = new R18Crawler;
-        $r18     = new stdClass;
 
         $searchLinks = $crawler->getSearchLinks($itemNumber);
         $searchLinks = $searchLinks ?? [];
 
         if (empty($searchLinks)) {
-            return $r18;
-        }
-
-        $r18 = $crawler->getDetail(reset($searchLinks));
-
-        return $r18;
-    }
-
-    /**
-     * @return array|boolean
-     * @throws GuzzleException
-     * @throws InvalidArgumentException
-     */
-    public function getFeatured()
-    {
-        $indexUrl = 'https://onejav.com/';
-
-        if (!$crawler = $this->getCrawler('GET', $indexUrl)) {
             return false;
         }
 
-        $links = $crawler->filter('.is-desktop .card-content .dragscroll a.thumbnail-link')->each(
-            function ($el) {
-                return $el->attr('href');
-            }
-        );
-
-        $list = [];
-
-        foreach ($links as $index => $link) {
-            if (!$crawler = $this->getCrawler('GET', $indexUrl . $link)) {
-                unset($crawler);
-                continue;
-            }
-
-            $list [] = $this->getDetail($crawler);
-            unset($crawler);
-        }
-
-        return $list;
+        return $crawler->getDetail(reset($searchLinks));
     }
 
     /**
-     * @param $url
-     * @return bool|stdClass
+     * @return array|bool
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
-    public function getDetailFromUrl($url)
+    public function getTags()
     {
-        if (!$crawler = $this->getCrawler('GET', $url)) {
+        if (!$crawler = $this->getCrawler('GET', $this->indexUrl . '/tag')) {
             return false;
         }
 
-        return $this->getDetail($crawler);
+        return $crawler->filter('.card-content .button.is-link')->each(function ($el) {
+            return trim($el->text());
+        });
     }
 }

@@ -70,11 +70,11 @@ class MediaController extends AbstractController
         return $this->render(
             'media/index.html.twig',
             [
-                'totalPages' => $maxPages,
+                'totalPages'  => $maxPages,
                 'currentPage' => $currentPage,
-                'limit' => $limit,
-                'items' => $pagination->getIterator(),
-                'pages' => $maxPages > 10 ? 10 : $maxPages,
+                'limit'       => $limit,
+                'items'       => $pagination->getIterator(),
+                'pages'       => $maxPages > 10 ? 10 : $maxPages,
             ]
         );
     }

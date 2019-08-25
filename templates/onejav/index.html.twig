@@ -7,40 +7,43 @@
     {{ include('base/guide.html.twig') }}
     <div class="row">
         <div class="col-8">
-            {% if daily is defined %}
-                {{ include('onejav/cards.html.twig') }}
+            {% if list is defined %}
+                <div class="daily-items">
+                    {{ include('onejav/cards.html.twig') }}
+                </div>
             {% endif %}
             <button type="button" class="btn btn-primary load-more"><i
                         class="fas fa-chevron-circle-down"></i>
                 Load more
             </button>
         </div>
-
         <div class="col-4">
             <div class="row">
-                <div class="col-12">
-                    {% if tags is defined %}
+                {% if tags is defined %}
+                    <div class="col-12">
+
                         {% for tag in tags %}
                             <a href="/onejav/tag/{{ tag }}"><span class="badge badge-info">{{ tag }}</span></a>
                         {% endfor %}
-                    {% endif %}
-                </div>
-                <hr/>
-                <div class="col-12">
+
+                    </div>
+                    <hr/>
+
                     {% if actresses is defined %}
+                        <div class="col-12">
                         {% for actress in actresses %}
                             <a href="/onejav/actress/{{ actress }}"><span class="badge badge-info">{{ actress }}</span></a>
                         {% endfor %}
                     {% endif %}
-                </div>
-                {% if featured is defined %}
-                    {% for item in featured %}
-                        <div class="col-12 mb-2">
-                            {{ include('/onejav/cover.html.twig') }}
-                        </div>
-                    {% endfor %}
+                    </div>
                 {% endif %}
+                <div class="col-12 featured-items">
+
+                </div>
             </div>
+        </div>
+        <div class="col-12 tags">
+
         </div>
     </div>
 

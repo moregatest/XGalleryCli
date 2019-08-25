@@ -43,9 +43,9 @@ class HttpClient extends Client
             array_merge(
                 [
                     'headers' => [
-                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.90 Safari/537.36',
-                        'Connection' => 'keep-alive',
-                        'Cache-Control' => 'no-cache',
+                        'User-Agent'      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.90 Safari/537.36',
+                        'Connection'      => 'keep-alive',
+                        'Cache-Control'   => 'no-cache',
                         'Accept-Encoding' => 'gzip, deflate',
                     ],
                 ],

@@ -150,7 +150,7 @@ final class XCityCrawler extends AbstractCrawler
                     }
                     if (strpos($li->text(), 'Label/Maker') !== false) {
                         return [
-                            'label' => $li->filter('#program_detail_maker_name')->text(),
+                            'label'  => $li->filter('#program_detail_maker_name')->text(),
                             'marker' => $li->filter('#program_detail_label_name')->text(),
                         ];
                     }

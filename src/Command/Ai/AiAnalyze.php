@@ -27,7 +27,7 @@ class AiAnalyze extends BaseCommand
     /**
      * @var array
      */
-    private $data;
+    private $items;
 
     /**
      * @return boolean
@@ -35,7 +35,7 @@ class AiAnalyze extends BaseCommand
      */
     protected function prepareGetData()
     {
-        $this->data = $this->entityManager->getRepository(JavMyFavorite::class)->findAll();
+        $this->items = $this->entityManager->getRepository(JavMyFavorite::class)->findAll();
         $this->entityManager->getConnection()->executeQuery('TRUNCATE `jav_my_favorites_data`');
 
         return self::PREPARE_SUCCEED;
@@ -47,9 +47,13 @@ class AiAnalyze extends BaseCommand
      */
     protected function processExtractData()
     {
+        if (empty($this->items)) {
+            return true;
+        }
+
         $r18 = new R18Crawler;
 
-        foreach ($this->data as $item) {
+        foreach ($this->items as $item) {
             $items = $r18->getSearchLinks($item->getItemNumber());
 
             if (empty($items)) {
@@ -99,6 +103,7 @@ class AiAnalyze extends BaseCommand
         $entity = new JavMyFavoriteData;
         $entity->setName($name);
         $entity->setType($type);
+
         return $this->entityManager->persist($entity);
     }
 }

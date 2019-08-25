@@ -141,9 +141,9 @@ class NctCrawler extends AbstractCrawler
             $xml = simplexml_load_string($this->get($url));
 
             return [
-                'url' => $url,
-                'title' => trim((string)$xml->track->title),
-                'creator' => trim((string)$xml->track->creator),
+                'url'      => $url,
+                'title'    => trim((string)$xml->track->title),
+                'creator'  => trim((string)$xml->track->creator),
                 'download' => trim((string)$xml->track->location),
             ];
         } catch (GuzzleException $exception) {

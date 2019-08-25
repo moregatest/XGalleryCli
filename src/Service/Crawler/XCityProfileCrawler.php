@@ -120,8 +120,8 @@ final class XCityProfileCrawler extends AbstractCrawler
                         return [
                             'sizes' => [
                                 'breast' => $breast ?? null,
-                                'waist' => $waist ?? null,
-                                'hips' => $hips ?? null,
+                                'waist'  => $waist ?? null,
+                                'hips'   => $hips ?? null,
                             ],
                         ];
                     }

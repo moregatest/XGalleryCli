@@ -120,8 +120,8 @@ class FlickrClient extends OAuthClient
         $albumId = end($parts);
 
         return [
-            'nsid' => $nsid,
-            'album' => $albumId,
+            'nsid'   => $nsid,
+            'album'  => $albumId,
             'photos' => $this->flickrPhotoSetsGetAllPhotos($albumId, $nsid),
         ];
     }

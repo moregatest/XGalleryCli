@@ -66,10 +66,10 @@ trait HasPhotoSets
         return $this->get(
             array_merge(
                 [
-                    'method' => 'flickr.photosets.getPhotos',
+                    'method'      => 'flickr.photosets.getPhotos',
                     'photoset_id' => $photoSetId,
-                    'user_id' => $userId,
-                    'per_page' => 500,
+                    'user_id'     => $userId,
+                    'per_page'    => 500,
                 ],
                 $parameters
             )

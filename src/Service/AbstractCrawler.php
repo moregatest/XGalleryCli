@@ -10,7 +10,6 @@
 
 namespace App\Service;
 
-use App\Traits\HasLogger;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
 use stdClass;
@@ -21,7 +20,6 @@ use stdClass;
  */
 abstract class AbstractCrawler extends BaseCrawler implements CrawlerInterface
 {
-    use HasLogger;
 
     /**
      * @var string

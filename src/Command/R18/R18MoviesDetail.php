@@ -113,8 +113,8 @@ final class R18MoviesDetail extends CrawlerCommand
 
                 $xRefEntity = $this->entityManager->getRepository(JavMoviesXref::class)->findOneBy(
                     [
-                        'movie_id' => $movieEntity->getId(),
-                        'xref_id' => $idolEntity->getId(),
+                        'movie_id'  => $movieEntity->getId(),
+                        'xref_id'   => $idolEntity->getId(),
                         'xref_type' => 'actress',
                     ]
                 );

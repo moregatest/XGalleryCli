@@ -16,11 +16,13 @@ use App\Service\Crawler\OnejavCrawler;
 use App\Service\Crawler\R18Crawler;
 use App\Traits\HasCache;
 use App\Traits\HasStorage;
+use DateInterval;
 use DateTime;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -75,9 +77,8 @@ class OnejavController extends AbstractController
         $response = $this->render(
             'onejav/index.html.twig',
             [
-                'featured'  => $this->prepareItems($this->onejavCrawler->getFeatured()),
-                'daily'     => $daily,
-                'yesterday' => $date->add(\DateInterval::createFromDateString('yesterday'))->format('Y/m/d')
+                'list'      => $daily,
+                'yesterday' => $date->add(DateInterval::createFromDateString('yesterday'))->format('Y/m/d')
             ]
         );
 
@@ -85,23 +86,77 @@ class OnejavController extends AbstractController
     }
 
     /**
+     * Prepare items
+     * @param array $items
+     * @return array|boolean
+     * @throws GuzzleException
+     * @throws InvalidArgumentException
+     */
+    private function prepareItems($items)
+    {
+        if (!$items) {
+            return false;
+        }
+
+        foreach ($items as $index => $item) {
+            unset($items[$index]);
+
+            $downloads                      = [];
+            $downloads[(string)$item->size] = $item->torrent;
+
+            if ($sameItems = $this->onejavCrawler->getAllDetailItems('search/' . urlencode($item->itemNumber))) {
+                if (empty($sameItems)) {
+                    continue;
+                }
+                foreach ($sameItems as $sameItem) {
+                    $downloads[(string)$sameItem->size] = $sameItem->torrent;
+                }
+            }
+
+            $item->downloads          = $downloads;
+            $date                     = DateTime::createFromFormat('F j, Y', $item->date);
+            $item->dateSlug           = $date ? $date->format('Y_m_d') : (new DateTime())->format('Y_m_d');
+            $items[$item->itemNumber] = $item;
+        }
+
+        return $items;
+    }
+
+    /**
      * @Route("/onejav/ajax")
      * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return JsonResponse
      * @throws GuzzleException
      * @throws InvalidArgumentException
      */
     public function indexAjax(Request $request)
     {
-        $formatDateTime = 'Y/m/d';
-        $date           = DateTime::createFromFormat($formatDateTime, $request->get('date'));
-        $requestDate    = $date->add(\DateInterval::createFromDateString('yesterday'))->format('Y/m/d');
+        $action = $request->get('action');
 
-        $daily[$requestDate] = $this->prepareItems(
-            $this->onejavCrawler->getAllDetailItems($requestDate)
-        );
+        switch ($action) {
+            case 'getFeaturedItems':
+                return $this->json(
+                    $this->renderView(
+                        'onejav/covers.html.twig',
+                        ['items' => $this->prepareItems($this->onejavCrawler->getFeatured())]
+                    )
+                );
+                break;
+            case 'getTags':
+                return $this->json($this->onejavCrawler->getTags());
+                break;
+            case 'getDailyItems':
+                $formatDateTime = 'Y/m/d';
+                $date           = DateTime::createFromFormat($formatDateTime, $request->get('date'));
+                $requestDate    = $date->add(DateInterval::createFromDateString('yesterday'))->format('Y/m/d');
 
-        return $this->json($this->renderView('onejav/cards.html.twig', ['daily' => $daily]));
+                $daily[$requestDate] = $this->prepareItems(
+                    $this->onejavCrawler->getAllDetailItems($requestDate)
+                );
+
+                return $this->json($this->renderView('onejav/cards.html.twig', ['list' => $daily]));
+                break;
+        }
     }
 
     /**
@@ -125,6 +180,27 @@ class OnejavController extends AbstractController
          */
 
         return $this->showResults($this->prepareItems([$item]), $slug);
+    }
+
+    /**
+     * @param $items
+     * @param $keyword
+     * @return Response
+     * @throws Exception
+     */
+    private function showResults($items, $keyword)
+    {
+        if (count($items) == 1) {
+            return $this->render(
+                'onejav/detail.html.twig',
+                ['keyword' => $keyword, 'item' => reset($items)]
+            );
+        }
+
+        return $this->render(
+            'onejav/results.html.twig',
+            ['keyword' => $keyword, 'items' => $items]
+        );
     }
 
     /**
@@ -162,8 +238,7 @@ class OnejavController extends AbstractController
      */
     public function actress($slug)
     {
-        $r18      = new R18Crawler;
-        $r18Items = $r18->getSearchDetail($slug);
+        $r18Items = $this->r18Crawler->getSearchDetail($slug);
         $items    = [];
 
         foreach ($r18Items as $item) {
@@ -178,9 +253,10 @@ class OnejavController extends AbstractController
             $items [] = $item;
         }
 
-        $items = array_merge($items, $this->onejavCrawler->getAllDetailItems('actress/' . $slug));
-
-        return $this->showResults($this->prepareItems($items), $slug);
+        return $this->showResults(
+            $this->prepareItems(array_merge($items, $this->onejavCrawler->getAllDetailItems('actress/' . $slug))),
+            $slug
+        );
     }
 
     /**
@@ -281,63 +357,5 @@ class OnejavController extends AbstractController
 
         $this->addFlash('success', 'Item added success: ' . $itemNumber);
         return $this->redirect('/onejav');
-    }
-
-    /**
-     * Prepare items
-     * @param array $items
-     * @return array|boolean
-     * @throws GuzzleException
-     * @throws InvalidArgumentException
-     */
-    private function prepareItems($items)
-    {
-        if (!$items) {
-            return false;
-        }
-
-        foreach ($items as $index => $item) {
-            unset($items[$index]);
-
-            $downloads                      = [];
-            $downloads[(string)$item->size] = $item->torrent;
-
-            if ($sameItems = $this->onejavCrawler->getAllDetailItems('search/' . urlencode($item->itemNumber))) {
-                if (empty($sameItems)) {
-                    continue;
-                }
-                foreach ($sameItems as $sameItem) {
-                    $downloads[(string)$sameItem->size] = $sameItem->torrent;
-                }
-            }
-
-            $item->downloads          = $downloads;
-            $date                     = DateTime::createFromFormat('F j, Y', $item->date);
-            $item->dateSlug           = $date ? $date->format('Y_m_d') : (new DateTime())->format('Y_m_d');
-            $items[$item->itemNumber] = $item;
-        }
-
-        return $items;
-    }
-
-    /**
-     * @param $items
-     * @param $keyword
-     * @return Response
-     * @throws Exception
-     */
-    private function showResults($items, $keyword)
-    {
-        if (count($items) == 1) {
-            return $this->render(
-                'onejav/detail.html.twig',
-                ['keyword' => $keyword, 'item' => reset($items)]
-            );
-        }
-
-        return $this->render(
-            'onejav/results.html.twig',
-            ['keyword' => $keyword, 'items' => $items]
-        );
     }
 }

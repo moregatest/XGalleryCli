@@ -189,11 +189,11 @@ class OAuthClient
     {
         return
             [
-                'oauth_consumer_key' => $this->credential['consumerKey'],
-                'oauth_nonce' => $this->getNonce(),
+                'oauth_consumer_key'     => $this->credential['consumerKey'],
+                'oauth_nonce'            => $this->getNonce(),
                 'oauth_signature_method' => self::SIGNATURE_METHOD,
-                'oauth_timestamp' => time(),
-                'oauth_version' => self::VERSION,
+                'oauth_timestamp'        => time(),
+                'oauth_version'          => self::VERSION,
             ];
     }
 
